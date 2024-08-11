@@ -1,28 +1,27 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import './Login.css';
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import "./Login.css";
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/auth/login', { email, password });
+      const response = await axios.post("/api/auth/login", { email, password });
       if (response.data.success) {
-        navigate('/components/Home/Home');
+        navigate("/components/Home/Home");
       }
     } catch (err) {
-      setError('Invalid email or password');
+      setError("Invalid email or password");
     }
   };
-  
 
   return (
     <div className="login-container">
@@ -41,7 +40,7 @@ const Login = () => {
         <div className="form-group">
           <div className="password-wrapper">
             <input
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
@@ -56,9 +55,13 @@ const Login = () => {
           </div>
         </div>
         <div className="form-group">
-          <a href="/forgot-password" className="forgot-password-link">Forget Password?</a>
+          <a href="/forgot-password" className="forgot-password-link">
+            Forget Password?
+          </a>
         </div>
-        <button type="submit" className="login-button">Sign In</button>
+        <button type="submit" className="login-button">
+          Sign In
+        </button>
       </form>
     </div>
   );
