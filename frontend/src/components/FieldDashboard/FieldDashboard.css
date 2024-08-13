@@ -1,0 +1,127 @@
+.next-page-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.info-box {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.edit-icon {
+  cursor: pointer;
+  font-size: 20px;
+  color: #888;
+}
+
+.info-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.info-item {
+  font-weight: bold;
+  margin-right: 15px;
+}
+
+.input-field {
+  width: 30%;
+  padding: 5px;
+  margin-right: 15px;
+  margin-bottom: 10px;
+}
+
+.family-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.family-table th,
+.family-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.table-input {
+  width: 90%;
+  padding: 5px;
+}
+
+.add-row-button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: block;
+  margin: 0 auto;
+}
+
+.add-row-button:hover {
+  background-color: #0056b3;
+}
+
+.add-member-icon {
+  cursor: pointer;
+  font-size: 18px;
+  color: #007bff;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  width: 300px;
+}
+
+.modal input {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 5px;
+}
+
+.modal button {
+  margin-right: 10px;
+}
+
+@media (max-width: 600px) {
+  .input-field {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .info-line {
+    flex-direction: column;
+  }
+  .info-item {
+    margin-bottom: 5px;
+  }
+}

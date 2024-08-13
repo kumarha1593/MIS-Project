@@ -4,7 +4,7 @@ body {
 }
 
 .login-container {
-  max-width: 400px;
+  max-width: 100%;
   margin: 100px auto;
   padding: 40px;
   background-color: #fff;

@@ -1,0 +1,82 @@
+/* FormPage.css */
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f5e6;
+  margin: 0;
+  padding: 20px;
+}
+
+.form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 20px;
+}
+
+h2 {
+  color: #4a4a4a;
+  border-bottom: 2px solid #8bc34a;
+  padding-bottom: 10px;
+  margin-top: 0;
+}
+
+.form-section {
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  color: #4a4a4a;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="number"],
+select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+button {
+  background-color: #8bc34a;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+button:hover {
+  background-color: #7cb342;
+}
+
+.back-button {
+  background-color: #f0f0f0;
+  color: #4a4a4a;
+}
+
+.back-button:hover {
+  background-color: #e0e0e0;
+}
