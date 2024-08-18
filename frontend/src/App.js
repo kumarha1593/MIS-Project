@@ -4,6 +4,8 @@ import Login from "./components/Login/Login";
 import Home from "./components/Home/Home";
 import FieldDashboard from "./components/FieldDashboard/FieldDashboard";
 import FormPage from "./components/FormPage/FormPage";
+import AppLayout from "./components/AppLayout/AppLayout"; // Import the new AppLayout
+import ReviewPage from "./components/FormPage/Review";
 
 function App() {
   return (
@@ -11,9 +13,38 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/FieldDashboard" element={<FieldDashboard />} />
-          <Route path="/FormPage" element={<FormPage />} />
+          <Route
+            path="/home"
+            element={
+              <AppLayout>
+                <Home />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/FieldDashboard"
+            element={
+              <AppLayout>
+                <FieldDashboard />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/FormPage"
+            element={
+              <AppLayout>
+                <FormPage />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/Review"
+            element={
+              <AppLayout>
+                <ReviewPage />
+              </AppLayout>
+            }
+          />
         </Routes>
       </div>
     </Router>

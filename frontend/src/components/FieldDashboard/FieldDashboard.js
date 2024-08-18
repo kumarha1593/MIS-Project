@@ -28,7 +28,7 @@ const FieldDashboard = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/getUserDetails"
+          `${process.env.REACT_APP_BASE_URL}getUserDetails`
         );
         setFormData({
           district: response.data.district,
@@ -40,7 +40,7 @@ const FieldDashboard = () => {
         });
 
         const tableResponse = await axios.get(
-          "http://localhost:5000/api/getFamilyData"
+          `${process.env.REACT_APP_BASE_URL}getFamilyData`
         );
         setTableData(tableResponse.data);
       } catch (error) {
@@ -181,6 +181,7 @@ const FieldDashboard = () => {
             <th>Number of Family Members</th>
             <th>Phone Number</th>
             <th>Add Member</th>
+            <th> Status</th>
           </tr>
         </thead>
         <tbody>
@@ -195,6 +196,7 @@ const FieldDashboard = () => {
                   onClick={() => handleAddFamilyMember(row.id)}
                 />
               </td>
+              <td>{row.status}</td>
             </tr>
           ))}
         </tbody>
