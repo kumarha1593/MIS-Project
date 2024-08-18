@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -16,29 +16,58 @@ const Home = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchMidoriStaffName = async () => {
+      const user_id = localStorage.getItem("user_id");
+      try {
+        const response = await axios.get(
+          `http://localhost:5001/api/user/${user_id}`
+        );
+        setFormData((prevState) => ({
+          ...prevState,
+          midoriStaff: response.data.name,
+        }));
+      } catch (error) {
+        console.error("Error fetching Midori staff name:", error);
+      }
+    };
+
+    fetchMidoriStaffName();
+  }, []);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const { district, village, healthFacility } = formData;
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-    if (!district || !village || !healthFacility) {
-      alert("All fields are mandatory");
-      return;
-    }
+    const user_id = localStorage.getItem("user_id");
+    const currentDate = new Date().toISOString();
+
+    const submitData = {
+      user_id,
+      district: formData.district,
+      village: formData.village,
+      health_facility: formData.healthFacility,
+      mo_mpw_cho_anu_name: formData.moName,
+      asha_name: formData.ashaName,
+      midori_staff_name: formData.midoriStaff,
+      date: currentDate,
+    };
 
     try {
-      await axios.post("http://localhost:5000/api/saveUserDetails", {
-        district,
-        village,
-        healthFacility,
-      });
-      // Redirect to the next page or show a success message
-      navigate("/FieldDashboard"); // Adjust according to your routing setup
+      const response = await axios.post(
+        "http://localhost:5001/api/district_info",
+        submitData
+      );
+      if (response.data.success) {
+        navigate("/FieldDashboard");
+      } else {
+        console.error("Data was not saved successfully");
+      }
     } catch (error) {
-      console.error("Error saving data", error);
+      console.error("Error submitting data:", error);
     }
   };
 
