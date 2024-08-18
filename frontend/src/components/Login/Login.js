@@ -14,19 +14,24 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      console.log("Sending login request with:", { email, password }); // Log the credentials being sent
+      console.log("Sending login request with:", { email, password });
       const response = await axios.post("http://localhost:5001/login", {
         email,
         password,
       });
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
-        navigate("/home");
+        localStorage.setItem("user_id", response.data.user_id);
+        if (response.data.hasDistrictInfo) {
+          navigate("/FieldDashboard");
+        } else {
+          navigate("/home");
+        }
       } else {
         setError("Invalid email or password");
       }
     } catch (err) {
-      console.error("Login error:", err.response || err); // Log the error response
+      console.error("Login error:", err.response || err);
       setError("Invalid email or password");
     }
   };

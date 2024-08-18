@@ -5,16 +5,9 @@ import { FaPencilAlt, FaPlusCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const FieldDashboard = () => {
+  const [districtInfo, setDistrictInfo] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    district: "",
-    village: "",
-    healthFacility: "",
-    moName: "",
-    ashaName: "",
-    midoriStaff: "",
-  });
-
+  const [editableData, setEditableData] = useState(null);
   const [tableData, setTableData] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [newHeadData, setNewHeadData] = useState({
@@ -25,44 +18,61 @@ const FieldDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:5000/api/getUserDetails"
-        );
-        setFormData({
-          district: response.data.district,
-          village: response.data.village,
-          healthFacility: response.data.healthFacility,
-          moName: response.data.moName || "",
-          ashaName: response.data.ashaName || "",
-          midoriStaff: response.data.midoriStaff || "",
-        });
-
-        const tableResponse = await axios.get(
-          "http://localhost:5000/api/getFamilyData"
-        );
-        setTableData(tableResponse.data);
-      } catch (error) {
-        console.error("Error fetching data", error);
-      }
-    };
-
-    fetchData();
+    fetchDistrictInfo();
   }, []);
+
+  const fetchDistrictInfo = async () => {
+    const user_id = localStorage.getItem("user_id");
+    try {
+      const response = await axios.get(
+        `http://localhost:5001/api/user_district_info/${user_id}`
+      );
+      setDistrictInfo(response.data);
+      setEditableData(response.data);
+    } catch (error) {
+      console.error("Error fetching district info:", error);
+    }
+  };
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
   };
 
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setEditableData({
+      ...editableData,
+      [name]: value,
+    });
   };
 
-  const handleUpdate = () => {
-    console.log("Updated data:", formData);
-    // Implement the logic to update the user details in the backend
-    setIsEditing(false);
+  const handleUpdate = async () => {
+    const user_id = localStorage.getItem("user_id");
+    const currentDate = new Date().toISOString();
+
+    const updatedData = {
+      user_id,
+      district: editableData.district,
+      village: editableData.village,
+      health_facility: editableData.health_facility,
+      mo_mpw_cho_anu_name: editableData.mo_mpw_cho_anu_name,
+      asha_name: editableData.asha_name,
+      midori_staff_name: editableData.midori_staff_name,
+      date: currentDate,
+    };
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5001/api/district_info",
+        updatedData
+      );
+      if (response.data.success) {
+        setIsEditing(false);
+        fetchDistrictInfo(); // Refresh the data
+      }
+    } catch (error) {
+      console.error("Error updating data:", error);
+    }
   };
 
   const handleAddFamilyMember = (id) => {
@@ -91,86 +101,96 @@ const FieldDashboard = () => {
           <h3>User Details</h3>
           <FaPencilAlt className="edit-icon" onClick={handleEditToggle} />
         </div>
-        <div className="info-line">
-          <span className="info-item">District: {formData.district}</span>
-          {isEditing && (
-            <input
-              type="text"
-              name="district"
-              value={formData.district}
-              onChange={handleInputChange}
-              className="input-field"
-            />
-          )}
-        </div>
-        <div className="info-line">
-          <span className="info-item">Village: {formData.village}</span>
-          {isEditing && (
-            <input
-              type="text"
-              name="village"
-              value={formData.village}
-              onChange={handleInputChange}
-              className="input-field"
-            />
-          )}
-        </div>
-        <div className="info-line">
-          <span className="info-item">
-            Health Facility: {formData.healthFacility}
-          </span>
-          {isEditing && (
-            <input
-              type="text"
-              name="healthFacility"
-              value={formData.healthFacility}
-              onChange={handleInputChange}
-              className="input-field"
-            />
-          )}
-        </div>
-        <div className="info-line">
-          <span className="info-item">Name of MO: {formData.moName}</span>
-          {isEditing && (
-            <input
-              type="text"
-              name="moName"
-              value={formData.moName}
-              onChange={handleInputChange}
-              className="input-field"
-            />
-          )}
-        </div>
-        <div className="info-line">
-          <span className="info-item">Name of Asha: {formData.ashaName}</span>
-          {isEditing && (
-            <input
-              type="text"
-              name="ashaName"
-              value={formData.ashaName}
-              onChange={handleInputChange}
-              className="input-field"
-            />
-          )}
-        </div>
-        <div className="info-line">
-          <span className="info-item">
-            Midori Staff: {formData.midoriStaff}
-          </span>
-          {isEditing && (
-            <input
-              type="text"
-              name="midoriStaff"
-              value={formData.midoriStaff}
-              onChange={handleInputChange}
-              className="input-field"
-            />
-          )}
-        </div>
-        {isEditing && (
-          <button onClick={handleUpdate} className="update-button">
-            Update
-          </button>
+        {districtInfo && (
+          <>
+            <div className="info-line">
+              <span className="info-item">
+                District: {districtInfo.district}
+              </span>
+              {isEditing && (
+                <input
+                  type="text"
+                  name="district"
+                  value={editableData.district}
+                  onChange={handleInputChange}
+                  className="input-field"
+                />
+              )}
+            </div>
+            <div className="info-line">
+              <span className="info-item">Village: {districtInfo.village}</span>
+              {isEditing && (
+                <input
+                  type="text"
+                  name="village"
+                  value={editableData.village}
+                  onChange={handleInputChange}
+                  className="input-field"
+                />
+              )}
+            </div>
+            <div className="info-line">
+              <span className="info-item">
+                Health Facility: {districtInfo.health_facility}
+              </span>
+              {isEditing && (
+                <input
+                  type="text"
+                  name="health_facility"
+                  value={editableData.health_facility}
+                  onChange={handleInputChange}
+                  className="input-field"
+                />
+              )}
+            </div>
+            <div className="info-line">
+              <span className="info-item">
+                Name of MO: {districtInfo.mo_mpw_cho_anu_name}
+              </span>
+              {isEditing && (
+                <input
+                  type="text"
+                  name="mo_mpw_cho_anu_name"
+                  value={editableData.mo_mpw_cho_anu_name}
+                  onChange={handleInputChange}
+                  className="input-field"
+                />
+              )}
+            </div>
+            <div className="info-line">
+              <span className="info-item">
+                Name of Asha: {districtInfo.asha_name}
+              </span>
+              {isEditing && (
+                <input
+                  type="text"
+                  name="asha_name"
+                  value={editableData.asha_name}
+                  onChange={handleInputChange}
+                  className="input-field"
+                />
+              )}
+            </div>
+            <div className="info-line">
+              <span className="info-item">
+                Midori Staff: {districtInfo.midori_staff_name}
+              </span>
+              {isEditing && (
+                <input
+                  type="text"
+                  name="midori_staff_name"
+                  value={editableData.midori_staff_name}
+                  onChange={handleInputChange}
+                  className="input-field"
+                />
+              )}
+            </div>
+            {isEditing && (
+              <button onClick={handleUpdate} className="update-button">
+                Update
+              </button>
+            )}
+          </>
         )}
       </div>
 
