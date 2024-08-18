@@ -201,6 +201,7 @@ const FieldDashboard = () => {
             <th>Number of Family Members</th>
             <th>Phone Number</th>
             <th>Add Member</th>
+            <th> Status</th>
           </tr>
         </thead>
         <tbody>
@@ -215,6 +216,7 @@ const FieldDashboard = () => {
                   onClick={() => handleAddFamilyMember(row.id)}
                 />
               </td>
+              <td>{row.status}</td>
             </tr>
           ))}
         </tbody>

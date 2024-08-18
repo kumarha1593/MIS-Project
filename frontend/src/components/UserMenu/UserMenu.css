@@ -1,0 +1,29 @@
+.user-menu-container {
+  position: relative;
+}
+
+.user-icon {
+  cursor: pointer;
+  font-size: 24px;
+}
+
+.user-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  z-index: 1000;
+}
+
+.user-menu-dropdown button {
+  width: 100%;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.user-menu-dropdown button:hover {
+  background-color: #f0f0f0;
+}
