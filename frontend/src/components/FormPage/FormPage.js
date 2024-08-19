@@ -409,9 +409,9 @@ const FormPage = () => {
 
   return (
     <div className="form-page">
-        <div className="form-icon" onClick={toggleSidebar}>
-          <FaList />
-        </div>
+      <div className="form-icon" onClick={toggleSidebar}>
+        <FaList />
+      </div>
       <main className="form-content">
         <h2>{sections[currentPage - 1]}</h2>
         {renderFormPage()}
@@ -424,8 +424,8 @@ const FormPage = () => {
         <button onClick={handleNext}>
           {currentPage === 18 ? "Submit" : "Next"}
         </button>
-        <h5>Page {currentPage}</h5>
       </footer>
+      <h5 className="page-no">Page {currentPage}</h5>
       <Sidebar
         isOpen={isSidebarOpen}
         onClose={toggleSidebar}
