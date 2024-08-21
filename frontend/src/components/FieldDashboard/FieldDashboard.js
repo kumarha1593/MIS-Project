@@ -98,7 +98,7 @@ const FieldDashboard = () => {
     <div className="next-page-container">
       <div className="info-box">
         <div className="info-header">
-          <h3>User Details</h3>
+          <h3>Basic Details</h3>
           <FaPencilAlt className="edit-icon" onClick={handleEditToggle} />
         </div>
         {districtInfo && (
@@ -199,7 +199,7 @@ const FieldDashboard = () => {
           <tr>
             <th>Head of Family Name</th>
             <th>Number of Family Members</th>
-            <th>Phone Number</th>
+            <th>Aadhaar Number</th>
             <th>Add Member</th>
             <th> Status</th>
           </tr>
@@ -209,7 +209,7 @@ const FieldDashboard = () => {
             <tr key={row.id}>
               <td>{row.headOfFamily}</td>
               <td>{row.familyMembers}</td>
-              <td>{row.phoneNumber}</td>
+              <td>{row.aadhaarNumber}</td>
               <td>
                 <FaPlusCircle
                   className="add-member-icon"
@@ -239,7 +239,7 @@ const FieldDashboard = () => {
             />
             <input
               type="text"
-              name="phoneNumber"
+              name="Aadhaar number"
               value={newHeadData.phoneNumber}
               onChange={handleModalInputChange}
               placeholder="Phone Number"
