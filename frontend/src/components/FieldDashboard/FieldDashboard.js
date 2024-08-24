@@ -12,13 +12,14 @@ const FieldDashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [newHeadData, setNewHeadData] = useState({
     headOfFamily: "",
-    phoneNumber: "",
+    aadharNumber: "",
   });
 
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchDistrictInfo();
+    fetchFamilyMembers();
   }, []);
 
   const fetchDistrictInfo = async () => {
@@ -87,11 +88,37 @@ const FieldDashboard = () => {
     setNewHeadData({ ...newHeadData, [e.target.name]: e.target.value });
   };
 
-  const handleSaveAndContinue = () => {
-    // Here you would typically save the new head data to your backend
-    console.log("New head data:", newHeadData);
-    setShowModal(false);
-    navigate("/FormPage", { state: { newHead: newHeadData } });
+  const fetchFamilyMembers = async () => {
+    const user_id = localStorage.getItem("user_id");
+    try {
+      const response = await axios.get(
+        `http://localhost:5001/api/family-members/${user_id}`
+      );
+      setTableData(response.data);
+    } catch (error) {
+      console.error("Error fetching family members:", error);
+    }
+  };
+
+  const handleSaveAndContinue = async () => {
+    const user_id = localStorage.getItem("user_id");
+    try {
+      const response = await axios.post(
+        "http://localhost:5001/api/family-members",
+        {
+          fc_id: user_id,
+          name: newHeadData.headOfFamily,
+          aadhar: newHeadData.aadharNumber,
+        }
+      );
+      if (response.data.success) {
+        setShowModal(false);
+        fetchFamilyMembers(); // Refresh the table data
+        navigate("/FormPage", { state: { familyId: response.data.fm_id } });
+      }
+    } catch (error) {
+      console.error("Error saving new head:", error);
+    }
   };
 
   return (
@@ -200,23 +227,16 @@ const FieldDashboard = () => {
             <th>Head of Family Name</th>
             <th>Number of Family Members</th>
             <th>Aadhaar Number</th>
-            <th>Add Member</th>
-            <th> Status</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
           {tableData.map((row) => (
             <tr key={row.id}>
-              <td>{row.headOfFamily}</td>
-              <td>{row.familyMembers}</td>
-              <td>{row.aadhaarNumber}</td>
-              <td>
-                <FaPlusCircle
-                  className="add-member-icon"
-                  onClick={() => handleAddFamilyMember(row.id)}
-                />
-              </td>
-              <td>{row.status}</td>
+              <td>{row.name}</td>
+              <td>{row.familyMemberCount}</td>
+              <td>{row.Aadhar}</td>
+              <td>{row.status === 0 ? "Incomplete" : "Complete"}</td>
             </tr>
           ))}
         </tbody>
@@ -239,10 +259,10 @@ const FieldDashboard = () => {
             />
             <input
               type="text"
-              name="Aadhaar number"
-              value={newHeadData.phoneNumber}
+              name="aadharNumber" // Changed from "Aadhaar number" to "aadharNumber"
+              value={newHeadData.aadharNumber}
               onChange={handleModalInputChange}
-              placeholder="Phone Number"
+              placeholder="Aadhaar number"
             />
             <button onClick={handleSaveAndContinue}>Save & Continue</button>
             <button onClick={() => setShowModal(false)}>Cancel</button>
