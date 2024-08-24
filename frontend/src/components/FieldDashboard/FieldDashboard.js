@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./FieldDashboard.css";
-import { FaPencilAlt, FaPlusCircle } from "react-icons/fa";
+import { FaPencilAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const FieldDashboard = () => {
@@ -120,6 +120,9 @@ const FieldDashboard = () => {
       console.error("Error saving new head:", error);
     }
   };
+  const handleRowClick = (headOfFamily) => {
+    navigate("/FamilyDetails", { state: { headOfFamily } });
+  };
 
   return (
     <div className="next-page-container">
@@ -202,15 +205,6 @@ const FieldDashboard = () => {
               <span className="info-item">
                 Midori Staff: {districtInfo.midori_staff_name}
               </span>
-              {isEditing && (
-                <input
-                  type="text"
-                  name="midori_staff_name"
-                  value={editableData.midori_staff_name}
-                  onChange={handleInputChange}
-                  className="input-field"
-                />
-              )}
             </div>
             {isEditing && (
               <button onClick={handleUpdate} className="update-button">
@@ -233,7 +227,9 @@ const FieldDashboard = () => {
         <tbody>
           {tableData.map((row) => (
             <tr key={row.id}>
-              <td>{row.name}</td>
+              <td onClick={() => handleRowClick(row.headOfFamily)}>
+                {row.name}
+              </td>
               <td>{row.familyMemberCount}</td>
               <td>{row.Aadhar}</td>
               <td>{row.status === 0 ? "Incomplete" : "Complete"}</td>

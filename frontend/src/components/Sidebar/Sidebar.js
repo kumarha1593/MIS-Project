@@ -1,18 +1,20 @@
 import React from "react";
 import "./Sidebar.css";
 
-const SidebarModal = ({
+const Sidebar = ({
   isOpen,
   onClose,
   sections,
   currentSection,
   onSectionChange,
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <div className="sidebar-modal-overlay">
-      <div className="sidebar-modal">
+    <>
+      <div
+        className={`sidebar-overlay ${isOpen ? "active" : ""}`}
+        onClick={onClose}
+      ></div>
+      <div className={`sidebar ${isOpen ? "open" : ""}`}>
         <button className="close-button" onClick={onClose}>
           &times;
         </button>
@@ -32,8 +34,8 @@ const SidebarModal = ({
           ))}
         </ul>
       </div>
-    </div>
+    </>
   );
 };
 
-export default SidebarModal;
+export default Sidebar;

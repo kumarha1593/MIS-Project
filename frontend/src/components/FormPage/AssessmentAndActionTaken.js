@@ -1,128 +1,202 @@
 import React from "react";
 
-const AssessmentAndActionTaken = ({ formData, handleInputChange }) => (
-  <div className="form-group">
-    <h3>Assessment and Action Taken</h3>
+const AssessmentAndActionTaken = ({ formData, handleInputChange }) => {
+  // Function to check if the user is a known case of DM with HTN
+  const isKnownCaseDMWithHTN = () => {
+    return (
+      (formData.knownHTN === "Yes and on treatment" &&
+        formData.knownDM === "Yes and on treatment") ||
+      (formData.knownHTN === "Yes and on treatment" &&
+        formData.knownDM === "Yes and not on treatment") ||
+      (formData.knownHTN === "Yes and not on treatment" &&
+        formData.knownDM === "Yes and not on treatment") ||
+      (formData.knownHTN === "Yes and not on treatment" &&
+        formData.knownDM === "Yes and on treatment")
+    );
+  };
 
-    {/* Assessment and Action Taken */}
-    <div>
-      <label>Assessment and Action Taken</label>
-      <textarea
-        name="assessmentAction"
-        value={formData.assessmentAction}
-        onChange={handleInputChange}
-        placeholder="Enter assessment and action taken"
-        rows="3"
-        required
-      ></textarea>
-    </div>
+  // Function to get detected diseases
+  const getDetectedDiseases = () => {
+    const diseases = [];
 
-    {/* Major NCD Detected */}
-    <div>
-      <label>Major NCD Detected</label>
-      <select
-        name="majorNCDDetected"
-        value={formData.majorNCDDetected}
-        onChange={handleInputChange}
-        required
-      >
-        <option value="">Select</option>
-        <option value="1">HTN</option>
-        <option value="2">DM</option>
-        <option value="3">CVD</option>
-        <option value="4">COPD</option>
-        <option value="5">Oral CA</option>
-        <option value="6">Breast CA</option>
-        <option value="7">Cx CA</option>
-        <option value="8">Post Stroke</option>
-        <option value="9">Mental Health Problem</option>
-        <option value="10">CKD</option>
-        <option value="11">TB</option>
-        <option value="12">Cataract</option>
-      </select>
-    </div>
+    if (formData.knownHTN === "Yes and on treatment" || formData.knownHTN === "Yes and not on treatment") {
+      diseases.push("HTN");
+    }
 
-    {/* Other Disease Detected */}
-    <div>
-      <label>Any Other Disease Detected</label>
-      <textarea
-        name="otherDiseaseDetected"
-        value={formData.otherDiseaseDetected}
-        onChange={handleInputChange}
-        placeholder="Specify any other disease detected"
-        rows="2"
-      ></textarea>
-    </div>
+    if (formData.knownDM === "Yes and on treatment" || formData.knownDM === "Yes and not on treatment") {
+      diseases.push("DM");
+    }
 
-    {/* Known Case of DM with HTN */}
-    <div>
-      <label>Known Case of DM with HTN</label>
-      <select
-        name="knownCaseDMWithHTN"
-        value={formData.knownCaseDMWithHTN}
-        onChange={handleInputChange}
-        required
-      >
-        <option value="">Select</option>
-        <option value="1">Yes</option>
-        <option value="2">No</option>
-      </select>
-    </div>
+    if (formData.cvd?.suspectedHeartDisease === "Yes") {
+      diseases.push("CVD");
+    }
 
-    {/* Telemedicine */}
-    <div>
-      <label>Telemedicine</label>
-      <select
-        name="telemedicine"
-        value={formData.telemedicine}
-        onChange={handleInputChange}
-        required
-      >
-        <option value="">Select</option>
-        <option value="yes">Yes</option>
-        <option value="no">No</option>
-      </select>
-    </div>
+    if (formData.knownRespiratoryDisease === "Yes") {
+      diseases.push("COPD");
+    }
 
-    {/* Medicine Distributed */}
-    <div>
-      <label>Medicine Distributed</label>
-      <select
-        name="medicineDistributed"
-        value={formData.medicineDistributed}
-        onChange={handleInputChange}
-        required
-      >
-        <option value="">Select</option>
-        <option value="yes">Yes</option>
-        <option value="no">No</option>
-      </select>
-    </div>
+    if (formData.suspectedOralCancer === "Yes") {
+      diseases.push("Oral CA");
+    }
 
-    {/* Other Advices */}
-    <div>
-      <label>Other Advices</label>
-      <textarea
-        name="otherAdvices"
-        value={formData.otherAdvices}
-        onChange={handleInputChange}
-        placeholder="Enter any other advices"
-        rows="3"
-      ></textarea>
-    </div>
+    if (formData.suspectedBreastCancer === "Yes") {
+      diseases.push("Breast CA");
+    }
 
-    {/* Remarks */}
-    <div>
-      <label>Remarks</label>
-      <textarea
-        name="remarks"
-        value={formData.remarks}
-        onChange={handleInputChange}
-        placeholder="Enter remarks (e.g., referral status, other health observations)"
-        rows="3"
-      ></textarea>
+    if (formData.knownCervicalCancer === "Yes and on treatment" || formData.knownCervicalCancer === "Yes and not on treatment") {
+      diseases.push("Cx CA");
+    }
+
+    if (formData.postStroke?.historyOfStroke === "Yes") {
+      diseases.push("Post Stroke");
+    }
+
+    if (formData.mentalHealth?.briefInterventionGiven === "Yes") {
+      diseases.push("Mental Health Problem");
+    }
+
+    if (formData.ckd?.ckdRiskAssessment === "Risk") {
+      diseases.push("CKD");
+    }
+
+    if (formData.knownRespiratoryDisease === "Yes") {
+      diseases.push("TB");
+    }
+
+    if (formData.cataract?.cataractResult === "Suspected") {
+      diseases.push("Cataract");
+    }
+
+    return diseases.join(", ");
+  };
+
+  const styles = {
+    formGroup: {
+      marginBottom: "15px",
+      display: "flex",
+      flexDirection: "column",
+    },
+    input: {
+      padding: "8px",
+      width: "100%",
+      boxSizing: "border-box",
+      fontSize: "14px",
+    },
+    textarea: {
+      padding: "8px",
+      width: "100%",
+      boxSizing: "border-box",
+      fontSize: "14px",
+      resize: "vertical",
+    },
+    label: {
+      marginBottom: "5px",
+      fontWeight: "bold",
+    },
+    h3: {
+      marginBottom: "15px",
+    },
+  };
+
+  return (
+    <div style={styles.formGroup}>
+      {/* Major NCD Detected */}
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Major NCD Detected</label>
+        <input
+          type="text"
+          name="majorNCDDetected"
+          value={getDetectedDiseases()}
+          readOnly
+          style={styles.input}
+        />
+      </div>
+
+      {/* Other Disease Detected */}
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Any Other Disease Detected</label>
+        <textarea
+          name="otherDiseaseDetected"
+          value={formData.otherDiseaseDetected}
+          onChange={handleInputChange}
+          placeholder="Specify any other disease detected"
+          rows="2"
+          style={styles.textarea}
+        ></textarea>
+      </div>
+
+      {/* Known Case of DM with HTN */}
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Known Case of DM with HTN</label>
+        <input
+          type="text"
+          name="knownCaseDMWithHTN"
+          value={isKnownCaseDMWithHTN() ? "Yes" : "No"}
+          onChange={handleInputChange}
+          readOnly
+          style={styles.input}
+        />
+      </div>
+
+      {/* Telemedicine */}
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Telemedicine</label>
+        <select
+          name="telemedicine"
+          value={formData.telemedicine}
+          onChange={handleInputChange}
+          required
+          style={styles.input}
+        >
+          <option value="">Select</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      {/* Medicine Distributed */}
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Medicine Distributed</label>
+        <select
+          name="medicineDistributed"
+          value={formData.medicineDistributed}
+          onChange={handleInputChange}
+          required
+          style={styles.input}
+        >
+          <option value="">Select</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      {/* Other Advices */}
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Other Advices</label>
+        <textarea
+          name="otherAdvices"
+          value={formData.otherAdvices}
+          onChange={handleInputChange}
+          placeholder="Enter any other advices"
+          rows="3"
+          style={styles.textarea}
+        ></textarea>
+      </div>
+
+      {/* Remarks */}
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Remarks</label>
+        <textarea
+          name="remarks"
+          value={formData.remarks}
+          onChange={handleInputChange}
+          placeholder="Enter remarks (e.g., referral status, other health observations)"
+          rows="3"
+          style={styles.textarea}
+        ></textarea>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default AssessmentAndActionTaken;
