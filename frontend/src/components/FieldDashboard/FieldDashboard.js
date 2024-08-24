@@ -1,19 +1,29 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./FieldDashboard.css";
-import { FaPencilAlt, FaPlusCircle } from "react-icons/fa";
+import { FaPencilAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const FieldDashboard = () => {
   const [districtInfo, setDistrictInfo] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editableData, setEditableData] = useState(null);
-  const [tableData, setTableData] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [newHeadData, setNewHeadData] = useState({
-    headOfFamily: "",
-    phoneNumber: "",
-  });
+  const [tableData, setTableData] = useState([
+    {
+      id: 1,
+      headOfFamily: "John Doe",
+      familyMembers: 4,
+      aadhaarNumber: "1234 5678 9012",
+      status: "Active",
+    },
+    {
+      id: 2,
+      headOfFamily: "Jane Smith",
+      familyMembers: 3,
+      aadhaarNumber: "9876 5432 1098",
+      status: "Inactive",
+    },
+  ]);
 
   const navigate = useNavigate();
 
@@ -75,23 +85,8 @@ const FieldDashboard = () => {
     }
   };
 
-  const handleAddFamilyMember = (id) => {
-    navigate("/FormPage", { state: { familyId: id } });
-  };
-
-  const handleAddRow = () => {
-    setShowModal(true);
-  };
-
-  const handleModalInputChange = (e) => {
-    setNewHeadData({ ...newHeadData, [e.target.name]: e.target.value });
-  };
-
-  const handleSaveAndContinue = () => {
-    // Here you would typically save the new head data to your backend
-    console.log("New head data:", newHeadData);
-    setShowModal(false);
-    navigate("/FormPage", { state: { newHead: newHeadData } });
+  const handleRowClick = (headOfFamily) => {
+    navigate("/FamilyDetails", { state: { headOfFamily } });
   };
 
   return (
@@ -175,15 +170,6 @@ const FieldDashboard = () => {
               <span className="info-item">
                 Midori Staff: {districtInfo.midori_staff_name}
               </span>
-              {isEditing && (
-                <input
-                  type="text"
-                  name="midori_staff_name"
-                  value={editableData.midori_staff_name}
-                  onChange={handleInputChange}
-                  className="input-field"
-                />
-              )}
             </div>
             {isEditing && (
               <button onClick={handleUpdate} className="update-button">
@@ -200,55 +186,20 @@ const FieldDashboard = () => {
             <th>Head of Family Name</th>
             <th>Number of Family Members</th>
             <th>Aadhaar Number</th>
-            <th>Add Member</th>
-            <th> Status</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
           {tableData.map((row) => (
-            <tr key={row.id}>
+            <tr key={row.id} onClick={() => handleRowClick(row.headOfFamily)}>
               <td>{row.headOfFamily}</td>
               <td>{row.familyMembers}</td>
               <td>{row.aadhaarNumber}</td>
-              <td>
-                <FaPlusCircle
-                  className="add-member-icon"
-                  onClick={() => handleAddFamilyMember(row.id)}
-                />
-              </td>
               <td>{row.status}</td>
             </tr>
           ))}
         </tbody>
       </table>
-
-      <button onClick={handleAddRow} className="add-row-button">
-        Add New Head
-      </button>
-
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Add New Head of Family</h2>
-            <input
-              type="text"
-              name="headOfFamily"
-              value={newHeadData.headOfFamily}
-              onChange={handleModalInputChange}
-              placeholder="Head of Family Name"
-            />
-            <input
-              type="text"
-              name="Aadhaar number"
-              value={newHeadData.phoneNumber}
-              onChange={handleModalInputChange}
-              placeholder="Phone Number"
-            />
-            <button onClick={handleSaveAndContinue}>Save & Continue</button>
-            <button onClick={() => setShowModal(false)}>Cancel</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

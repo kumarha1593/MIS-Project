@@ -6,6 +6,7 @@ import FieldDashboard from "./components/FieldDashboard/FieldDashboard";
 import FormPage from "./components/FormPage/FormPage";
 import AppLayout from "./components/AppLayout/AppLayout"; // Import the new AppLayout
 import ReviewPage from "./components/Review/Review";
+import FamilyDetails from "./components/FamilyDetails/FamilyDetails";
 
 function App() {
   return (
@@ -26,6 +27,14 @@ function App() {
             element={
               <AppLayout>
                 <FieldDashboard />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/FamilyDetails"
+            element={
+              <AppLayout>
+                <FamilyDetails />
               </AppLayout>
             }
           />
