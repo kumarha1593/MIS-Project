@@ -5,7 +5,7 @@ import Home from "./components/Home/Home";
 import FieldDashboard from "./components/FieldDashboard/FieldDashboard";
 import FormPage from "./components/FormPage/FormPage";
 import AppLayout from "./components/AppLayout/AppLayout"; // Import the new AppLayout
-import ReviewPage from "./components/FormPage/Review";
+import ReviewPage from "./components/Review/Review";
 
 function App() {
   return (

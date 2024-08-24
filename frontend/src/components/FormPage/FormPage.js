@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./FormPage.css";
 import { FaList } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
 import HealthProfileForm from "./HealthProfileForm";
 import HealthMeasurements from "./HealthMeasurements";
@@ -20,8 +21,10 @@ import LeprosyAssessment from "./LeprosyAssessment";
 import ElderlyAssessment from "./ElderlyAssessment";
 import MentalHealthAssessment from "./MentalHealthAssessment";
 import AssessmentAndActionTaken from "./AssessmentAndActionTaken";
+import ABHAIdStatus from "./ABHAIdStatus";
 
 const FormPage = () => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -227,6 +230,7 @@ const FormPage = () => {
     "Elderly",
     "Mental Health",
     "Assessment and Action Taken",
+    "ABHA ID Status",
   ];
 
   const handleInputChange = (e, section = null) => {
@@ -248,11 +252,10 @@ const FormPage = () => {
   };
 
   const handleNext = () => {
-    if (currentPage < 18) {
+    if (currentPage < 19) {
       setCurrentPage(currentPage + 1);
     } else {
-      console.log("Final Form Data: ", formData);
-      // Submit form or take appropriate action
+      navigate("/review", { state: { formData } });
     }
   };
 
@@ -264,7 +267,6 @@ const FormPage = () => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const handleSaveDraft = () => {
-    // Implement save draft functionality
     console.log("Saving draft...");
   };
 
@@ -273,7 +275,6 @@ const FormPage = () => {
       setCurrentPage(currentPage - 1);
     }
   };
-
   const renderFormPage = () => {
     switch (currentPage) {
       case 1:
@@ -402,6 +403,13 @@ const FormPage = () => {
             handleInputChange={handleInputChange}
           />
         );
+      case 19:
+        return (
+          <ABHAIdStatus
+            formData={formData}
+            handleInputChange={handleInputChange}
+          />
+        );
       default:
         return null;
     }
@@ -422,18 +430,19 @@ const FormPage = () => {
         </button>
         <button onClick={handleSaveDraft}>Save Draft</button>
         <button onClick={handleNext}>
-          {currentPage === 18 ? "Submit" : "Next"}
+          {currentPage === 19 ? "Submit" : "Next"}
         </button>
       </footer>
       <h5 className="page-no">Page {currentPage}</h5>
       <Sidebar
         isOpen={isSidebarOpen}
-        onClose={toggleSidebar}
+        onClose={() => setIsSidebarOpen(false)}
         sections={sections}
         currentSection={sections[currentPage - 1]}
-        onSectionChange={(section) =>
-          handlePageChange(sections.indexOf(section) + 1)
-        }
+        onSectionChange={(section) => {
+          handlePageChange(sections.indexOf(section) + 1);
+          setIsSidebarOpen(false);
+        }}
       />
     </div>
   );
