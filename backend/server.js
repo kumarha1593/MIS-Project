@@ -224,6 +224,290 @@ app.get("/api/family-members/:user_id", async (req, res) => {
   }
 });
 
+//FORM DATA
+
+//PERSONAL INFO
+app.post("/api/personal-info", async (req, res) => {
+  const {
+    fm_id,
+    name = "",
+    identifier = null, // Default to null if not provided
+    card_number = "",
+    dob = null, // Default to null if not provided
+    sex = null, // Default to null if not provided
+    tel_no = "",
+    address = "",
+    state_health_insurance = null, // Default to null if not provided
+    state_health_insurance_remark = "",
+    disability = null, // Default to null if not provided
+    disability_remark = "",
+  } = req.body;
+
+  console.log(`Received fm_id: ${fm_id}`); // Log the received fm_id
+
+  // Convert input values to match ENUM in the database
+  const genderMap = {
+    male: "M",
+    female: "F",
+    others: "O",
+  };
+  const sanitizedSex = genderMap[sex.toLowerCase()] || null;
+
+  // Convert empty strings to null for nullable fields
+  const sanitizedDob = dob === "" ? null : dob;
+  const sanitizedIdentifier = identifier === "" ? null : identifier;
+  const sanitizedStateHealthInsurance =
+    state_health_insurance === "" ? null : state_health_insurance;
+  const sanitizedDisability = disability === "" ? null : disability;
+
+  try {
+    await db.promise().beginTransaction();
+
+    const sanitizedValues = [
+      name,
+      sanitizedIdentifier,
+      card_number,
+      sanitizedDob,
+      sanitizedSex,
+      tel_no,
+      address,
+      sanitizedStateHealthInsurance,
+      state_health_insurance_remark,
+      sanitizedDisability,
+      disability_remark,
+    ];
+
+    let personal_info_id;
+
+    // Insert or update personal_info
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT personal_info_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].personal_info_id) {
+      // Update existing personal_info
+      personal_info_id = masterData[0].personal_info_id;
+      await db.promise().query(
+        `UPDATE personal_info SET
+        name = ?, identifier = ?, card_number = ?, dob = ?, sex = ?,
+        tel_no = ?, address = ?, state_health_insurance = ?,
+        state_health_insurance_remark = ?, disability = ?, disability_remark = ?
+        WHERE id = ?`,
+        [...sanitizedValues, personal_info_id]
+      );
+      console.log(`Updated personal_info with ID: ${personal_info_id}`);
+    } else {
+      // Insert new personal_info and get the insertId
+      const [result] = await db.promise().query(
+        `INSERT INTO personal_info 
+        (name, identifier, card_number, dob, sex, tel_no, address, 
+         state_health_insurance, state_health_insurance_remark, 
+         disability, disability_remark) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        sanitizedValues
+      );
+      personal_info_id = result.insertId;
+      console.log(`Inserted new personal_info with ID: ${personal_info_id}`);
+
+      // Log fm_id and personal_info_id before the update query
+      console.log(
+        `Updating master_data for fm_id: ${fm_id} with personal_info_id: ${personal_info_id}`
+      );
+
+      // Update master_data table with the new personal_info_id
+      const [updateResult] = await db
+        .promise()
+        .query(`UPDATE master_data SET personal_info_id = ? WHERE fm_id = ?`, [
+          personal_info_id,
+          fm_id,
+        ]);
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Personal information saved successfully",
+      personal_info_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving personal information:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/personal-info/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT personal_info_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].personal_info_id) {
+      const [personalInfo] = await db
+        .promise()
+        .query(`SELECT * FROM personal_info WHERE id = ?`, [
+          masterData[0].personal_info_id,
+        ]);
+
+      if (personalInfo.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: personalInfo[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Personal information not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No personal information associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching personal information:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+//HEALTH MEASUREMENTS
+app.post("/api/health-measurements", async (req, res) => {
+  const {
+    fm_id,
+    height = null,
+    weight = null,
+    bmi = null,
+    temp = null,
+    spO2 = null,
+  } = req.body;
+
+  console.log(`Received fm_id: ${fm_id}`); // Log the received fm_id
+
+  try {
+    await db.promise().beginTransaction();
+
+    // Convert empty strings to null for nullable fields
+    const sanitizedHeight = height === "" ? null : height;
+    const sanitizedWeight = weight === "" ? null : weight;
+    const sanitizedBmi = bmi === "" ? null : bmi;
+    const sanitizedTemp = temp === "" ? null : temp;
+    const sanitizedSpO2 = spO2 === "" ? null : spO2;
+
+    const sanitizedValues = [
+      sanitizedHeight,
+      sanitizedWeight,
+      sanitizedBmi,
+      sanitizedTemp,
+      sanitizedSpO2,
+    ];
+
+    let health_id;
+
+    // Insert or update health measurements
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT health_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].health_id) {
+      // Update existing health measurements and set updated_at
+      health_id = masterData[0].health_id;
+      await db.promise().query(
+        `UPDATE health SET
+        height = ?, weight = ?, bmi = ?, temp = ?, spO2 = ?, updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, health_id]
+      );
+      console.log(`Updated health measurements with ID: ${health_id}`);
+    } else {
+      // Insert new health measurements and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO health 
+        (height, weight, bmi, temp, spO2, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      health_id = result.insertId;
+      console.log(`Inserted new health measurements with ID: ${health_id}`);
+
+      // Log fm_id and health_id before the update query
+      console.log(
+        `Updating master_data for fm_id: ${fm_id} with health_id: ${health_id}`
+      );
+
+      // Update master_data table with the new health_id
+      const [updateResult] = await db
+        .promise()
+        .query(`UPDATE master_data SET health_id = ? WHERE fm_id = ?`, [
+          health_id,
+          fm_id,
+        ]);
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Health measurements saved successfully",
+      health_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving health measurements:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/health-measurements/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT health_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].health_id) {
+      const [healthData] = await db
+        .promise()
+        .query(`SELECT * FROM health WHERE id = ?`, [masterData[0].health_id]);
+
+      if (healthData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: healthData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Health measurements not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No health measurements associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching health measurements:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./FormPage.css";
 import { FaList } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -25,19 +26,22 @@ import ABHAIdStatus from "./ABHAIdStatus";
 
 const FormPage = () => {
   const navigate = useNavigate();
+  const [currentFmId, setCurrentFmId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [formData, setFormData] = useState({
     // Page 1: Health Profile Form
-    patientName: "",
+    name: "",
     identifier: "",
-    cardNumber: "",
+    card_number: "",
     dob: "",
     sex: "",
-    phone: "",
+    tel_no: "",
     address: "",
-    insurance: "",
+    state_health_insurance: "",
+    state_health_insurance_remark: "",
     disability: "",
+    disability_remark: "",
 
     // Page 2: Health Measurements
     height: "",
@@ -233,22 +237,60 @@ const FormPage = () => {
     "ABHA ID Status",
   ];
 
-  const handleInputChange = (e, section = null) => {
-    const { name, value } = e.target;
-    if (section) {
-      setFormData((prevData) => ({
-        ...prevData,
-        [section]: {
-          ...prevData[section],
-          [name]: value,
-        },
-      }));
-    } else {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
+  useEffect(() => {
+    const fm_id = localStorage.getItem("current_fm_id");
+    if (fm_id) {
+      setCurrentFmId(fm_id);
+      fetchPersonalInfo(fm_id);
+      // localStorage.removeItem("current_fm_id");
     }
+  }, []);
+
+  const fetchPersonalInfo = async (fm_id) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5001/api/personal-info/${fm_id}`
+      );
+      if (response.data.success) {
+        const fetchedData = response.data.data;
+        // Format the date properly
+        const formattedDate = fetchedData.dob
+          ? new Date(fetchedData.dob).toISOString().split("T")[0]
+          : "";
+        setFormData({
+          ...fetchedData,
+          dob: formattedDate,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching personal information:", error);
+    }
+  };
+
+  // const handleInputChange = (e, section = null) => {
+  //   const { name, value } = e.target;
+  //   if (section) {
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       [section]: {
+  //         ...prevData[section],
+  //         [name]: value,
+  //       },
+  //     }));
+  //   } else {
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       [name]: value,
+  //     }));
+  //   }
+  // };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
   const handleNext = () => {
@@ -285,12 +327,7 @@ const FormPage = () => {
           />
         );
       case 2:
-        return (
-          <HealthMeasurements
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <HealthMeasurements currentFmId={currentFmId} />;
       case 3:
         return (
           <HTNAssessment
@@ -428,7 +465,7 @@ const FormPage = () => {
         <button onClick={handleBack} disabled={currentPage === 1}>
           Back
         </button>
-        <button onClick={handleSaveDraft}>Save Draft</button>
+        {/* <button onClick={handleSaveDraft}>Save Draft</button> */}
         <button onClick={handleNext}>
           {currentPage === 19 ? "Submit" : "Next"}
         </button>

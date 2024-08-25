@@ -123,6 +123,10 @@ const FieldDashboard = () => {
   const handleRowClick = (headOfFamily) => {
     navigate("/FamilyDetails", { state: { headOfFamily } });
   };
+  const handleCompleteForm = (fm_id) => {
+    localStorage.setItem("current_fm_id", fm_id);
+    navigate("/FormPage");
+  };
 
   return (
     <div className="next-page-container">
@@ -232,7 +236,15 @@ const FieldDashboard = () => {
               </td>
               <td>{row.familyMemberCount}</td>
               <td>{row.Aadhar}</td>
-              <td>{row.status === 0 ? "Incomplete" : "Complete"}</td>
+              <td>
+                {row.status === 0 ? (
+                  <button onClick={() => handleCompleteForm(row.id)}>
+                    Pending
+                  </button>
+                ) : (
+                  "Completed"
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
