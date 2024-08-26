@@ -1,40 +1,97 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const DMAssessment = ({ formData, handleInputChange }) => {
-  const [rbsOption, setRbsOption] = useState(formData.rbsOption || "");
-  const [rbsValue, setRbsValue] = useState(formData.rbsValue || "");
+const DMAssessment = ({ currentFmId }) => {
+  const [formData, setFormData] = useState({
+    case_of_dm: "",
+    RBS: "",
+    blood_sugar: "",
+    action_high_bs: "",
+    referral_center: "",
+    DM_date: "",
+  });
+
   const [showHighBSOptions, setShowHighBSOptions] = useState(false);
   const [showReferralField, setShowReferralField] = useState(false);
 
   useEffect(() => {
-    // Check if RBS value is higher than 140 mg/dL
-    if (Number(rbsValue) > 140) {
-      setShowHighBSOptions(true);
-    } else {
-      setShowHighBSOptions(false);
+    const fetchDmData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5001/api/dm-assessment/${currentFmId}`
+        );
+        if (response.data.success) {
+          const data = response.data.data;
+
+          // Format the date to "yyyy-MM-dd"
+          if (data.DM_date) {
+            data.DM_date = new Date(data.DM_date).toISOString().split("T")[0];
+          }
+
+          // Set the formData with the fetched data
+          setFormData(data);
+
+          // Check if blood sugar level is high and set the state accordingly
+          const bloodSugar = parseFloat(data.blood_sugar);
+          if (bloodSugar > 150) {
+            // Assuming 150 as the threshold
+            setShowHighBSOptions(true);
+            if (data.action_high_bs === "referral") {
+              setShowReferralField(true);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching DM assessment:", error);
+      }
+    };
+
+    if (currentFmId) {
+      fetchDmData(); // Ensure the fetch is only attempted if currentFmId is available
+    }
+  }, [currentFmId]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+
+    // Handle blood sugar field change specifically
+    if (name === "blood_sugar") {
+      const bloodSugar = parseFloat(value);
+      if (bloodSugar > 150) {
+        setShowHighBSOptions(true);
+      } else {
+        setShowHighBSOptions(false);
+        setShowReferralField(false);
+      }
+    }
+
+    // Handle action_high_bs field change
+    if (name === "action_high_bs" && value === "referral") {
+      setShowReferralField(true);
+    } else if (name === "action_high_bs") {
       setShowReferralField(false);
     }
-  }, [rbsValue]);
-
-  const handleRbsOptionChange = (e) => {
-    setRbsOption(e.target.value);
-    handleInputChange(e);
   };
 
-  const handleRbsValueChange = (e) => {
-    setRbsValue(e.target.value);
-    handleInputChange(e);
-  };
-
-  const handleHighBSActionChange = (e) => {
-    const value = e.target.value;
-    handleInputChange(e);
-
-    if (value === "2") {
-      // If "Referral" is selected, show the referred center field
-      setShowReferralField(true);
-    } else {
-      setShowReferralField(false);
+  const handleSave = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5001/api/dm-assessment",
+        {
+          fm_id: currentFmId,
+          ...formData,
+        }
+      );
+      if (response.data.success) {
+        alert("DM assessment saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving DM assessment:", error);
+      alert("Failed to save DM assessment. Please try again.");
     }
   };
 
@@ -62,50 +119,53 @@ const DMAssessment = ({ formData, handleInputChange }) => {
 
   return (
     <div style={styles.formSection}>
-
       <div style={styles.formGroup}>
         <label style={styles.label}>Known case of DM *</label>
         <select
-          name="knownDM"
-          value={formData.knownDM}
+          id="case_of_dm"
+          name="case_of_dm"
+          value={formData.case_of_dm || ""}
           onChange={handleInputChange}
-          required
-          style={styles.input}
         >
           <option value="">Select</option>
-          <option value="1">Yes and on Treatment</option>
-          <option value="2">Yes and Not on Treatment</option>
-          <option value="3">No</option>
+          <option value="yes and on treatment">Yes and on Treatment</option>
+          <option value="yes and not on treatment">
+            Yes and Not on Treatment
+          </option>
+          <option value="No">No</option>
         </select>
       </div>
 
       <div style={styles.formGroup}>
         <label style={styles.label}>Select Blood Sugar Type *</label>
         <select
-          name="rbsOption"
-          value={rbsOption}
-          onChange={handleRbsOptionChange}
-          required
-          style={styles.input}
+          id="RBS"
+          name="RBS"
+          value={formData.RBS || ""}
+          onChange={handleInputChange}
         >
           <option value="">Select</option>
           <option value="fasting">Fasting</option>
-          <option value="pp">Post Prandial (PP)</option>
+          <option value="post prandial">Post Prandial</option>
           <option value="random">Random</option>
         </select>
       </div>
 
       <div style={styles.formGroup}>
         <label style={styles.label}>
-          {rbsOption ? `${rbsOption.charAt(0).toUpperCase() + rbsOption.slice(1)} Blood Sugar (mg/dL)` : "Blood Sugar (mg/dL)"} *
+          {formData.RBS
+            ? `${
+                formData.RBS.charAt(0).toUpperCase() + formData.RBS.slice(1)
+              } Blood Sugar (mg/dL)`
+            : "Blood Sugar (mg/dL)"}
+          *
         </label>
         <input
-          type="number"
-          name="rbsValue"
-          value={rbsValue}
-          onChange={handleRbsValueChange}
-          required
-          style={styles.input}
+          type="text"
+          id="blood_sugar"
+          name="blood_sugar"
+          value={formData.blood_sugar || ""}
+          onChange={handleInputChange}
         />
       </div>
 
@@ -113,15 +173,14 @@ const DMAssessment = ({ formData, handleInputChange }) => {
         <div style={styles.formGroup}>
           <label style={styles.label}>Action for High Blood Sugar *</label>
           <select
-            name="highBSAction"
-            value={formData.highBSAction}
-            onChange={handleHighBSActionChange}
-            required
-            style={styles.input}
+            id="action_high_bs"
+            name="action_high_bs"
+            value={formData.action_high_bs || ""}
+            onChange={handleInputChange}
           >
             <option value="">Select</option>
-            <option value="1">Teleconsultation</option>
-            <option value="2">Referral</option>
+            <option value="referral">Referral</option>
+            <option value="teleconsultation">Teleconsultation</option>
           </select>
         </div>
       )}
@@ -131,11 +190,10 @@ const DMAssessment = ({ formData, handleInputChange }) => {
           <label style={styles.label}>Referred Centre for DM *</label>
           <input
             type="text"
-            name="referredCentreDM"
-            value={formData.referredCentreDM}
+            id="referral_center"
+            name="referral_center"
+            value={formData.referral_center || ""}
             onChange={handleInputChange}
-            required
-            style={styles.input}
           />
         </div>
       )}
@@ -146,13 +204,15 @@ const DMAssessment = ({ formData, handleInputChange }) => {
         </label>
         <input
           type="date"
-          name="dmConfirmed"
-          value={formData.dmConfirmed}
+          id="DM_date"
+          name="DM_date"
+          value={formData.DM_date || ""}
           onChange={handleInputChange}
-          required
-          style={styles.input}
         />
       </div>
+      <button type="button" onClick={handleSave}>
+        Save DM Assessment
+      </button>
     </div>
   );
 };

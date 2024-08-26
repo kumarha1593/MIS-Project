@@ -636,6 +636,136 @@ app.get("/api/htn-assessment/:fm_id", async (req, res) => {
   }
 });
 
+//DM
+app.post("/api/dm-assessment", async (req, res) => {
+  const {
+    fm_id,
+    case_of_dm = null,
+    RBS = null,
+    blood_sugar = null,
+    action_high_bs = null,
+    referral_center = null,
+    DM_date = null,
+  } = req.body;
+
+  console.log(`Received fm_id: ${fm_id}`); // Log the received fm_id
+
+  try {
+    await db.promise().beginTransaction();
+
+    // Convert empty strings to null for nullable fields
+    const sanitizedCaseOfDm = case_of_dm === "" ? null : case_of_dm;
+    const sanitizedRBS = RBS === "" ? null : RBS;
+    const sanitizedBloodSugar = blood_sugar === "" ? null : blood_sugar;
+    const sanitizedActionHighBs = action_high_bs === "" ? null : action_high_bs;
+    const sanitizedReferralCenter =
+      referral_center === "" ? null : referral_center;
+    const sanitizedDmDate = DM_date === "" ? null : DM_date;
+
+    const sanitizedValues = [
+      sanitizedCaseOfDm,
+      sanitizedRBS,
+      sanitizedBloodSugar,
+      sanitizedActionHighBs,
+      sanitizedReferralCenter,
+      sanitizedDmDate,
+    ];
+
+    let dm_id;
+
+    // Insert or update DM assessment
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT dm_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].dm_id) {
+      // Update existing DM assessment and set updated_at
+      dm_id = masterData[0].dm_id;
+      await db.promise().query(
+        `UPDATE DM SET
+        case_of_dm = ?, RBS = ?, blood_sugar = ?, action_high_bs = ?, referral_center = ?, DM_date = ?, updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, dm_id]
+      );
+      console.log(`Updated DM assessment with ID: ${dm_id}`);
+    } else {
+      // Insert new DM assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO DM 
+        (case_of_dm, RBS, blood_sugar, action_high_bs, referral_center, DM_date, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      dm_id = result.insertId;
+      console.log(`Inserted new DM assessment with ID: ${dm_id}`);
+
+      // Log fm_id and dm_id before the update query
+      console.log(
+        `Updating master_data for fm_id: ${fm_id} with dm_id: ${dm_id}`
+      );
+
+      // Update master_data table with the new dm_id
+      const [updateResult] = await db
+        .promise()
+        .query(`UPDATE master_data SET dm_id = ? WHERE fm_id = ?`, [
+          dm_id,
+          fm_id,
+        ]);
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "DM assessment saved successfully",
+      dm_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving DM assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/dm-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT dm_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].dm_id) {
+      const [dmData] = await db
+        .promise()
+        .query(`SELECT * FROM DM WHERE id = ?`, [masterData[0].dm_id]);
+
+      if (dmData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: dmData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "DM assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No DM assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching DM assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
