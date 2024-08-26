@@ -186,7 +186,7 @@ const HTNAssessment = ({ currentFmId }) => {
         />
       </div>
       <button type="button" onClick={handleSave}>
-        Save HTN Assessment
+        Save Draft
       </button>
     </div>
   );

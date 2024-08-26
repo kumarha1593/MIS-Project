@@ -211,7 +211,7 @@ const DMAssessment = ({ currentFmId }) => {
         />
       </div>
       <button type="button" onClick={handleSave}>
-        Save DM Assessment
+        Save Draft
       </button>
     </div>
   );
