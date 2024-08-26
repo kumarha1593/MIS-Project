@@ -8,27 +8,18 @@ const FieldDashboard = () => {
   const [districtInfo, setDistrictInfo] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editableData, setEditableData] = useState(null);
-  const [tableData, setTableData] = useState([
-    {
-      id: 1,
-      headOfFamily: "John Doe",
-      familyMembers: 4,
-      aadhaarNumber: "1234 5678 9012",
-      status: "Active",
-    },
-    {
-      id: 2,
-      headOfFamily: "Jane Smith",
-      familyMembers: 3,
-      aadhaarNumber: "9876 5432 1098",
-      status: "Inactive",
-    },
-  ]);
+  const [tableData, setTableData] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [newHeadData, setNewHeadData] = useState({
+    headOfFamily: "",
+    aadharNumber: "",
+  });
 
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchDistrictInfo();
+    fetchFamilyMembers();
   }, []);
 
   const fetchDistrictInfo = async () => {
@@ -85,8 +76,56 @@ const FieldDashboard = () => {
     }
   };
 
+  const handleAddFamilyMember = (id) => {
+    navigate("/FormPage", { state: { familyId: id } });
+  };
+
+  const handleAddRow = () => {
+    setShowModal(true);
+  };
+
+  const handleModalInputChange = (e) => {
+    setNewHeadData({ ...newHeadData, [e.target.name]: e.target.value });
+  };
+
+  const fetchFamilyMembers = async () => {
+    const user_id = localStorage.getItem("user_id");
+    try {
+      const response = await axios.get(
+        `http://localhost:5001/api/family-members/${user_id}`
+      );
+      setTableData(response.data);
+    } catch (error) {
+      console.error("Error fetching family members:", error);
+    }
+  };
+
+  const handleSaveAndContinue = async () => {
+    const user_id = localStorage.getItem("user_id");
+    try {
+      const response = await axios.post(
+        "http://localhost:5001/api/family-members",
+        {
+          fc_id: user_id,
+          name: newHeadData.headOfFamily,
+          aadhar: newHeadData.aadharNumber,
+        }
+      );
+      if (response.data.success) {
+        setShowModal(false);
+        fetchFamilyMembers(); // Refresh the table data
+        navigate("/FormPage", { state: { familyId: response.data.fm_id } });
+      }
+    } catch (error) {
+      console.error("Error saving new head:", error);
+    }
+  };
   const handleRowClick = (headOfFamily) => {
     navigate("/FamilyDetails", { state: { headOfFamily } });
+  };
+  const handleCompleteForm = (fm_id) => {
+    localStorage.setItem("current_fm_id", fm_id);
+    navigate("/FormPage");
   };
 
   return (
@@ -191,15 +230,53 @@ const FieldDashboard = () => {
         </thead>
         <tbody>
           {tableData.map((row) => (
-            <tr key={row.id} onClick={() => handleRowClick(row.headOfFamily)}>
-              <td>{row.headOfFamily}</td>
-              <td>{row.familyMembers}</td>
-              <td>{row.aadhaarNumber}</td>
-              <td>{row.status}</td>
+            <tr key={row.id}>
+              <td onClick={() => handleRowClick(row.headOfFamily)}>
+                {row.name}
+              </td>
+              <td>{row.familyMemberCount}</td>
+              <td>{row.Aadhar}</td>
+              <td>
+                {row.status === 0 ? (
+                  <button onClick={() => handleCompleteForm(row.id)}>
+                    Pending
+                  </button>
+                ) : (
+                  "Completed"
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      <button onClick={handleAddRow} className="add-row-button">
+        Add New Head
+      </button>
+
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Add New Head of Family</h2>
+            <input
+              type="text"
+              name="headOfFamily"
+              value={newHeadData.headOfFamily}
+              onChange={handleModalInputChange}
+              placeholder="Head of Family Name"
+            />
+            <input
+              type="text"
+              name="aadharNumber" // Changed from "Aadhaar number" to "aadharNumber"
+              value={newHeadData.aadharNumber}
+              onChange={handleModalInputChange}
+              placeholder="Aadhaar number"
+            />
+            <button onClick={handleSaveAndContinue}>Save & Continue</button>
+            <button onClick={() => setShowModal(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

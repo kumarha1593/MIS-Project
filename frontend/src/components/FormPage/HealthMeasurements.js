@@ -1,32 +1,68 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const HealthMeasurements = ({ formData, handleInputChange }) => {
-  const [height, setHeight] = useState(formData.height || "");
-  const [weight, setWeight] = useState(formData.weight || "");
-  const [bmi, setBmi] = useState(formData.bmi || "");
+const HealthMeasurements = ({ currentFmId }) => {
+  const [formData, setFormData] = useState({
+    height: "",
+    weight: "",
+    bmi: "",
+    temp: "",
+    spO2: "",
+  });
 
   useEffect(() => {
-    // Convert height to meters and calculate BMI if height and weight are available
-    if (height && weight) {
-      const heightInMeters = height / 100;
-      const calculatedBmi = (
-        weight /
-        (heightInMeters * heightInMeters)
-      ).toFixed(2);
-      setBmi(calculatedBmi);
-    } else {
-      setBmi("");
-    }
-  }, [height, weight]);
+    const fetchHealthData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5001/api/health-measurements/${currentFmId}`
+        );
+        if (response.data.success) {
+          setFormData(response.data.data); // Populate formData with fetched data
+        }
+      } catch (error) {
+        console.error("Error fetching health measurements:", error);
+      }
+    };
 
-  const handleHeightChange = (e) => {
-    setHeight(e.target.value);
-    handleInputChange(e);
+    fetchHealthData();
+  }, [currentFmId]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    const updatedFormData = { ...formData, [name]: value };
+
+    // Calculate BMI whenever weight or height changes
+    if (name === "weight" || name === "height") {
+      const heightInMeters = updatedFormData.height / 100;
+      const bmi =
+        updatedFormData.weight && heightInMeters
+          ? (
+              updatedFormData.weight /
+              (heightInMeters * heightInMeters)
+            ).toFixed(2)
+          : "";
+      updatedFormData.bmi = bmi;
+    }
+
+    setFormData(updatedFormData);
   };
 
-  const handleWeightChange = (e) => {
-    setWeight(e.target.value);
-    handleInputChange(e);
+  const handleSave = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5001/api/health-measurements",
+        {
+          fm_id: currentFmId,
+          ...formData,
+        }
+      );
+      if (response.data.success) {
+        alert("Health measurements saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving health measurements:", error);
+      alert("Failed to save health measurements. Please try again.");
+    }
   };
 
   const styles = {
@@ -54,63 +90,77 @@ const HealthMeasurements = ({ formData, handleInputChange }) => {
   return (
     <div style={styles.formSection}>
       <div style={styles.formGroup}>
-        <label style={styles.label}>Height (cm) *</label>
+        <label style={styles.label} htmlFor="height">
+          Height (cm) *
+        </label>
         <input
           type="number"
+          id="height"
           name="height"
-          value={height}
-          onChange={handleHeightChange}
-          required
+          value={formData.height || ""}
+          onChange={handleInputChange}
           style={styles.input}
         />
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>Weight (kg) *</label>
+        <label style={styles.label} htmlFor="weight">
+          Weight (kg) *
+        </label>
         <input
           type="number"
+          id="weight"
           name="weight"
-          value={weight}
-          onChange={handleWeightChange}
-          required
+          value={formData.weight || ""}
+          onChange={handleInputChange}
           style={styles.input}
         />
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>BMI *</label>
+        <label style={styles.label} htmlFor="bmi">
+          BMI *
+        </label>
         <input
-          type="text"
+          type="number"
+          id="bmi"
           name="bmi"
-          value={bmi}
-          readOnly
+          value={formData.bmi || ""}
+          onChange={handleInputChange}
           style={styles.input}
         />
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>Temperature (°F) *</label>
+        <label style={styles.label} htmlFor="temp">
+          Temperature (°C) *
+        </label>
         <input
           type="number"
+          id="temp"
           name="temp"
-          value={formData.temp}
+          value={formData.temp || ""}
           onChange={handleInputChange}
-          required
           style={styles.input}
         />
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>SpO2 (%) *</label>
+        <label style={styles.label} htmlFor="spO2">
+          SpO2 (%) *
+        </label>
         <input
           type="number"
-          name="spo2"
-          value={formData.spo2}
+          id="spO2"
+          name="spO2"
+          value={formData.spO2 || ""}
           onChange={handleInputChange}
-          required
           style={styles.input}
         />
       </div>
+      <button type="button" onClick={handleSave}>
+        Save Health Measurements
+      </button>
     </div>
   );
 };
