@@ -329,12 +329,7 @@ const FormPage = () => {
       case 2:
         return <HealthMeasurements currentFmId={currentFmId} />;
       case 3:
-        return (
-          <HTNAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <HTNAssessment currentFmId={currentFmId} />;
       case 4:
         return (
           <DMAssessment

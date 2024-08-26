@@ -1,35 +1,95 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const HTNAssessment = ({ formData, handleInputChange }) => {
-  const [bp, setBp] = useState(formData.bp || "");
+const HTNAssessment = ({ currentFmId }) => {
+  const [formData, setFormData] = useState({
+    case_of_htn: "",
+    blood_pressure: "",
+    action_high_bp: "",
+    referral_center: "",
+    htn_date: "",
+  });
+
   const [showHighBPOptions, setShowHighBPOptions] = useState(false);
   const [showReferralField, setShowReferralField] = useState(false);
 
   useEffect(() => {
-    // Check if BP is higher than 140 or lower than 90 mmHg
-    const [upperBP, lowerBP] = bp.split("/").map(Number);
-    if (upperBP > 140 || lowerBP < 90) {
-      setShowHighBPOptions(true);
-    } else {
-      setShowHighBPOptions(false);
+    const fetchHtnData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5001/api/htn-assessment/${currentFmId}`
+        );
+        if (response.data.success) {
+          const data = response.data.data;
+
+          // Format the date to "yyyy-MM-dd"
+          if (data.htn_date) {
+            data.htn_date = new Date(data.htn_date).toISOString().split("T")[0];
+          }
+
+          // Set the formData with the fetched data
+          setFormData(data);
+
+          // Check if BP is high and set the state accordingly
+          const [upperBP, lowerBP] = data.blood_pressure.split("/").map(Number);
+          if (upperBP > 140 || lowerBP < 90) {
+            setShowHighBPOptions(true);
+            if (data.action_high_bp === "referral") {
+              setShowReferralField(true);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching HTN assessment:", error);
+      }
+    };
+
+    if (currentFmId) {
+      fetchHtnData(); // Ensure the fetch is only attempted if currentFmId is available
+    }
+  }, [currentFmId]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+
+    // Handle BP field change specifically
+    if (name === "blood_pressure") {
+      const [upperBP, lowerBP] = value.split("/").map(Number);
+      if (upperBP > 140 || lowerBP < 90) {
+        setShowHighBPOptions(true);
+      } else {
+        setShowHighBPOptions(false);
+        setShowReferralField(false);
+      }
+    }
+
+    // Handle action_high_bp field change
+    if (name === "action_high_bp" && value === "referral") {
+      setShowReferralField(true);
+    } else if (name === "action_high_bp") {
       setShowReferralField(false);
     }
-  }, [bp]);
-
-  const handleBpChange = (e) => {
-    setBp(e.target.value);
-    handleInputChange(e);
   };
 
-  const handleHighBPActionChange = (e) => {
-    const value = e.target.value;
-    handleInputChange(e);
-
-    if (value === "2") {
-      // If "Referral" is selected, show the referred center field
-      setShowReferralField(true);
-    } else {
-      setShowReferralField(false);
+  const handleSave = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5001/api/htn-assessment",
+        {
+          fm_id: currentFmId,
+          ...formData,
+        }
+      );
+      if (response.data.success) {
+        alert("HTN assessment saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving HTN assessment:", error);
+      alert("Failed to save HTN assessment. Please try again.");
     }
   };
 
@@ -59,28 +119,28 @@ const HTNAssessment = ({ formData, handleInputChange }) => {
       <div style={styles.formGroup}>
         <label style={styles.label}>Known case of HTN *</label>
         <select
-          name="knownHTN"
-          value={formData.knownHTN}
+          id="case_of_htn"
+          name="case_of_htn"
+          value={formData.case_of_htn || ""}
           onChange={handleInputChange}
-          required
-          style={styles.input}
         >
           <option value="">Select</option>
-          <option value="1">Yes and on treatment</option>
-          <option value="2">Yes and not on treatment</option>
-          <option value="3">No</option>
+          <option value="yes and on treatment">Yes and on Treatment</option>
+          <option value="yes and not on treatment">
+            Yes and Not on Treatment
+          </option>
+          <option value="No">No</option>
         </select>
       </div>
 
       <div style={styles.formGroup}>
         <label style={styles.label}>Blood Pressure (mmHg) *</label>
         <input
-          type="text"
-          name="bp"
-          value={bp}
-          onChange={handleBpChange}
-          required
-          style={styles.input}
+          type="number"
+          id="blood_pressure"
+          name="blood_pressure"
+          value={formData.blood_pressure || ""}
+          onChange={handleInputChange}
         />
       </div>
 
@@ -88,15 +148,14 @@ const HTNAssessment = ({ formData, handleInputChange }) => {
         <div style={styles.formGroup}>
           <label style={styles.label}>Action for High BP *</label>
           <select
-            name="highBPAction"
-            value={formData.highBPAction}
-            onChange={handleHighBPActionChange}
-            required
-            style={styles.input}
+            id="action_high_bp"
+            name="action_high_bp"
+            value={formData.action_high_bp || ""}
+            onChange={handleInputChange}
           >
             <option value="">Select</option>
-            <option value="1">Teleconsultation</option>
-            <option value="2">Referral</option>
+            <option value="referral">Referral</option>
+            <option value="teleconsultation">Teleconsultation</option>
           </select>
         </div>
       )}
@@ -106,11 +165,10 @@ const HTNAssessment = ({ formData, handleInputChange }) => {
           <label style={styles.label}>Referred Centre for HTN *</label>
           <input
             type="text"
-            name="referredCentreHTN"
-            value={formData.referredCentreHTN}
+            id="referral_center"
+            name="referral_center"
+            value={formData.referral_center || ""}
             onChange={handleInputChange}
-            required
-            style={styles.input}
           />
         </div>
       )}
@@ -121,13 +179,15 @@ const HTNAssessment = ({ formData, handleInputChange }) => {
         </label>
         <input
           type="date"
-          name="htnConfirmed"
-          value={formData.htnConfirmed}
+          id="htn_date"
+          name="htn_date"
+          value={formData.htn_date || ""}
           onChange={handleInputChange}
-          required
-          style={styles.input}
         />
       </div>
+      <button type="button" onClick={handleSave}>
+        Save HTN Assessment
+      </button>
     </div>
   );
 };

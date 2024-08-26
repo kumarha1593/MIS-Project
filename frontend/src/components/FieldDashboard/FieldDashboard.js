@@ -238,7 +238,10 @@ const FieldDashboard = () => {
               <td>{row.Aadhar}</td>
               <td>
                 {row.status === 0 ? (
-                  <button onClick={() => handleCompleteForm(row.id)}>
+                  <button
+                    onClick={() => handleCompleteForm(row.id)}
+                    style={{ padding: "5px" }}
+                  >
                     Pending
                   </button>
                 ) : (

@@ -508,6 +508,134 @@ app.get("/api/health-measurements/:fm_id", async (req, res) => {
   }
 });
 
+//HTN
+app.post("/api/htn-assessment", async (req, res) => {
+  const {
+    fm_id,
+    case_of_htn = null,
+    blood_pressure = null,
+    action_high_bp = null,
+    referral_center = null,
+    htn_date = null,
+  } = req.body;
+
+  console.log(`Received fm_id: ${fm_id}`); // Log the received fm_id
+
+  try {
+    await db.promise().beginTransaction();
+
+    // Convert empty strings to null for nullable fields
+    const sanitizedCaseOfHtn = case_of_htn === "" ? null : case_of_htn;
+    const sanitizedBloodPressure =
+      blood_pressure === "" ? null : blood_pressure;
+    const sanitizedActionHighBp = action_high_bp === "" ? null : action_high_bp;
+    const sanitizedReferralCenter =
+      referral_center === "" ? null : referral_center;
+    const sanitizedHtnDate = htn_date === "" ? null : htn_date;
+
+    const sanitizedValues = [
+      sanitizedCaseOfHtn,
+      sanitizedBloodPressure,
+      sanitizedActionHighBp,
+      sanitizedReferralCenter,
+      sanitizedHtnDate,
+    ];
+
+    let htn_id;
+
+    // Insert or update HTN assessment
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT htn_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].htn_id) {
+      // Update existing HTN assessment and set updated_at
+      htn_id = masterData[0].htn_id;
+      await db.promise().query(
+        `UPDATE htn SET
+        case_of_htn = ?, blood_pressure = ?, action_high_bp = ?, referral_center = ?, htn_date = ?, updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, htn_id]
+      );
+      console.log(`Updated HTN assessment with ID: ${htn_id}`);
+    } else {
+      // Insert new HTN assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO htn 
+        (case_of_htn, blood_pressure, action_high_bp, referral_center, htn_date, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      htn_id = result.insertId;
+      console.log(`Inserted new HTN assessment with ID: ${htn_id}`);
+
+      // Log fm_id and htn_id before the update query
+      console.log(
+        `Updating master_data for fm_id: ${fm_id} with htn_id: ${htn_id}`
+      );
+
+      // Update master_data table with the new htn_id
+      const [updateResult] = await db
+        .promise()
+        .query(`UPDATE master_data SET htn_id = ? WHERE fm_id = ?`, [
+          htn_id,
+          fm_id,
+        ]);
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "HTN assessment saved successfully",
+      htn_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving HTN assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/htn-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT htn_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].htn_id) {
+      const [htnData] = await db
+        .promise()
+        .query(`SELECT * FROM htn WHERE id = ?`, [masterData[0].htn_id]);
+
+      if (htnData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: htnData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "HTN assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No HTN assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching HTN assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

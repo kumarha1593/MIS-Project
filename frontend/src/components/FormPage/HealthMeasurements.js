@@ -159,7 +159,7 @@ const HealthMeasurements = ({ currentFmId }) => {
         />
       </div>
       <button type="button" onClick={handleSave}>
-        Save Health Measurements
+        Save Draft
       </button>
     </div>
   );
