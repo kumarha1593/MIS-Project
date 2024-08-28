@@ -15,7 +15,7 @@ const Login = () => {
     e.preventDefault();
     try {
       console.log("Sending login request with:", { email, password });
-      const response = await axios.post("http://localhost:5001/login", {
+      const response = await axios.post("http://localhost:5000/login", {
         email,
         password,
       });
