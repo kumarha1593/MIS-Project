@@ -43,7 +43,7 @@ const HealthProfileForm = ({ formData, handleInputChange, currentFmId }) => {
     try {
       const fm_id = localStorage.getItem("current_fm_id");
       const response = await axios.post(
-        "http://localhost:5000/api/personal-info",
+        "http://localhost:5001/api/personal-info",
         {
           fm_id,
           name: formData.name,
