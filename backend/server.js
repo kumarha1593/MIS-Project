@@ -637,122 +637,95 @@ app.get("/api/htn-assessment/:fm_id", async (req, res) => {
 });
 
 //DM
-app.post("/api/oral-cancer-assessment", async (req, res) => {
+app.post("/api/dm-assessment", async (req, res) => {
   const {
     fm_id,
-    known_case = null,
-    persistent_ulcer = null,
-    persistent_patch = null,
-    difficulty_chewing = null,
-    difficulty_opening_mouth = null,
-    growth_in_mouth = null,
-    swelling_in_neck = null,
-    suspected_oral_cancer = null,
+    case_of_dm = null,
+    RBS = null,
+    blood_sugar = null,
+    action_high_bs = null,
+    referral_center = null,
+    DM_date = null,
   } = req.body;
+
+  console.log(`Received fm_id: ${fm_id}`); // Log the received fm_id
 
   try {
     await db.promise().beginTransaction();
 
+    // Convert empty strings to null for nullable fields
+    const sanitizedCaseOfDm = case_of_dm === "" ? null : case_of_dm;
+    const sanitizedRBS = RBS === "" ? null : RBS;
+    const sanitizedBloodSugar = blood_sugar === "" ? null : blood_sugar;
+    const sanitizedActionHighBs = action_high_bs === "" ? null : action_high_bs;
+    const sanitizedReferralCenter =
+      referral_center === "" ? null : referral_center;
+    const sanitizedDmDate = DM_date === "" ? null : DM_date;
+
     const sanitizedValues = [
-      known_case === "" ? null : known_case,
-      persistent_ulcer === "" ? null : persistent_ulcer,
-      persistent_patch === "" ? null : persistent_patch,
-      difficulty_chewing === "" ? null : difficulty_chewing,
-      difficulty_opening_mouth === "" ? null : difficulty_opening_mouth,
-      growth_in_mouth === "" ? null : growth_in_mouth,
-      swelling_in_neck === "" ? null : swelling_in_neck,
-      suspected_oral_cancer === "" ? null : suspected_oral_cancer,
+      sanitizedCaseOfDm,
+      sanitizedRBS,
+      sanitizedBloodSugar,
+      sanitizedActionHighBs,
+      sanitizedReferralCenter,
+      sanitizedDmDate,
     ];
 
-    let oral_cancer_id;
+    let dm_id;
 
-    // Insert or update oral cancer assessment
+    // Insert or update DM assessment
     const [masterData] = await db
       .promise()
-      .query(`SELECT oral_cancer_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+      .query(`SELECT dm_id FROM master_data WHERE fm_id = ?`, [fm_id]);
 
-    if (masterData.length > 0 && masterData[0].oral_cancer_id) {
-      // Update existing oral cancer assessment and set updated_at
-      oral_cancer_id = masterData[0].oral_cancer_id;
+    if (masterData.length > 0 && masterData[0].dm_id) {
+      // Update existing DM assessment and set updated_at
+      dm_id = masterData[0].dm_id;
       await db.promise().query(
-        `UPDATE oralcancer SET
-        known_case = ?, persistent_ulcer = ?, persistent_patch = ?, 
-        difficulty_chewing = ?, difficulty_opening_mouth = ?, 
-        growth_in_mouth = ?, swelling_in_neck = ?, suspected_oral_cancer = ?, 
-        updated_at = NOW()
+        `UPDATE DM SET
+        case_of_dm = ?, RBS = ?, blood_sugar = ?, action_high_bs = ?, referral_center = ?, DM_date = ?, updated_at = NOW()
         WHERE id = ?`,
-        [...sanitizedValues, oral_cancer_id]
+        [...sanitizedValues, dm_id]
       );
+      console.log(`Updated DM assessment with ID: ${dm_id}`);
     } else {
-      // Insert new oral cancer assessment and set created_at and updated_at
+      // Insert new DM assessment and set created_at and updated_at
       const [result] = await db.promise().query(
-        `INSERT INTO oralcancer 
-        (known_case, persistent_ulcer, persistent_patch, 
-         difficulty_chewing, difficulty_opening_mouth, 
-         growth_in_mouth, swelling_in_neck, suspected_oral_cancer, 
-         created_at, updated_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        `INSERT INTO DM 
+        (case_of_dm, RBS, blood_sugar, action_high_bs, referral_center, DM_date, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         sanitizedValues
       );
-      oral_cancer_id = result.insertId;
+      dm_id = result.insertId;
+      console.log(`Inserted new DM assessment with ID: ${dm_id}`);
 
-      // Update master_data table with the new oral_cancer_id
-      await db
+      // Log fm_id and dm_id before the update query
+      console.log(
+        `Updating master_data for fm_id: ${fm_id} with dm_id: ${dm_id}`
+      );
+
+      // Update master_data table with the new dm_id
+      const [updateResult] = await db
         .promise()
-        .query(`UPDATE master_data SET oral_cancer_id = ? WHERE fm_id = ?`, [
-          oral_cancer_id,
+        .query(`UPDATE master_data SET dm_id = ? WHERE fm_id = ?`, [
+          dm_id,
           fm_id,
         ]);
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
     }
 
     await db.promise().commit();
 
     res.status(200).json({
       success: true,
-      message: "Oral cancer assessment saved successfully",
-      oral_cancer_id,
+      message: "DM assessment saved successfully",
+      dm_id,
     });
   } catch (error) {
     await db.promise().rollback();
-    console.error("Error saving oral cancer assessment:", error);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-app.get("/api/oral-cancer-assessment/:fm_id", async (req, res) => {
-  const { fm_id } = req.params;
-
-  try {
-    const [masterData] = await db
-      .promise()
-      .query(`SELECT oral_cancer_id FROM master_data WHERE fm_id = ?`, [fm_id]);
-
-    if (masterData.length > 0 && masterData[0].oral_cancer_id) {
-      const [oralCancerData] = await db
-        .promise()
-        .query(`SELECT * FROM oralcancer WHERE id = ?`, [
-          masterData[0].oral_cancer_id,
-        ]);
-
-      if (oralCancerData.length > 0) {
-        res.status(200).json({
-          success: true,
-          data: oralCancerData[0],
-        });
-      } else {
-        res.status(404).json({
-          success: false,
-          message: "Oral cancer assessment not found",
-        });
-      }
-    } else {
-      res.status(404).json({
-        success: false,
-        message: "No oral cancer assessment associated with this family member",
-      });
-    }
-  } catch (error) {
-    console.error("Error fetching oral cancer assessment:", error);
+    console.error("Error saving DM assessment:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -959,25 +932,25 @@ app.post("/api/oral-cancer-assessment", async (req, res) => {
     await db.promise().beginTransaction();
 
     const sanitizedValues = [
-      known_case,
-      persistent_ulcer,
-      persistent_patch,
-      difficulty_chewing,
-      difficulty_opening_mouth,
-      growth_in_mouth,
-      swelling_in_neck,
-      suspected_oral_cancer,
+      known_case === "" ? null : known_case,
+      persistent_ulcer === "" ? null : persistent_ulcer,
+      persistent_patch === "" ? null : persistent_patch,
+      difficulty_chewing === "" ? null : difficulty_chewing,
+      difficulty_opening_mouth === "" ? null : difficulty_opening_mouth,
+      growth_in_mouth === "" ? null : growth_in_mouth,
+      swelling_in_neck === "" ? null : swelling_in_neck,
+      suspected_oral_cancer === "" ? null : suspected_oral_cancer,
     ];
 
     let oral_cancer_id;
 
-    // Check if the fm_id already has a related oral_cancer_id
+    // Insert or update oral cancer assessment
     const [masterData] = await db
       .promise()
       .query(`SELECT oral_cancer_id FROM master_data WHERE fm_id = ?`, [fm_id]);
 
     if (masterData.length > 0 && masterData[0].oral_cancer_id) {
-      // Update the existing entry
+      // Update existing oral cancer assessment and set updated_at
       oral_cancer_id = masterData[0].oral_cancer_id;
       await db.promise().query(
         `UPDATE oralcancer SET
@@ -988,9 +961,8 @@ app.post("/api/oral-cancer-assessment", async (req, res) => {
         WHERE id = ?`,
         [...sanitizedValues, oral_cancer_id]
       );
-      console.log(`Updated oral cancer assessment with ID: ${oral_cancer_id}`);
     } else {
-      // Insert a new entry if no existing record is found
+      // Insert new oral cancer assessment and set created_at and updated_at
       const [result] = await db.promise().query(
         `INSERT INTO oralcancer 
         (known_case, persistent_ulcer, persistent_patch, 
@@ -1002,16 +974,13 @@ app.post("/api/oral-cancer-assessment", async (req, res) => {
       );
       oral_cancer_id = result.insertId;
 
-      // Link the new entry with the master_data
+      // Update master_data table with the new oral_cancer_id
       await db
         .promise()
         .query(`UPDATE master_data SET oral_cancer_id = ? WHERE fm_id = ?`, [
           oral_cancer_id,
           fm_id,
         ]);
-      console.log(
-        `Inserted new oral cancer assessment with ID: ${oral_cancer_id}`
-      );
     }
 
     await db.promise().commit();
@@ -1024,44 +993,6 @@ app.post("/api/oral-cancer-assessment", async (req, res) => {
   } catch (error) {
     await db.promise().rollback();
     console.error("Error saving oral cancer assessment:", error);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-app.get("/api/oral-cancer-assessment/:fm_id", async (req, res) => {
-  const { fm_id } = req.params;
-
-  try {
-    const [masterData] = await db
-      .promise()
-      .query(`SELECT oral_cancer_id FROM master_data WHERE fm_id = ?`, [fm_id]);
-
-    if (masterData.length > 0 && masterData[0].oral_cancer_id) {
-      const [oralCancerData] = await db
-        .promise()
-        .query(`SELECT * FROM oralcancer WHERE id = ?`, [
-          masterData[0].oral_cancer_id,
-        ]);
-
-      if (oralCancerData.length > 0) {
-        res.status(200).json({
-          success: true,
-          data: oralCancerData[0],
-        });
-      } else {
-        res.status(404).json({
-          success: false,
-          message: "Oral cancer assessment not found",
-        });
-      }
-    } else {
-      res.status(404).json({
-        success: false,
-        message: "No oral cancer assessment associated with this family member",
-      });
-    }
-  } catch (error) {
-    console.error("Error fetching oral cancer assessment:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
