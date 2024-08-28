@@ -21,7 +21,7 @@ const Home = () => {
       const user_id = localStorage.getItem("user_id");
       try {
         const response = await axios.get(
-          `http://localhost:5001/api/user/${user_id}`
+          `${process.env.REACT_APP_BASE_URL}api/user/${user_id}`
         );
         setFormData((prevState) => ({
           ...prevState,
@@ -58,7 +58,7 @@ const Home = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5001/api/district_info",
+        `${process.env.REACT_APP_BASE_URL}api/district_info`,
         submitData
       );
       if (response.data.success) {

@@ -15,10 +15,13 @@ const AdminLogin = () => {
     e.preventDefault();
     try {
       console.log("Sending admin login request with:", { email, password });
-      const response = await axios.post("http://localhost:5001/admin-login", {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}admin-login`,
+        {
+          email,
+          password,
+        }
+      );
       if (response.data.token) {
         localStorage.setItem("admin_token", response.data.token);
         localStorage.setItem("admin_id", response.data.admin_id);

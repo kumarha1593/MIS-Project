@@ -17,7 +17,7 @@ const HTNAssessment = ({ currentFmId }) => {
     const fetchHtnData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5001/api/htn-assessment/${currentFmId}`
+          `${process.env.REACT_APP_BASE_URL}api/htn-assessment/${currentFmId}`
         );
         if (response.data.success) {
           const data = response.data.data;
@@ -78,7 +78,7 @@ const HTNAssessment = ({ currentFmId }) => {
   const handleSave = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5001/api/htn-assessment",
+        `${process.env.REACT_APP_BASE_URL}api/htn-assessment`,
         {
           fm_id: currentFmId,
           ...formData,

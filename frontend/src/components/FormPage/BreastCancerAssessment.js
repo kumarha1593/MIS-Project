@@ -16,7 +16,7 @@ const BreastCancerAssessment = ({ currentFmId }) => {
   const fetchBreastCancerData = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5001/api/breast-cancer-assessment/${currentFmId}`
+        `${process.env.REACT_APP_BASE_URL}api/breast-cancer-assessment/${currentFmId}`
       );
       if (response.data.success) {
         setFormData(response.data.data); // Pre-fill the form with fetched data
@@ -35,7 +35,7 @@ const BreastCancerAssessment = ({ currentFmId }) => {
   const handleSave = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5001/api/breast-cancer-assessment",
+        `${process.env.REACT_APP_BASE_URL}api/breast-cancer-assessment`,
         {
           fm_id: currentFmId,
           ...formData,

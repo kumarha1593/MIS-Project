@@ -249,7 +249,7 @@ const FormPage = () => {
   const fetchPersonalInfo = async (fm_id) => {
     try {
       const response = await axios.get(
-        `http://localhost:5001/api/personal-info/${fm_id}`
+        `${process.env.REACT_APP_BASE_URL}api/personal-info/${fm_id}`
       );
       if (response.data.success) {
         const fetchedData = response.data.data;

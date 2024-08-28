@@ -17,7 +17,7 @@ const OralCancerAssessment = ({ currentFmId }) => {
   const fetchOralCancerData = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5001/api/oral-cancer-assessment/${currentFmId}`
+        `${process.env.REACT_APP_BASE_URL}api/oral-cancer-assessment/${currentFmId}`
       );
       if (response.data.success) {
         setFormData(response.data.data); // Pre-fill the form with fetched data
@@ -36,7 +36,7 @@ const OralCancerAssessment = ({ currentFmId }) => {
   const handleSave = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5001/api/oral-cancer-assessment",
+        `${process.env.REACT_APP_BASE_URL}api/oral-cancer-assessment`,
         {
           fm_id: currentFmId, // Make sure fm_id is passed correctly
           ...formData,
