@@ -14,8 +14,8 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "$Mumuksh14$",
-  database: "user_management",
+  password: "$Anshika28$",
+  database: "manipur",
 });
 
 db.connect((err) => {
@@ -766,8 +766,131 @@ app.get("/api/dm-assessment/:fm_id", async (req, res) => {
   }
 });
 
+//Elderly
+app.post("/api/elderly-assessment", async (req, res) => {
+  const {
+    fm_id,
+    unsteady_walking = null,
+    physical_disability = null,
+    help_from_others = null,
+    forget_names = null,
+  } = req.body;
+
+  console.log(`Received fm_id: ${fm_id}`);
+
+  try {
+    await db.promise().beginTransaction();
+
+    // Convert empty strings to null for nullable fields
+    const sanitizedUnsteadyWalking =
+      unsteady_walking === "" ? null : unsteady_walking;
+    const sanitizedPhysicalDisability =
+      physical_disability === "" ? null : physical_disability;
+    const sanitizedHelpFromOthers =
+      help_from_others === "" ? null : help_from_others;
+    const sanitizedForgetNames = forget_names === "" ? null : forget_names;
+
+    const sanitizedValues = [
+      sanitizedUnsteadyWalking,
+      sanitizedPhysicalDisability,
+      sanitizedHelpFromOthers,
+      sanitizedForgetNames,
+    ];
+
+    let elderly_id;
+
+    // Insert or update Elderly assessment
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT elderly_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].elderly_id) {
+      // Update existing Elderly assessment and set updated_at
+      elderly_id = masterData[0].elderly_id;
+      await db.promise().query(
+        `UPDATE elderly SET
+        unsteady_walking = ?, physical_disability = ?, help_from_others = ?, forget_names = ?, updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, elderly_id]
+      );
+      console.log(`Updated Elderly assessment with ID: ${elderly_id}`);
+    } else {
+      // Insert new Elderly assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO elderly 
+        (unsteady_walking, physical_disability, help_from_others, forget_names, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      elderly_id = result.insertId;
+      console.log(`Inserted new Elderly assessment with ID: ${elderly_id}`);
+
+      // Update master_data table with the new elderly_id
+      const [updateResult] = await db
+        .promise()
+        .query(`UPDATE master_data SET elderly_id = ? WHERE fm_id = ?`, [
+          elderly_id,
+          fm_id,
+        ]);
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Elderly assessment saved successfully",
+      elderly_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving Elderly assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/elderly-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT elderly_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].elderly_id) {
+      const [elderlyData] = await db
+        .promise()
+        .query(`SELECT * FROM elderly WHERE id = ?`, [
+          masterData[0].elderly_id,
+        ]);
+
+      if (elderlyData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: elderlyData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Elderly assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No Elderly assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching Elderly assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Start server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
