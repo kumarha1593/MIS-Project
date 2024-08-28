@@ -333,12 +333,7 @@ const FormPage = () => {
       case 4:
         return <DMAssessment currentFmId={currentFmId} />;
       case 5:
-        return (
-          <RiskAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <RiskAssessment currentFmId={currentFmId} />;
       case 6:
         return (
           <OralCancerAssessment

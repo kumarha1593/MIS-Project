@@ -766,6 +766,154 @@ app.get("/api/dm-assessment/:fm_id", async (req, res) => {
   }
 });
 
+//RISK ASSESSMENT
+
+app.post("/api/risk-assessment", async (req, res) => {
+  const {
+    fm_id,
+    age = null,
+    tobacco_use = null,
+    alcohol_use = null,
+    waist_female = null,
+    waist_male = null,
+    physical_activity = null,
+    family_diabetes_history = null,
+  } = req.body;
+
+  const calculateRiskScore = () => {
+    let score = 0;
+    if (age !== null) score += parseInt(age);
+    if (tobacco_use !== null) score += parseInt(tobacco_use);
+    if (alcohol_use !== null) score += parseInt(alcohol_use);
+    if (waist_female !== null) score += parseInt(waist_female);
+    if (waist_male !== null) score += parseInt(waist_male);
+    if (physical_activity !== null) score += parseInt(physical_activity);
+    if (family_diabetes_history !== null)
+      score += parseInt(family_diabetes_history);
+    return isNaN(score) ? 0 : score; // Fallback to 0 if score is NaN
+  };
+
+  const risk_score = calculateRiskScore();
+
+  try {
+    await db.promise().beginTransaction();
+
+    const sanitizedValues = [
+      age || null,
+      tobacco_use || null,
+      alcohol_use || null,
+      waist_female || null,
+      waist_male || null,
+      physical_activity || null,
+      family_diabetes_history || null,
+      risk_score,
+    ];
+
+    let risk_assessment_id;
+
+    // Insert or update Risk Assessment
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT risk_assessment_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].risk_assessment_id) {
+      // Update existing Risk Assessment and set updated_at
+      risk_assessment_id = masterData[0].risk_assessment_id;
+      await db.promise().query(
+        `UPDATE risk_assessment SET
+        age = ?, tobacco_use = ?, alcohol_use = ?, waist_female = ?, waist_male = ?, physical_activity = ?, 
+        family_diabetes_history = ?, risk_score = ?, updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, risk_assessment_id]
+      );
+      console.log(`Updated risk assessment with ID: ${risk_assessment_id}`);
+    } else {
+      // Insert new Risk Assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO risk_assessment 
+        (age, tobacco_use, alcohol_use, waist_female, waist_male, physical_activity, 
+         family_diabetes_history, risk_score, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      risk_assessment_id = result.insertId;
+      console.log(
+        `Inserted new risk assessment with ID: ${risk_assessment_id}`
+      );
+
+      // Log fm_id and risk_assessment_id before the update query
+      console.log(
+        `Updating master_data for fm_id: ${fm_id} with risk_assessment_id: ${risk_assessment_id}`
+      );
+
+      // Update master_data table with the new risk_assessment_id
+      const [updateResult] = await db
+        .promise()
+        .query(
+          `UPDATE master_data SET risk_assessment_id = ? WHERE fm_id = ?`,
+          [risk_assessment_id, fm_id]
+        );
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Risk assessment saved successfully",
+      risk_assessment_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving risk assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/risk-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT risk_assessment_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].risk_assessment_id) {
+      const [riskData] = await db
+        .promise()
+        .query(`SELECT * FROM risk_assessment WHERE id = ?`, [
+          masterData[0].risk_assessment_id,
+        ]);
+
+      if (riskData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: riskData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Risk assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No risk assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching risk assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
