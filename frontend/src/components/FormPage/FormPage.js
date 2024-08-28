@@ -249,7 +249,7 @@ const FormPage = () => {
   const fetchPersonalInfo = async (fm_id) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/personal-info/${fm_id}`
+        `${process.env.REACT_APP_BASE_URL}api/personal-info/${fm_id}`
       );
       if (response.data.success) {
         const fetchedData = response.data.data;
@@ -333,33 +333,13 @@ const FormPage = () => {
       case 4:
         return <DMAssessment currentFmId={currentFmId} />;
       case 5:
-        return (
-          <RiskAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <RiskAssessment currentFmId={currentFmId} />;
       case 6:
-        return (
-          <OralCancerAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <OralCancerAssessment currentFmId={currentFmId} />;
       case 7:
-        return (
-          <BreastCancerAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <BreastCancerAssessment currentFmId={currentFmId} />;
       case 8:
-        return (
-          <CervicalCancerAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <CervicalCancerAssessment currentFmId={currentFmId} />;
       case 9:
         return (
           <CVDAssessment

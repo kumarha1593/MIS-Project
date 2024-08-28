@@ -766,6 +766,401 @@ app.get("/api/dm-assessment/:fm_id", async (req, res) => {
   }
 });
 
+//RISK ASSESSMENT
+
+app.post("/api/risk-assessment", async (req, res) => {
+  const {
+    fm_id,
+    age = null,
+    tobacco_use = null,
+    alcohol_use = null,
+    waist_female = null,
+    waist_male = null,
+    physical_activity = null,
+    family_diabetes_history = null,
+  } = req.body;
+
+  const calculateRiskScore = () => {
+    let score = 0;
+    if (age !== null) score += parseInt(age);
+    if (tobacco_use !== null) score += parseInt(tobacco_use);
+    if (alcohol_use !== null) score += parseInt(alcohol_use);
+    if (waist_female !== null) score += parseInt(waist_female);
+    if (waist_male !== null) score += parseInt(waist_male);
+    if (physical_activity !== null) score += parseInt(physical_activity);
+    if (family_diabetes_history !== null)
+      score += parseInt(family_diabetes_history);
+    return isNaN(score) ? 0 : score; // Fallback to 0 if score is NaN
+  };
+
+  const risk_score = calculateRiskScore();
+
+  try {
+    await db.promise().beginTransaction();
+
+    const sanitizedValues = [
+      age || null,
+      tobacco_use || null,
+      alcohol_use || null,
+      waist_female || null,
+      waist_male || null,
+      physical_activity || null,
+      family_diabetes_history || null,
+      risk_score,
+    ];
+
+    let risk_assessment_id;
+
+    // Insert or update Risk Assessment
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT risk_assessment_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].risk_assessment_id) {
+      // Update existing Risk Assessment and set updated_at
+      risk_assessment_id = masterData[0].risk_assessment_id;
+      await db.promise().query(
+        `UPDATE risk_assessment SET
+        age = ?, tobacco_use = ?, alcohol_use = ?, waist_female = ?, waist_male = ?, physical_activity = ?, 
+        family_diabetes_history = ?, risk_score = ?, updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, risk_assessment_id]
+      );
+      console.log(`Updated risk assessment with ID: ${risk_assessment_id}`);
+    } else {
+      // Insert new Risk Assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO risk_assessment 
+        (age, tobacco_use, alcohol_use, waist_female, waist_male, physical_activity, 
+         family_diabetes_history, risk_score, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      risk_assessment_id = result.insertId;
+      console.log(
+        `Inserted new risk assessment with ID: ${risk_assessment_id}`
+      );
+
+      // Log fm_id and risk_assessment_id before the update query
+      console.log(
+        `Updating master_data for fm_id: ${fm_id} with risk_assessment_id: ${risk_assessment_id}`
+      );
+
+      // Update master_data table with the new risk_assessment_id
+      const [updateResult] = await db
+        .promise()
+        .query(
+          `UPDATE master_data SET risk_assessment_id = ? WHERE fm_id = ?`,
+          [risk_assessment_id, fm_id]
+        );
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Risk assessment saved successfully",
+      risk_assessment_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving risk assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/risk-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT risk_assessment_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].risk_assessment_id) {
+      const [riskData] = await db
+        .promise()
+        .query(`SELECT * FROM risk_assessment WHERE id = ?`, [
+          masterData[0].risk_assessment_id,
+        ]);
+
+      if (riskData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: riskData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Risk assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No risk assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching risk assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Oral Cancer Assessment POST Endpoint
+app.post("/api/oral-cancer-assessment", async (req, res) => {
+  const {
+    fm_id,
+    known_case = null,
+    persistent_ulcer = null,
+    persistent_patch = null,
+    difficulty_chewing = null,
+    difficulty_opening_mouth = null,
+    growth_in_mouth = null,
+    swelling_in_neck = null,
+    suspected_oral_cancer = null,
+  } = req.body;
+
+  try {
+    await db.promise().beginTransaction();
+
+    const sanitizedValues = [
+      known_case === "" ? null : known_case,
+      persistent_ulcer === "" ? null : persistent_ulcer,
+      persistent_patch === "" ? null : persistent_patch,
+      difficulty_chewing === "" ? null : difficulty_chewing,
+      difficulty_opening_mouth === "" ? null : difficulty_opening_mouth,
+      growth_in_mouth === "" ? null : growth_in_mouth,
+      swelling_in_neck === "" ? null : swelling_in_neck,
+      suspected_oral_cancer === "" ? null : suspected_oral_cancer,
+    ];
+
+    let oral_cancer_id;
+
+    // Insert or update oral cancer assessment
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT oral_cancer_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].oral_cancer_id) {
+      // Update existing oral cancer assessment and set updated_at
+      oral_cancer_id = masterData[0].oral_cancer_id;
+      await db.promise().query(
+        `UPDATE oralcancer SET
+        known_case = ?, persistent_ulcer = ?, persistent_patch = ?, 
+        difficulty_chewing = ?, difficulty_opening_mouth = ?, 
+        growth_in_mouth = ?, swelling_in_neck = ?, suspected_oral_cancer = ?, 
+        updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, oral_cancer_id]
+      );
+    } else {
+      // Insert new oral cancer assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO oralcancer 
+        (known_case, persistent_ulcer, persistent_patch, 
+         difficulty_chewing, difficulty_opening_mouth, 
+         growth_in_mouth, swelling_in_neck, suspected_oral_cancer, 
+         created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      oral_cancer_id = result.insertId;
+
+      // Update master_data table with the new oral_cancer_id
+      await db
+        .promise()
+        .query(`UPDATE master_data SET oral_cancer_id = ? WHERE fm_id = ?`, [
+          oral_cancer_id,
+          fm_id,
+        ]);
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Oral cancer assessment saved successfully",
+      oral_cancer_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving oral cancer assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Oral Cancer Assessment GET Endpoint
+app.get("/api/oral-cancer-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT oral_cancer_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].oral_cancer_id) {
+      const [oralCancerData] = await db
+        .promise()
+        .query(`SELECT * FROM oralcancer WHERE id = ?`, [
+          masterData[0].oral_cancer_id,
+        ]);
+
+      if (oralCancerData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: oralCancerData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Oral cancer assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No oral cancer assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching oral cancer assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Breast Cancer Assessment POST Endpoint
+app.post("/api/breast-cancer-assessment", async (req, res) => {
+  const {
+    fm_id,
+    known_case = null,
+    lump_in_breast = null,
+    blood_stained_discharge = null,
+    change_in_shape = null,
+    constant_pain_or_swelling = null,
+    redness_or_ulcer = null,
+    suspected_breast_cancer = null,
+  } = req.body;
+
+  try {
+    await db.promise().beginTransaction();
+
+    const sanitizedValues = [
+      known_case === "" ? null : known_case,
+      lump_in_breast === "" ? null : lump_in_breast,
+      blood_stained_discharge === "" ? null : blood_stained_discharge,
+      change_in_shape === "" ? null : change_in_shape,
+      constant_pain_or_swelling === "" ? null : constant_pain_or_swelling,
+      redness_or_ulcer === "" ? null : redness_or_ulcer,
+      suspected_breast_cancer === "" ? null : suspected_breast_cancer,
+    ];
+
+    let breast_cancer_id;
+
+    // Insert or update breast cancer assessment
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT breast_cancer_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].breast_cancer_id) {
+      // Update existing breast cancer assessment and set updated_at
+      breast_cancer_id = masterData[0].breast_cancer_id;
+      await db.promise().query(
+        `UPDATE breastcancer SET
+        known_case = ?, lump_in_breast = ?, blood_stained_discharge = ?, 
+        change_in_shape = ?, constant_pain_or_swelling = ?, 
+        redness_or_ulcer = ?, suspected_breast_cancer = ?, 
+        updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, breast_cancer_id]
+      );
+    } else {
+      // Insert new breast cancer assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO breastcancer 
+        (known_case, lump_in_breast, blood_stained_discharge, 
+         change_in_shape, constant_pain_or_swelling, 
+         redness_or_ulcer, suspected_breast_cancer, 
+         created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      breast_cancer_id = result.insertId;
+
+      // Update master_data table with the new breast_cancer_id
+      await db
+        .promise()
+        .query(`UPDATE master_data SET breast_cancer_id = ? WHERE fm_id = ?`, [
+          breast_cancer_id,
+          fm_id,
+        ]);
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Breast cancer assessment saved successfully",
+      breast_cancer_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving breast cancer assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Breast Cancer Assessment GET Endpoint
+app.get("/api/breast-cancer-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT breast_cancer_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].breast_cancer_id) {
+      const [breastCancerData] = await db
+        .promise()
+        .query(`SELECT * FROM breastcancer WHERE id = ?`, [
+          masterData[0].breast_cancer_id,
+        ]);
+
+      if (breastCancerData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: breastCancerData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Breast cancer assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message:
+          "No breast cancer assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching breast cancer assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 //Elderly
 app.post("/api/elderly-assessment", async (req, res) => {
   const {

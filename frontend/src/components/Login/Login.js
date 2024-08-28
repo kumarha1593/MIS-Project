@@ -15,10 +15,13 @@ const Login = () => {
     e.preventDefault();
     try {
       console.log("Sending login request with:", { email, password });
-      const response = await axios.post("http://localhost:5000/login", {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}login`,
+        {
+          email,
+          password,
+        }
+      );
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user_id", response.data.user_id);

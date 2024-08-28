@@ -14,7 +14,7 @@ const HealthMeasurements = ({ currentFmId }) => {
     const fetchHealthData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/health-measurements/${currentFmId}`
+          `${process.env.REACT_APP_BASE_URL}api/health-measurements/${currentFmId}`
         );
         if (response.data.success) {
           setFormData(response.data.data); // Populate formData with fetched data
@@ -50,7 +50,7 @@ const HealthMeasurements = ({ currentFmId }) => {
   const handleSave = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/health-measurements",
+        `${process.env.REACT_APP_BASE_URL}api/health-measurements`,
         {
           fm_id: currentFmId,
           ...formData,

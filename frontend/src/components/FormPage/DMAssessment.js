@@ -18,7 +18,7 @@ const DMAssessment = ({ currentFmId }) => {
     const fetchDmData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5001/api/dm-assessment/${currentFmId}`
+          `${process.env.REACT_APP_BASE_URL}api/dm-assessment/${currentFmId}`
         );
         if (response.data.success) {
           const data = response.data.data;
@@ -80,7 +80,7 @@ const DMAssessment = ({ currentFmId }) => {
   const handleSave = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5001/api/dm-assessment",
+        `${process.env.REACT_APP_BASE_URL}api/dm-assessment`,
         {
           fm_id: currentFmId,
           ...formData,

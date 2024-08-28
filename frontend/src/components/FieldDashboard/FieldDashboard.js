@@ -34,7 +34,7 @@ const FieldDashboard = () => {
     const user_id = localStorage.getItem("user_id");
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/user_district_info/${user_id}`
+        `${process.env.REACT_APP_BASE_URL}api/user_district_info/${user_id}`
       );
       setDistrictInfo(response.data);
       setEditableData(response.data);
@@ -72,7 +72,7 @@ const FieldDashboard = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/district_info",
+        `${process.env.REACT_APP_BASE_URL}api/district_info`,
         updatedData
       );
       if (response.data.success) {
@@ -88,7 +88,7 @@ const FieldDashboard = () => {
     const user_id = localStorage.getItem("user_id");
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/family-members/${user_id}`
+        `${process.env.REACT_APP_BASE_URL}api/family-members/${user_id}`
       );
       setTableData(response.data);
       setFilteredData(response.data);
@@ -135,7 +135,7 @@ const FieldDashboard = () => {
     const user_id = localStorage.getItem("user_id");
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/family-members",
+        `${process.env.REACT_APP_BASE_URL}api/family-members`,
         {
           fc_id: user_id,
           name: newHeadData.headOfFamily,

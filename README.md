@@ -1,1 +1,1 @@
-# ManipurProject
+# MIS-Project
