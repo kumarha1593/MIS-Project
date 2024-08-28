@@ -1161,6 +1161,128 @@ app.get("/api/breast-cancer-assessment/:fm_id", async (req, res) => {
   }
 });
 
+//Cervical Cancer Assessment POST Endpoint
+app.post("/api/cervical-cancer-assessment", async (req, res) => {
+  const {
+    fm_id,
+    known_case = null,
+    bleeding_between_periods = null,
+    bleeding_after_menopause = null,
+    bleeding_after_intercourse = null,
+    foul_smelling_discharge = null,
+    via_appointment_date = null,
+    via_result = null,
+  } = req.body;
+
+  try {
+    await db.promise().beginTransaction();
+
+    const sanitizedValues = [
+      known_case === "" ? null : known_case,
+      bleeding_between_periods === "" ? null : bleeding_between_periods,
+      bleeding_after_menopause === "" ? null : bleeding_after_menopause,
+      bleeding_after_intercourse === "" ? null : bleeding_after_intercourse,
+      foul_smelling_discharge === "" ? null : foul_smelling_discharge,
+      via_appointment_date === "" ? null : via_appointment_date,
+      via_result === "" ? null : via_result,
+    ];
+
+    let cervical_cancer_id;
+
+    // Insert or update cervical cancer assessment
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT cervical_cancer_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].cervical_cancer_id) {
+      // Update existing cervical cancer assessment and set updated_at
+      cervical_cancer_id = masterData[0].cervical_cancer_id;
+      await db.promise().query(
+        `UPDATE cervicalcancer SET
+        known_case = ?, bleeding_between_periods = ?, bleeding_after_menopause = ?, 
+        bleeding_after_intercourse = ?, foul_smelling_discharge = ?, 
+        via_appointment_date = ?, via_result = ?, updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, cervical_cancer_id]
+      );
+    } else {
+      // Insert new cervical cancer assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO cervicalcancer 
+        (known_case, bleeding_between_periods, bleeding_after_menopause, 
+         bleeding_after_intercourse, foul_smelling_discharge, 
+         via_appointment_date, via_result, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      cervical_cancer_id = result.insertId;
+
+      // Update master_data table with the new cervical_cancer_id
+      await db
+        .promise()
+        .query(
+          `UPDATE master_data SET cervical_cancer_id = ? WHERE fm_id = ?`,
+          [cervical_cancer_id, fm_id]
+        );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Cervical cancer assessment saved successfully",
+      cervical_cancer_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving cervical cancer assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/cervical-cancer-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT cervical_cancer_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].cervical_cancer_id) {
+      const [cervicalCancerData] = await db
+        .promise()
+        .query(`SELECT * FROM cervicalcancer WHERE id = ?`, [
+          masterData[0].cervical_cancer_id,
+        ]);
+
+      if (cervicalCancerData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: cervicalCancerData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Cervical cancer assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message:
+          "No cervical cancer assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching cervical cancer assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
