@@ -1036,6 +1036,131 @@ app.get("/api/oral-cancer-assessment/:fm_id", async (req, res) => {
   }
 });
 
+// Breast Cancer Assessment POST Endpoint
+app.post("/api/breast-cancer-assessment", async (req, res) => {
+  const {
+    fm_id,
+    known_case = null,
+    lump_in_breast = null,
+    blood_stained_discharge = null,
+    change_in_shape = null,
+    constant_pain_or_swelling = null,
+    redness_or_ulcer = null,
+    suspected_breast_cancer = null,
+  } = req.body;
+
+  try {
+    await db.promise().beginTransaction();
+
+    const sanitizedValues = [
+      known_case === "" ? null : known_case,
+      lump_in_breast === "" ? null : lump_in_breast,
+      blood_stained_discharge === "" ? null : blood_stained_discharge,
+      change_in_shape === "" ? null : change_in_shape,
+      constant_pain_or_swelling === "" ? null : constant_pain_or_swelling,
+      redness_or_ulcer === "" ? null : redness_or_ulcer,
+      suspected_breast_cancer === "" ? null : suspected_breast_cancer,
+    ];
+
+    let breast_cancer_id;
+
+    // Insert or update breast cancer assessment
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT breast_cancer_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].breast_cancer_id) {
+      // Update existing breast cancer assessment and set updated_at
+      breast_cancer_id = masterData[0].breast_cancer_id;
+      await db.promise().query(
+        `UPDATE breastcancer SET
+        known_case = ?, lump_in_breast = ?, blood_stained_discharge = ?, 
+        change_in_shape = ?, constant_pain_or_swelling = ?, 
+        redness_or_ulcer = ?, suspected_breast_cancer = ?, 
+        updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, breast_cancer_id]
+      );
+    } else {
+      // Insert new breast cancer assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO breastcancer 
+        (known_case, lump_in_breast, blood_stained_discharge, 
+         change_in_shape, constant_pain_or_swelling, 
+         redness_or_ulcer, suspected_breast_cancer, 
+         created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      breast_cancer_id = result.insertId;
+
+      // Update master_data table with the new breast_cancer_id
+      await db
+        .promise()
+        .query(`UPDATE master_data SET breast_cancer_id = ? WHERE fm_id = ?`, [
+          breast_cancer_id,
+          fm_id,
+        ]);
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Breast cancer assessment saved successfully",
+      breast_cancer_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving breast cancer assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Breast Cancer Assessment GET Endpoint
+app.get("/api/breast-cancer-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT breast_cancer_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].breast_cancer_id) {
+      const [breastCancerData] = await db
+        .promise()
+        .query(`SELECT * FROM breastcancer WHERE id = ?`, [
+          masterData[0].breast_cancer_id,
+        ]);
+
+      if (breastCancerData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: breastCancerData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Breast cancer assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message:
+          "No breast cancer assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching breast cancer assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

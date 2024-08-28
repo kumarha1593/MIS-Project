@@ -337,19 +337,9 @@ const FormPage = () => {
       case 6:
         return <OralCancerAssessment currentFmId={currentFmId} />;
       case 7:
-        return (
-          <BreastCancerAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <BreastCancerAssessment currentFmId={currentFmId} />;
       case 8:
-        return (
-          <CervicalCancerAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <CervicalCancerAssessment currentFmId={currentFmId} />;
       case 9:
         return (
           <CVDAssessment
