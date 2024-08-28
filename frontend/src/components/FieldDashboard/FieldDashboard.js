@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./FieldDashboard.css";
-import { FaPencilAlt } from "react-icons/fa";
+import { FaPencilAlt, FaFilter, FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const FieldDashboard = () => {
   const [districtInfo, setDistrictInfo] = useState(null);
@@ -14,6 +16,12 @@ const FieldDashboard = () => {
     headOfFamily: "",
     aadharNumber: "",
   });
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [fromDate, setFromDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
+  const [statusFilter, setStatusFilter] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredData, setFilteredData] = useState([]);
 
   const navigate = useNavigate();
 
@@ -69,23 +77,11 @@ const FieldDashboard = () => {
       );
       if (response.data.success) {
         setIsEditing(false);
-        fetchDistrictInfo(); // Refresh the data
+        fetchDistrictInfo();
       }
     } catch (error) {
       console.error("Error updating data:", error);
     }
-  };
-
-  const handleAddFamilyMember = (id) => {
-    navigate("/FormPage", { state: { familyId: id } });
-  };
-
-  const handleAddRow = () => {
-    setShowModal(true);
-  };
-
-  const handleModalInputChange = (e) => {
-    setNewHeadData({ ...newHeadData, [e.target.name]: e.target.value });
   };
 
   const fetchFamilyMembers = async () => {
@@ -95,9 +91,44 @@ const FieldDashboard = () => {
         `http://localhost:5000/api/family-members/${user_id}`
       );
       setTableData(response.data);
+      setFilteredData(response.data);
     } catch (error) {
       console.error("Error fetching family members:", error);
     }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...tableData];
+
+    if (fromDate) {
+      filtered = filtered.filter((row) => new Date(row.date) >= fromDate);
+    }
+    if (toDate) {
+      filtered = filtered.filter((row) => new Date(row.date) <= toDate);
+    }
+    if (statusFilter) {
+      filtered = filtered.filter((row) =>
+        statusFilter === "pending" ? row.status === 0 : row.status === 1
+      );
+    }
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (row) =>
+          row.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          row.Aadhar.includes(searchTerm)
+      );
+    }
+
+    setFilteredData(filtered);
+    setShowFilterDropdown(false);
+  };
+
+  const handleAddRow = () => {
+    setShowModal(true);
+  };
+
+  const handleModalInputChange = (e) => {
+    setNewHeadData({ ...newHeadData, [e.target.name]: e.target.value });
   };
 
   const handleSaveAndContinue = async () => {
@@ -113,19 +144,34 @@ const FieldDashboard = () => {
       );
       if (response.data.success) {
         setShowModal(false);
-        fetchFamilyMembers(); // Refresh the table data
+        fetchFamilyMembers();
         navigate("/FormPage", { state: { familyId: response.data.fm_id } });
       }
     } catch (error) {
       console.error("Error saving new head:", error);
     }
   };
+
   const handleRowClick = (headOfFamily) => {
     navigate("/FamilyDetails", { state: { headOfFamily } });
   };
+
   const handleCompleteForm = (fm_id) => {
     localStorage.setItem("current_fm_id", fm_id);
     navigate("/FormPage");
+  };
+
+  const handleFilterClick = () => {
+    setShowFilterDropdown(!showFilterDropdown);
+  };
+
+  const resetFilters = () => {
+    setFromDate(null);
+    setToDate(null);
+    setStatusFilter(null);
+    setSearchTerm("");
+    setFilteredData(tableData);
+    setShowFilterDropdown(false);
   };
 
   return (
@@ -219,6 +265,56 @@ const FieldDashboard = () => {
         )}
       </div>
 
+      <div className="filter-container">
+        <button onClick={handleFilterClick} className="filter-button">
+          <FaFilter /> Filter
+        </button>
+        {showFilterDropdown && (
+          <div className="filter-dropdown">
+            <div className="filter-option">
+              <label>From Date:</label>
+              <DatePicker
+                selected={fromDate}
+                onChange={(date) => setFromDate(date)}
+                placeholderText="Select From Date"
+              />
+            </div>
+            <div className="filter-option">
+              <label>To Date:</label>
+              <DatePicker
+                selected={toDate}
+                onChange={(date) => setToDate(date)}
+                placeholderText="Select To Date"
+              />
+            </div>
+            <div className="filter-option">
+              <label>Status:</label>
+              <select
+                value={statusFilter || ""}
+                onChange={(e) => setStatusFilter(e.target.value || null)}
+              >
+                <option value="">All</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <div className="filter-option">
+              <label>Search:</label>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by name or Aadhaar"
+              />
+            </div>
+            <div className="filter-actions">
+              <button onClick={applyFilters}>Apply Filters</button>
+              <button onClick={resetFilters}>Reset Filters</button>
+            </div>
+          </div>
+        )}
+      </div>
+
       <table className="family-table">
         <thead>
           <tr>
@@ -229,7 +325,7 @@ const FieldDashboard = () => {
           </tr>
         </thead>
         <tbody>
-          {tableData.map((row) => (
+          {filteredData.map((row) => (
             <tr key={row.id}>
               <td onClick={() => handleRowClick(row.headOfFamily)}>
                 {row.name}
@@ -240,12 +336,12 @@ const FieldDashboard = () => {
                 {row.status === 0 ? (
                   <button
                     onClick={() => handleCompleteForm(row.id)}
-                    style={{ padding: "5px" }}
+                    style={{ padding: "3px", backgroundColor: "red"}}
                   >
                     Pending
                   </button>
                 ) : (
-                  "Completed"
+                  <span style={{ color: "green" }}>Completed</span>
                 )}
               </td>
             </tr>
@@ -270,7 +366,7 @@ const FieldDashboard = () => {
             />
             <input
               type="text"
-              name="aadharNumber" // Changed from "Aadhaar number" to "aadharNumber"
+              name="aadharNumber"
               value={newHeadData.aadharNumber}
               onChange={handleModalInputChange}
               placeholder="Aadhaar number"

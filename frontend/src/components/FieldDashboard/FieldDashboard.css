@@ -1,51 +1,98 @@
+/* General container styling */
 .next-page-container {
   padding: 20px;
-  font-family: Arial, sans-serif;
+  box-sizing: border-box;
 }
 
+/* Info box styling */
 .info-box {
-  background-color: #f9f9f9;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 5px;
   padding: 20px;
   margin-bottom: 20px;
-  position: relative;
+  background-color: #f9f9f9;
 }
 
 .info-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-}
-
-.edit-icon {
-  cursor: pointer;
-  font-size: 20px;
-  color: #888;
 }
 
 .info-line {
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
-  flex-wrap: wrap;
-}
-
-.info-item {
-  font-weight: bold;
-  margin-right: 15px;
 }
 
 .input-field {
-  width: 30%;
+  margin-left: 10px;
   padding: 5px;
-  margin-right: 15px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.edit-icon {
+  cursor: pointer;
+}
+
+.update-button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.update-button:hover {
+  background-color: #45a049;
+}
+
+/* Filter dropdown and buttons */
+.filter-container {
+  margin-bottom: 20px;
+}
+
+.filter-button {
+  padding: 8px 12px;
+  background-color: #008cba;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.filter-dropdown {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  position: absolute;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.filter-option {
   margin-bottom: 10px;
 }
 
+.filter-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.filter-actions button {
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+/* Family table styling */
 .family-table {
-  max-width: 100%;
+  width: 100%;
+  max-width: 100%; /* Prevents the table from exceeding the container width */
+  table-layout: fixed; /* Ensures columns don't exceed table width */
   border-collapse: collapse;
   margin-bottom: 20px;
 }
@@ -53,76 +100,115 @@
 .family-table th,
 .family-table td {
   border: 1px solid #ddd;
-  padding: 10px;
+  padding: 8px; /* Reduced padding for compactness */
   text-align: left;
-  font-size: 0.7em;
+  font-size: 0.9 em; /* Reduced font size */
+  word-wrap: break-word; /* Ensures long text breaks to next line */
 }
 
-.table-input {
-  width: 90%;
-  padding: 5px;
+.family-table th {
+  background-color: #f2f2f2;
 }
 
+.family-table td button {
+  padding: 2px 5px; /* Smaller padding */
+  font-size: 0.8em; /* Smaller font size */
+}
+
+/* Button to add a new head */
 .add-row-button {
   padding: 10px 15px;
-  background-color: #007bff;
+  background-color: #4caf50;
   color: white;
   border: none;
-  border-radius: 5px;
   cursor: pointer;
-  display: block;
-  margin: 0 auto;
+  border-radius: 5px;
 }
 
 .add-row-button:hover {
-  background-color: #0056b3;
+  background-color: #45a049;
 }
 
-.add-member-icon {
-  cursor: pointer;
-  font-size: 18px;
-  color: #007bff;
-}
-
+/* Modal styling */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1000;
 }
 
 .modal {
-  background-color: white;
+  background: white;
   padding: 20px;
   border-radius: 5px;
   width: 300px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modal h2 {
+  margin-top: 0;
 }
 
 .modal input {
-  display: block;
   width: 100%;
+  padding: 8px;
   margin-bottom: 10px;
-  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
 }
 
 .modal button {
-  margin-right: 10px;
+  padding: 8px 12px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
 }
 
+.modal button:hover {
+  background-color: #45a049;
+}
+
+.modal button:last-child {
+  background-color: #f44336;
+}
+
+.modal button:last-child:hover {
+  background-color: #e53935;
+}
+
+/* Responsive adjustments for smaller screens */
 @media (max-width: 600px) {
+  .info-line {
+    flex-direction: column;
+  }
+
   .input-field {
     width: 100%;
     margin-bottom: 10px;
   }
-  .info-line {
-    flex-direction: column;
+
+  .filter-dropdown {
+    width: 90%;
+    left: 5%;
+    transform: none;
   }
-  .info-item {
-    margin-bottom: 5px;
+
+  .family-table th,
+  .family-table td {
+    padding: 5px;
+    font-size: 0.7em;
+  }
+
+  .add-row-button {
+    padding: 8px 12px;
+    font-size: 14px;
   }
 }

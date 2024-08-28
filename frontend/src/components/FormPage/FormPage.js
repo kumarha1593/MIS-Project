@@ -410,12 +410,8 @@ const FormPage = () => {
           />
         );
       case 16:
-        return (
-          <ElderlyAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return;
+        <ElderlyAssessment currentFmId={currentFmId} />;
       case 17:
         return (
           <MentalHealthAssessment
