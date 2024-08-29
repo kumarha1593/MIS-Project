@@ -14,8 +14,8 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "$Mumuksh14$",
-  database: "user_management",
+  password: "$Anshika28$",
+  database: "manipur",
 });
 
 db.connect((err) => {
@@ -1161,130 +1161,131 @@ app.get("/api/breast-cancer-assessment/:fm_id", async (req, res) => {
   }
 });
 
-//Cervical Cancer Assessment POST Endpoint
-app.post("/api/cervical-cancer-assessment", async (req, res) => {
+//Elderly
+app.post("/api/elderly-assessment", async (req, res) => {
   const {
     fm_id,
-    known_case = null,
-    bleeding_between_periods = null,
-    bleeding_after_menopause = null,
-    bleeding_after_intercourse = null,
-    foul_smelling_discharge = null,
-    via_appointment_date = null,
-    via_result = null,
+    unsteady_walking = null,
+    physical_disability = null,
+    help_from_others = null,
+    forget_names = null,
   } = req.body;
+
+  console.log(`Received fm_id: ${fm_id}`);
 
   try {
     await db.promise().beginTransaction();
 
+    // Convert empty strings to null for nullable fields
+    const sanitizedUnsteadyWalking =
+      unsteady_walking === "" ? null : unsteady_walking;
+    const sanitizedPhysicalDisability =
+      physical_disability === "" ? null : physical_disability;
+    const sanitizedHelpFromOthers =
+      help_from_others === "" ? null : help_from_others;
+    const sanitizedForgetNames = forget_names === "" ? null : forget_names;
+
     const sanitizedValues = [
-      known_case === "" ? null : known_case,
-      bleeding_between_periods === "" ? null : bleeding_between_periods,
-      bleeding_after_menopause === "" ? null : bleeding_after_menopause,
-      bleeding_after_intercourse === "" ? null : bleeding_after_intercourse,
-      foul_smelling_discharge === "" ? null : foul_smelling_discharge,
-      via_appointment_date === "" ? null : via_appointment_date,
-      via_result === "" ? null : via_result,
+      sanitizedUnsteadyWalking,
+      sanitizedPhysicalDisability,
+      sanitizedHelpFromOthers,
+      sanitizedForgetNames,
     ];
 
-    let cervical_cancer_id;
+    let elderly_id;
 
-    // Insert or update cervical cancer assessment
+    // Insert or update Elderly assessment
     const [masterData] = await db
       .promise()
-      .query(`SELECT cervical_cancer_id FROM master_data WHERE fm_id = ?`, [
-        fm_id,
-      ]);
+      .query(`SELECT elderly_id FROM master_data WHERE fm_id = ?`, [fm_id]);
 
-    if (masterData.length > 0 && masterData[0].cervical_cancer_id) {
-      // Update existing cervical cancer assessment and set updated_at
-      cervical_cancer_id = masterData[0].cervical_cancer_id;
+    if (masterData.length > 0 && masterData[0].elderly_id) {
+      // Update existing Elderly assessment and set updated_at
+      elderly_id = masterData[0].elderly_id;
       await db.promise().query(
-        `UPDATE cervicalcancer SET
-        known_case = ?, bleeding_between_periods = ?, bleeding_after_menopause = ?, 
-        bleeding_after_intercourse = ?, foul_smelling_discharge = ?, 
-        via_appointment_date = ?, via_result = ?, updated_at = NOW()
+        `UPDATE elderly SET
+        unsteady_walking = ?, physical_disability = ?, help_from_others = ?, forget_names = ?, updated_at = NOW()
         WHERE id = ?`,
-        [...sanitizedValues, cervical_cancer_id]
+        [...sanitizedValues, elderly_id]
       );
+      console.log(`Updated Elderly assessment with ID: ${elderly_id}`);
     } else {
-      // Insert new cervical cancer assessment and set created_at and updated_at
+      // Insert new Elderly assessment and set created_at and updated_at
       const [result] = await db.promise().query(
-        `INSERT INTO cervicalcancer 
-        (known_case, bleeding_between_periods, bleeding_after_menopause, 
-         bleeding_after_intercourse, foul_smelling_discharge, 
-         via_appointment_date, via_result, created_at, updated_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        `INSERT INTO elderly 
+        (unsteady_walking, physical_disability, help_from_others, forget_names, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, NOW(), NOW())`,
         sanitizedValues
       );
-      cervical_cancer_id = result.insertId;
+      elderly_id = result.insertId;
+      console.log(`Inserted new Elderly assessment with ID: ${elderly_id}`);
 
-      // Update master_data table with the new cervical_cancer_id
-      await db
+      // Update master_data table with the new elderly_id
+      const [updateResult] = await db
         .promise()
-        .query(
-          `UPDATE master_data SET cervical_cancer_id = ? WHERE fm_id = ?`,
-          [cervical_cancer_id, fm_id]
-        );
+        .query(`UPDATE master_data SET elderly_id = ? WHERE fm_id = ?`, [
+          elderly_id,
+          fm_id,
+        ]);
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
     }
 
     await db.promise().commit();
 
     res.status(200).json({
       success: true,
-      message: "Cervical cancer assessment saved successfully",
-      cervical_cancer_id,
+      message: "Elderly assessment saved successfully",
+      elderly_id,
     });
   } catch (error) {
     await db.promise().rollback();
-    console.error("Error saving cervical cancer assessment:", error);
+    console.error("Error saving Elderly assessment:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-app.get("/api/cervical-cancer-assessment/:fm_id", async (req, res) => {
+app.get("/api/elderly-assessment/:fm_id", async (req, res) => {
   const { fm_id } = req.params;
 
   try {
     const [masterData] = await db
       .promise()
-      .query(`SELECT cervical_cancer_id FROM master_data WHERE fm_id = ?`, [
-        fm_id,
-      ]);
+      .query(`SELECT elderly_id FROM master_data WHERE fm_id = ?`, [fm_id]);
 
-    if (masterData.length > 0 && masterData[0].cervical_cancer_id) {
-      const [cervicalCancerData] = await db
+    if (masterData.length > 0 && masterData[0].elderly_id) {
+      const [elderlyData] = await db
         .promise()
-        .query(`SELECT * FROM cervicalcancer WHERE id = ?`, [
-          masterData[0].cervical_cancer_id,
+        .query(`SELECT * FROM elderly WHERE id = ?`, [
+          masterData[0].elderly_id,
         ]);
 
-      if (cervicalCancerData.length > 0) {
+      if (elderlyData.length > 0) {
         res.status(200).json({
           success: true,
-          data: cervicalCancerData[0],
+          data: elderlyData[0],
         });
       } else {
         res.status(404).json({
           success: false,
-          message: "Cervical cancer assessment not found",
+          message: "Elderly assessment not found",
         });
       }
     } else {
       res.status(404).json({
         success: false,
-        message:
-          "No cervical cancer assessment associated with this family member",
+        message: "No Elderly assessment associated with this family member",
       });
     }
   } catch (error) {
-    console.error("Error fetching cervical cancer assessment:", error);
+    console.error("Error fetching Elderly assessment:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
 // Start server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
