@@ -15,7 +15,7 @@ const CervicalCancerAssessment = ({ currentFmId }) => {
   const fetchCervicalCancerData = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5001/api/cervical-cancer-assessment/${currentFmId}`
+        `${process.env.REACT_APP_BASE_URL}api/cervical-cancer-assessment/${currentFmId}`
       );
       if (response.data.success) {
         const data = response.data.data;
@@ -42,7 +42,7 @@ const CervicalCancerAssessment = ({ currentFmId }) => {
   const handleSave = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5001/api/cervical-cancer-assessment",
+        `${process.env.REACT_APP_BASE_URL}api/cervical-cancer-assessment`,
         {
           fm_id: currentFmId,
           ...formData,
