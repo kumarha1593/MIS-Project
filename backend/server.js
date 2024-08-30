@@ -27,7 +27,7 @@ db.connect((err) => {
 });
 
 // Login Route
-app.post("/login", (req, res) => {
+app.post("/api/login", (req, res) => {
   console.log("Request body:", req.body);
   const { email, password } = req.body;
 
