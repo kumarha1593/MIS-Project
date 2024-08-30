@@ -16,7 +16,7 @@ const Login = () => {
     try {
       console.log("Sending login request with:", { email, password });
       const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/api/login`,
+        `${process.env.REACT_APP_BASE_URL}api/login`,
         {
           email,
           password,
