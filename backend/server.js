@@ -101,7 +101,7 @@ app.post("/api/district_info", (req, res) => {
 
       // Update users table with the new district_info_id
       const updateUserQuery =
-        "UPDATE users SET district_info_id = ? WHERE id = ?";
+        "UPDATE Users SET district_info_id = ? WHERE id = ?";
       db.query(updateUserQuery, [result.insertId, user_id], (updateError) => {
         if (updateError) {
           console.error("Error updating user:", updateError);
@@ -139,7 +139,7 @@ app.get("/api/user_district_info/:user_id", (req, res) => {
   const user_id = req.params.user_id;
   const query = `
     SELECT d.*
-    FROM users u
+    FROM Users u
     JOIN district_info_fc d ON u.district_info_id = d.id
     WHERE u.id = ?
   `;
