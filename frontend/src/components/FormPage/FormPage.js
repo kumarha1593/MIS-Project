@@ -348,57 +348,22 @@ const FormPage = () => {
           />
         );
       case 10:
-        return (
-          <PostStrokeAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <PostStrokeAssessment currentFmId={currentFmId} />;
+
       case 11:
-        return (
-          <CKDAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <CKDAssessment currentFmId={currentFmId} />;
       case 12:
-        return (
-          <COPDTBAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <COPDTBAssessment currentFmId={currentFmId} />;
       case 13:
-        return (
-          <CataractAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <CataractAssessment currentFmId={currentFmId} />;
       case 14:
-        return (
-          <HearingIssue
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <HearingIssue currentFmId={currentFmId} />;
       case 15:
-        return (
-          <LeprosyAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <LeprosyAssessment currentFmId={currentFmId} />;
       case 16:
-        return;
-        <ElderlyAssessment currentFmId={currentFmId} />;
+        return <ElderlyAssessment currentFmId={currentFmId} />;
       case 17:
-        return (
-          <MentalHealthAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <MentalHealthAssessment currentFmId={currentFmId} />;
       case 18:
         return (
           <AssessmentAndActionTaken
@@ -407,12 +372,7 @@ const FormPage = () => {
           />
         );
       case 19:
-        return (
-          <ABHAIdStatus
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <ABHAIdStatus currentFmId={currentFmId} />;
       default:
         return null;
     }

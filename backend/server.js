@@ -1284,6 +1284,1001 @@ app.get("/api/elderly-assessment/:fm_id", async (req, res) => {
   }
 });
 
+app.post("/api/post-stroke-assessment", async (req, res) => {
+  const {
+    fm_id,
+    history_of_stroke = null,
+    stroke_date = null,
+    present_condition = null,
+    stroke_sign_action = null,
+    referral_center_name = null,
+  } = req.body;
+
+  console.log(`Received fm_id: ${fm_id}`); // Log the received fm_id
+
+  try {
+    await db.promise().beginTransaction();
+
+    // Convert empty strings to null for nullable fields
+    const sanitizedHistoryOfStroke =
+      history_of_stroke === "" ? null : history_of_stroke;
+    const sanitizedStrokeDate = stroke_date === "" ? null : stroke_date;
+    const sanitizedPresentCondition =
+      present_condition === "" ? null : present_condition;
+    const sanitizedStrokeSignAction =
+      stroke_sign_action === "" ? null : stroke_sign_action;
+    const sanitizedReferralCenterName =
+      referral_center_name === "" ? null : referral_center_name;
+
+    const sanitizedValues = [
+      sanitizedHistoryOfStroke,
+      sanitizedStrokeDate,
+      sanitizedPresentCondition,
+      sanitizedStrokeSignAction,
+      sanitizedReferralCenterName,
+    ];
+
+    let post_stroke_id;
+
+    // Insert or update post-stroke assessment
+    const [masterData] = await db
+      .promise()
+      .query("SELECT post_stroke_id FROM master_data WHERE fm_id = ?", [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].post_stroke_id) {
+      // Update existing post-stroke assessment and set updated_at
+      post_stroke_id = masterData[0].post_stroke_id;
+      await db.promise().query(
+        `UPDATE poststroke SET
+         history_of_stroke = ?, stroke_date = ?, present_condition = ?, stroke_sign_action = ?, referral_center_name = ?, updated_at = NOW()
+         WHERE id = ?`,
+        [...sanitizedValues, post_stroke_id]
+      );
+      console.log(`Updated post-stroke assessment with ID: ${post_stroke_id}`);
+    } else {
+      // Insert new post-stroke assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO poststroke 
+        (history_of_stroke, stroke_date, present_condition, stroke_sign_action, referral_center_name, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      post_stroke_id = result.insertId;
+      console.log(
+        `Inserted new post-stroke assessment with ID: ${post_stroke_id}`
+      );
+
+      // Log fm_id and post_stroke_id before the update query
+      console.log(
+        `Updating master_data for fm_id: ${fm_id} with post_stroke_id: ${post_stroke_id}`
+      );
+
+      // Update master_data table with the new post_stroke_id
+      const [updateResult] = await db
+        .promise()
+        .query("UPDATE master_data SET post_stroke_id = ? WHERE fm_id = ?", [
+          post_stroke_id,
+          fm_id,
+        ]);
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Post-stroke assessment saved successfully",
+      post_stroke_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving post-stroke assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/post-stroke-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query("SELECT post_stroke_id FROM master_data WHERE fm_id = ?", [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].post_stroke_id) {
+      const [postStrokeData] = await db
+        .promise()
+        .query("SELECT * FROM poststroke WHERE id = ?", [
+          masterData[0].post_stroke_id,
+        ]);
+
+      if (postStrokeData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: postStrokeData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Post-stroke assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No post-stroke assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching post-stroke assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+//copdtb
+app.post("/api/copd-tb-assessment", async (req, res) => {
+  const {
+    fm_id,
+    known_case_crd = null,
+    crd_specify = null,
+    occupational_exposure = null,
+    cooking_fuel_type = null,
+    chest_sound = null,
+    chest_sound_action = null,
+    referral_center_name = null,
+    copd_confirmed = null,
+    copd_confirmation_date = null,
+    shortness_of_breath = null,
+    coughing_more_than_2_weeks = null,
+    blood_in_sputum = null,
+    fever_more_than_2_weeks = null,
+    night_sweats = null,
+    taking_anti_tb_drugs = null,
+    family_tb_history = null,
+    history_of_tb = null,
+  } = req.body;
+
+  console.log(`Received fm_id: ${fm_id}`); // Log the received fm_id
+
+  try {
+    await db.promise().beginTransaction();
+
+    // Convert empty strings to null for nullable fields
+    const sanitizedValues = [
+      known_case_crd === "" ? null : known_case_crd,
+      crd_specify === "" ? null : crd_specify,
+      occupational_exposure === "" ? null : occupational_exposure,
+      cooking_fuel_type === "" ? null : cooking_fuel_type,
+      chest_sound === "" ? null : chest_sound,
+      chest_sound_action === "" ? null : chest_sound_action,
+      referral_center_name === "" ? null : referral_center_name,
+      copd_confirmed === "" ? null : copd_confirmed,
+      copd_confirmation_date === "" ? null : copd_confirmation_date,
+      shortness_of_breath === "" ? null : shortness_of_breath,
+      coughing_more_than_2_weeks === "" ? null : coughing_more_than_2_weeks,
+      blood_in_sputum === "" ? null : blood_in_sputum,
+      fever_more_than_2_weeks === "" ? null : fever_more_than_2_weeks,
+      night_sweats === "" ? null : night_sweats,
+      taking_anti_tb_drugs === "" ? null : taking_anti_tb_drugs,
+      family_tb_history === "" ? null : family_tb_history,
+      history_of_tb === "" ? null : history_of_tb,
+    ];
+
+    let copd_tb_id;
+
+    // Insert or update COPD/TB assessment
+    const [masterData] = await db
+      .promise()
+      .query("SELECT COPD_TB FROM master_data WHERE fm_id = ?", [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].COPD_TB) {
+      // Update existing COPD/TB assessment and set updated_at
+      copd_tb_id = masterData[0].COPD_TB;
+      await db.promise().query(
+        `UPDATE copdtb SET
+         known_case_crd = ?, crd_specify = ?, occupational_exposure = ?, cooking_fuel_type = ?, chest_sound = ?, chest_sound_action = ?, referral_center_name = ?, copd_confirmed = ?, copd_confirmation_date = ?, shortness_of_breath = ?, coughing_more_than_2_weeks = ?, blood_in_sputum = ?, fever_more_than_2_weeks = ?, night_sweats = ?, taking_anti_tb_drugs = ?, family_tb_history = ?, history_of_tb = ?, updated_at = NOW()
+         WHERE id = ?`,
+        [...sanitizedValues, copd_tb_id]
+      );
+      console.log(`Updated COPD/TB assessment with ID: ${copd_tb_id}`);
+    } else {
+      // Insert new COPD/TB assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO copdtb 
+        (known_case_crd, crd_specify, occupational_exposure, cooking_fuel_type, chest_sound, chest_sound_action, referral_center_name, copd_confirmed, copd_confirmation_date, shortness_of_breath, coughing_more_than_2_weeks, blood_in_sputum, fever_more_than_2_weeks, night_sweats, taking_anti_tb_drugs, family_tb_history, history_of_tb, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      copd_tb_id = result.insertId;
+      console.log(`Inserted new COPD/TB assessment with ID: ${copd_tb_id}`);
+
+      // Update master_data table with the new COPD_TB id
+      const [updateResult] = await db
+        .promise()
+        .query("UPDATE master_data SET COPD_TB = ? WHERE fm_id = ?", [
+          copd_tb_id,
+          fm_id,
+        ]);
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "COPD/TB assessment saved successfully",
+      copd_tb_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving COPD/TB assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/copd-tb-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query("SELECT COPD_TB FROM master_data WHERE fm_id = ?", [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].COPD_TB) {
+      const [copdTBData] = await db
+        .promise()
+        .query("SELECT * FROM copdtb WHERE id = ?", [masterData[0].COPD_TB]);
+
+      if (copdTBData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: copdTBData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "COPD/TB assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No COPD/TB assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching COPD/TB assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Leprosy
+app.post("/api/leprosy-assessment", async (req, res) => {
+  const {
+    fm_id,
+    lesionSensationLoss = null,
+    ulceration = null,
+    clawingFingers = null,
+    inabilityToCloseEyelid = null,
+    weaknessFeet = null,
+  } = req.body;
+
+  console.log(`Received fm_id: ${fm_id}`);
+
+  try {
+    await db.promise().beginTransaction();
+
+    // Convert empty strings to null for nullable fields
+    const sanitizedLesionSensationLoss =
+      lesionSensationLoss === "" ? null : lesionSensationLoss;
+    const sanitizedUlceration = ulceration === "" ? null : ulceration;
+    const sanitizedClawingFingers =
+      clawingFingers === "" ? null : clawingFingers;
+    const sanitizedInabilityToCloseEyelid =
+      inabilityToCloseEyelid === "" ? null : inabilityToCloseEyelid;
+    const sanitizedWeaknessFeet = weaknessFeet === "" ? null : weaknessFeet;
+
+    const sanitizedValues = [
+      sanitizedLesionSensationLoss,
+      sanitizedUlceration,
+      sanitizedClawingFingers,
+      sanitizedInabilityToCloseEyelid,
+      sanitizedWeaknessFeet,
+    ];
+
+    let leprosy_id;
+
+    // Insert or update Leprosy assessment
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT leprosy_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].leprosy_id) {
+      // Update existing Leprosy assessment and set updated_at
+      leprosy_id = masterData[0].leprosy_id;
+      await db.promise().query(
+        `UPDATE leprosy SET
+        hypopigmented_patch = ?, recurrent_ulceration = ?, clawing_of_fingers = ?, inability_to_close_eyelid = ?, difficulty_holding_objects = ?, updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, leprosy_id]
+      );
+      console.log(`Updated Leprosy assessment with ID: ${leprosy_id}`);
+    } else {
+      // Insert new Leprosy assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO leprosy 
+        (hypopigmented_patch, recurrent_ulceration, clawing_of_fingers, inability_to_close_eyelid, difficulty_holding_objects, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      leprosy_id = result.insertId;
+      console.log(`Inserted new Leprosy assessment with ID: ${leprosy_id}`);
+
+      // Update master_data table with the new leprosy_id
+      const [updateResult] = await db
+        .promise()
+        .query(`UPDATE master_data SET leprosy_id = ? WHERE fm_id = ?`, [
+          leprosy_id,
+          fm_id,
+        ]);
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Leprosy assessment saved successfully",
+      leprosy_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving Leprosy assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/leprosy-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT leprosy_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].leprosy_id) {
+      const [leprosyData] = await db
+        .promise()
+        .query(`SELECT * FROM leprosy WHERE id = ?`, [
+          masterData[0].leprosy_id,
+        ]);
+
+      if (leprosyData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: leprosyData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Leprosy assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No Leprosy assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching Leprosy assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Hearing Issue
+app.post("/api/hearing-issue-assessment", async (req, res) => {
+  const { fm_id, difficultyHearing = null } = req.body;
+
+  console.log(`Received fm_id: ${fm_id}`); // Log the received fm_id
+
+  try {
+    await db.promise().beginTransaction();
+
+    // Convert empty string to null for nullable fields
+    const sanitizedDifficultyHearing =
+      difficultyHearing === "" ? null : difficultyHearing;
+
+    let hearing_id;
+
+    // Insert or update hearing issue assessment
+    const [masterData] = await db
+      .promise()
+      .query("SELECT hearing_id FROM master_data WHERE fm_id = ?", [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].hearing_id) {
+      // Update existing hearing issue assessment and set updated_at
+      hearing_id = masterData[0].hearing_id;
+      await db
+        .promise()
+        .query(
+          "UPDATE hearingissue SET difficulty_hearing = ?, updated_at = NOW() WHERE id = ?",
+          [sanitizedDifficultyHearing, hearing_id]
+        );
+      console.log(`Updated hearing issue assessment with ID: ${hearing_id}`);
+    } else {
+      // Insert new hearing issue assessment and set created_at and updated_at
+      const [result] = await db
+        .promise()
+        .query(
+          "INSERT INTO hearingissue (difficulty_hearing, created_at, updated_at) VALUES (?, NOW(), NOW())",
+          [sanitizedDifficultyHearing]
+        );
+      hearing_id = result.insertId;
+      console.log(
+        `Inserted new hearing issue assessment with ID: ${hearing_id}`
+      );
+
+      // Log fm_id and hearing_id before the update query
+      console.log(
+        `Updating master_data for fm_id: ${fm_id} with hearing_id: ${hearing_id}`
+      );
+
+      // Update master_data table with the new hearing_id
+      const [updateResult] = await db
+        .promise()
+        .query("UPDATE master_data SET hearing_id = ? WHERE fm_id = ?", [
+          hearing_id,
+          fm_id,
+        ]);
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Hearing issue assessment saved successfully",
+      hearing_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving hearing issue assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/hearing-issue-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query("SELECT hearing_id FROM master_data WHERE fm_id = ?", [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].hearing_id) {
+      const [hearingData] = await db
+        .promise()
+        .query("SELECT * FROM hearingissue WHERE id = ?", [
+          masterData[0].hearing_id,
+        ]);
+
+      if (hearingData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: hearingData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Hearing issue assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message:
+          "No hearing issue assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching hearing issue assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Abhaid
+app.post("/api/abhaid-assessment", async (req, res) => {
+  const { fm_id, abhaidStatus = null } = req.body;
+
+  console.log(`Received fm_id: ${fm_id}`);
+
+  try {
+    await db.promise().beginTransaction();
+
+    // Convert empty strings to null for nullable fields
+    const sanitizedAbhaidStatus = abhaidStatus === "" ? null : abhaidStatus;
+
+    const sanitizedValues = [sanitizedAbhaidStatus];
+
+    let abhaid_id;
+
+    // Insert or update Abhaid assessment
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT AHBA_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].AHBA_id) {
+      // Update existing Abhaid assessment and set updated_at
+      abhaid_id = masterData[0].AHBA_id;
+      await db.promise().query(
+        `UPDATE abhaid SET
+        abhaid_status = ?, updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, abhaid_id]
+      );
+      console.log(`Updated Abhaid assessment with ID: ${abhaid_id}`);
+    } else {
+      // Insert new Abhaid assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO abhaid 
+        (abhaid_status, created_at, updated_at) 
+        VALUES (?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      abhaid_id = result.insertId;
+      console.log(`Inserted new Abhaid assessment with ID: ${abhaid_id}`);
+
+      // Update master_data table with the new abhaid_id
+      const [updateResult] = await db
+        .promise()
+        .query(`UPDATE master_data SET AHBA_id = ? WHERE fm_id = ?`, [
+          abhaid_id,
+          fm_id,
+        ]);
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Abhaid assessment saved successfully",
+      abhaid_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving Abhaid assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/abhaid-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT AHBA_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].AHBA_id) {
+      const [abhaidData] = await db
+        .promise()
+        .query(`SELECT * FROM abhaid WHERE id = ?`, [masterData[0].AHBA_id]);
+
+      if (abhaidData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: abhaidData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Abhaid assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No Abhaid assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching Abhaid assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Cataract Assessment
+app.post("/api/cataract-assessment", async (req, res) => {
+  const {
+    fm_id,
+    cloudyBlurredVision = null,
+    painOrRedness = null,
+    cataractAssessmentResult = null,
+  } = req.body;
+
+  console.log(`Received fm_id: ${fm_id}`); // Log the received fm_id
+
+  try {
+    await db.promise().beginTransaction();
+
+    // Convert empty strings to null for nullable fields
+    const sanitizedCloudyBlurredVision =
+      cloudyBlurredVision === "" ? null : cloudyBlurredVision;
+    const sanitizedPainOrRedness = painOrRedness === "" ? null : painOrRedness;
+    const sanitizedCataractAssessmentResult =
+      cataractAssessmentResult === "" ? null : cataractAssessmentResult;
+
+    const sanitizedValues = [
+      sanitizedCloudyBlurredVision,
+      sanitizedPainOrRedness,
+      sanitizedCataractAssessmentResult,
+    ];
+
+    let cataract_id;
+
+    // Insert or update cataract assessment
+    const [masterData] = await db
+      .promise()
+      .query("SELECT cataract_id FROM master_data WHERE fm_id = ?", [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].cataract_id) {
+      // Update existing cataract assessment and set updated_at
+      cataract_id = masterData[0].cataract_id;
+      await db.promise().query(
+        `UPDATE cataract SET
+         cloudy_blurred_vision = ?, pain_or_redness = ?, cataract_assessment_result = ?, updated_at = NOW()
+         WHERE id = ?`,
+        [...sanitizedValues, cataract_id]
+      );
+      console.log(`Updated cataract assessment with ID: ${cataract_id}`);
+    } else {
+      // Insert new cataract assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO cataract 
+        (cloudy_blurred_vision, pain_or_redness, cataract_assessment_result, created_at, updated_at) 
+        VALUES (?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      cataract_id = result.insertId;
+      console.log(`Inserted new cataract assessment with ID: ${cataract_id}`);
+
+      // Log fm_id and cataract_id before the update query
+      console.log(
+        `Updating master_data for fm_id: ${fm_id} with cataract_id: ${cataract_id}`
+      );
+
+      // Update master_data table with the new cataract_id
+      const [updateResult] = await db
+        .promise()
+        .query("UPDATE master_data SET cataract_id = ? WHERE fm_id = ?", [
+          cataract_id,
+          fm_id,
+        ]);
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Cataract assessment saved successfully",
+      cataract_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving cataract assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/cataract-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query("SELECT cataract_id FROM master_data WHERE fm_id = ?", [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].cataract_id) {
+      const [cataractData] = await db
+        .promise()
+        .query("SELECT * FROM cataract WHERE id = ?", [
+          masterData[0].cataract_id,
+        ]);
+
+      if (cataractData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: cataractData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Cataract assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No cataract assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching cataract assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+//MENTALHEALTH
+app.post("/api/mental-health-assessment", async (req, res) => {
+  const {
+    fm_id,
+    little_interest_or_pleasure = null,
+    feeling_down_or_depressed = null,
+    mental_health_problem = null,
+    history_of_fits = null,
+    other_mental_disorder = null,
+    brief_intervention_given = null, // This matches the table schema
+    intervention_type = null,
+    mental_health_score = 0, // Calculated score from the frontend
+  } = req.body;
+
+  console.log("Received data from frontend:", req.body);
+
+  try {
+    await db.promise().beginTransaction();
+
+    const sanitizedValues = [
+      little_interest_or_pleasure || null,
+      feeling_down_or_depressed || null,
+      mental_health_problem || null,
+      history_of_fits || null,
+      other_mental_disorder || null,
+      brief_intervention_given || null, // Ensure it matches schema
+      intervention_type || null,
+      mental_health_score || 0,
+    ];
+
+    let mental_health_assessment_id;
+
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT mental_health_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].mental_health_id) {
+      mental_health_assessment_id = masterData[0].mental_health_id;
+      await db.promise().query(
+        `UPDATE mentalhealth SET
+        little_interest_or_pleasure = ?, feeling_down_or_depressed = ?, 
+        mental_health_problem = ?, history_of_fits = ?, other_mental_disorder = ?, 
+        brief_intervention_given = ?, intervention_type = ?, mental_health_score = ?, 
+        updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, mental_health_assessment_id]
+      );
+      console.log(
+        `Updated Mental Health assessment with ID: ${mental_health_assessment_id}`
+      );
+    } else {
+      const [result] = await db.promise().query(
+        `INSERT INTO mentalhealth 
+        (little_interest_or_pleasure, feeling_down_or_depressed, 
+        mental_health_problem, history_of_fits, other_mental_disorder, 
+        brief_intervention_given, intervention_type, mental_health_score, 
+        created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      mental_health_assessment_id = result.insertId;
+      console.log(
+        `Inserted new Mental Health assessment with ID: ${mental_health_assessment_id}`
+      );
+
+      await db
+        .promise()
+        .query(`UPDATE master_data SET mental_health_id = ? WHERE fm_id = ?`, [
+          mental_health_assessment_id,
+          fm_id,
+        ]);
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Mental Health assessment saved successfully",
+      mental_health_assessment_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving Mental Health assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/mental-health-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT mental_health_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].mental_health_id) {
+      const [mentalHealthData] = await db
+        .promise()
+        .query(`SELECT * FROM mentalhealth WHERE id = ?`, [
+          masterData[0].mental_health_id,
+        ]);
+
+      if (mentalHealthData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: mentalHealthData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Mental Health assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message:
+          "No Mental Health assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching Mental Health assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+//ckd
+app.post("/api/ckd-assessment", async (req, res) => {
+  const {
+    fm_id,
+    knownCKD = null,
+    historyCKDStone = null,
+    ageAbove50 = null,
+    hypertensionPatient = null,
+    diabetesPatient = null,
+    anemiaPatient = null,
+    historyOfStroke = null,
+    swellingFaceLeg = null,
+    historyNSAIDS = null,
+    ckdRiskScore = 0, // This will be passed from the frontend
+    riskaAssessment = null,
+  } = req.body;
+
+  try {
+    await db.promise().beginTransaction();
+
+    const sanitizedValues = [
+      knownCKD || null,
+      historyCKDStone || null,
+      ageAbove50 || null,
+      hypertensionPatient || null,
+      diabetesPatient || null,
+      anemiaPatient || null,
+      historyOfStroke || null,
+      swellingFaceLeg || null,
+      historyNSAIDS || null,
+      ckdRiskScore || 0,
+      riskaAssessment || null,
+    ];
+
+    let ckd_assessment_id;
+
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT CKD_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].CKD_id) {
+      ckd_assessment_id = masterData[0].CKD_id;
+      await db.promise().query(
+        `UPDATE ckd_assessment SET
+        knownCKD = ?, historyCKDStone = ?, ageAbove50 = ?, hypertensionPatient = ?, diabetesPatient = ?, 
+        anemiaPatient = ?, historyOfStroke = ?, swellingFaceLeg = ?, historyNSAIDS = ?, 
+        ckdRiskScore = ?, riskaAssessment = ?, updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, ckd_assessment_id]
+      );
+      console.log(`Updated CKD assessment with ID: ${ckd_assessment_id}`);
+    } else {
+      const [result] = await db.promise().query(
+        `INSERT INTO ckd_assessment 
+        (knownCKD, historyCKDStone, ageAbove50, hypertensionPatient, diabetesPatient, 
+         anemiaPatient, historyOfStroke, swellingFaceLeg, historyNSAIDS, ckdRiskScore, 
+         riskaAssessment, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      ckd_assessment_id = result.insertId;
+      console.log(`Inserted new CKD assessment with ID: ${ckd_assessment_id}`);
+
+      console.log(
+        `Updating master_data for fm_id: ${fm_id} with CKD_id: ${ckd_assessment_id}`
+      );
+
+      await db
+        .promise()
+        .query(`UPDATE master_data SET CKD_id = ? WHERE fm_id = ?`, [
+          ckd_assessment_id,
+          fm_id,
+        ]);
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "CKD assessment saved successfully",
+      ckd_assessment_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving CKD assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+app.get("/api/ckd-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT CKD_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].CKD_id) {
+      const [ckdData] = await db
+        .promise()
+        .query(`SELECT * FROM ckd_assessment WHERE id = ?`, [
+          masterData[0].CKD_id,
+        ]);
+
+      if (ckdData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: ckdData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "CKD assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No CKD assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching CKD assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

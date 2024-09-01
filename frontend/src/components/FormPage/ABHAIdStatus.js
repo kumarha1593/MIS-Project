@@ -1,6 +1,59 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const ABHAIdStatus = ({ formData, handleInputChange }) => {
+const ABHAIdStatus = ({ currentFmId }) => {
+  const [formData, setFormData] = useState({
+    abhaIdStatus: "", // Initialize with an empty string
+  });
+
+  useEffect(() => {
+    const fetchAbhaIdData = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/abhaid-assessment/${currentFmId}`
+        );
+        if (response.data.success) {
+          // Correctly map the data received from the backend to the state
+          setFormData({
+            abhaIdStatus: response.data.data.abhaid_status || "", // Use the exact field name from the response
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching ABHA ID status:", error);
+      }
+    };
+
+    if (currentFmId) {
+      fetchAbhaIdData(); // Fetch data only if `currentFmId` is available
+    }
+  }, [currentFmId]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSave = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}api/abhaid-assessment`,
+        {
+          fm_id: currentFmId,
+          abhaidStatus: formData.abhaIdStatus, // Make sure this matches the backend field
+        }
+      );
+      if (response.data.success) {
+        alert("ABHA ID status saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving ABHA ID status:", error);
+      alert("Failed to save ABHA ID status. Please try again.");
+    }
+  };
+
   const styles = {
     formSection: {
       marginBottom: "20px",
@@ -25,20 +78,23 @@ const ABHAIdStatus = ({ formData, handleInputChange }) => {
   return (
     <div style={styles.formSection}>
       <div style={styles.formGroup}>
-
+        <label style={styles.label}>ABHA ID Status</label>
         <select
           name="abhaIdStatus"
-          value={formData.abhaIdStatus}
+          value={formData.abhaIdStatus} // Ensure this is correctly mapped to the state
           onChange={handleInputChange}
           required
           style={styles.input}
         >
           <option value="">Select</option>
-          <option value="1">Created</option>
-          <option value="2">Linked</option>
-          <option value="3">None</option>
+          <option value="Created">Created</option>
+          <option value="Linked">Linked</option>
+          <option value="None">None</option>
         </select>
       </div>
+      <button type="button" onClick={handleSave}>
+        Save Draft
+      </button>
     </div>
   );
 };

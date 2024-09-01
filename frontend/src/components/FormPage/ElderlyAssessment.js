@@ -13,10 +13,16 @@ const ElderlyAssessment = ({ currentFmId }) => {
     const fetchElderlyData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5001/api/elderly-assessment/${currentFmId}`
+          `${process.env.REACT_APP_BASE_URL}api/elderly-assessment/${currentFmId}`
         );
         if (response.data.success) {
-          setFormData(response.data.data);
+          // Populate form fields with the fetched data
+          setFormData({
+            unsteadyWalking: response.data.data.unsteady_walking,
+            physicalDisability: response.data.data.physical_disability,
+            helpNeeded: response.data.data.help_from_others,
+            forgetNames: response.data.data.forget_names,
+          });
         }
       } catch (error) {
         console.error("Error fetching Elderly assessment:", error);
@@ -39,10 +45,13 @@ const ElderlyAssessment = ({ currentFmId }) => {
   const handleSave = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5001/api/elderly-assessment",
+        `${process.env.REACT_APP_BASE_URL}api/elderly-assessment`,
         {
           fm_id: currentFmId,
-          ...formData,
+          unsteady_walking: formData.unsteadyWalking,
+          physical_disability: formData.physicalDisability,
+          help_from_others: formData.helpNeeded,
+          forget_names: formData.forgetNames,
         }
       );
       if (response.data.success) {
@@ -53,7 +62,6 @@ const ElderlyAssessment = ({ currentFmId }) => {
       alert("Failed to save Elderly assessment. Please try again.");
     }
   };
-
   const styles = {
     formSection: {
       marginBottom: "20px",
@@ -83,7 +91,7 @@ const ElderlyAssessment = ({ currentFmId }) => {
         </label>
         <select
           name="unsteadyWalking"
-          value={formData.unsteadyWalking}
+          value={formData.unsteadyWalking || ""}
           onChange={handleInputChange}
           required
           style={styles.input}
