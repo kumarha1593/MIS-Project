@@ -1,6 +1,71 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const LeprosyAssessment = ({ formData, handleInputChange }) => {
+const LeprosyAssessment = ({ currentFmId }) => {
+  const [formData, setFormData] = useState({
+    lesionSensationLoss: "",
+    ulceration: "",
+    clawingFingers: "",
+    inabilityToCloseEyelid: "",
+    weaknessFeet: "",
+  });
+
+  useEffect(() => {
+    const fetchLeprosyData = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/leprosy-assessment/${currentFmId}`
+        );
+        if (response.data.success) {
+          // Populate form with fetched data
+          setFormData({
+            lesionSensationLoss: response.data.data.hypopigmented_patch,
+            ulceration: response.data.data.recurrent_ulceration,
+            clawingFingers: response.data.data.clawing_of_fingers,
+            inabilityToCloseEyelid: response.data.data.inability_to_close_eyelid,
+            weaknessFeet: response.data.data.difficulty_holding_objects,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching Leprosy assessment:", error);
+      }
+    };
+
+    if (currentFmId) {
+      fetchLeprosyData(); // Ensure the fetch is only attempted if currentFmId is available
+    }
+  }, [currentFmId]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSave = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}api/leprosy-assessment`,
+        {
+          fm_id: currentFmId,
+          lesionSensationLoss: formData.lesionSensationLoss,
+          ulceration: formData.ulceration,
+          clawingFingers: formData.clawingFingers,
+          inabilityToCloseEyelid: formData.inabilityToCloseEyelid,
+          weaknessFeet: formData.weaknessFeet,
+        }
+      );
+      if (response.data.success) {
+        alert("Leprosy assessment saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving Leprosy assessment:", error);
+      alert("Failed to save Leprosy assessment. Please try again.");
+    }
+  };
+
   const styles = {
     formSection: {
       marginBottom: "20px",
@@ -24,15 +89,14 @@ const LeprosyAssessment = ({ formData, handleInputChange }) => {
 
   return (
     <div style={styles.formSection}>
-
       <div style={styles.formGroup}>
         <label style={styles.label}>
           Hypopigmented or discolored lesion(s) with loss of sensation *
         </label>
         <select
           name="lesionSensationLoss"
-          value={formData.leprosy.lesionSensationLoss}
-          onChange={(e) => handleInputChange(e, "leprosy")}
+          value={formData.lesionSensationLoss}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
@@ -48,8 +112,8 @@ const LeprosyAssessment = ({ formData, handleInputChange }) => {
         </label>
         <select
           name="ulceration"
-          value={formData.leprosy.ulceration}
-          onChange={(e) => handleInputChange(e, "leprosy")}
+          value={formData.ulceration}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
@@ -65,8 +129,8 @@ const LeprosyAssessment = ({ formData, handleInputChange }) => {
         </label>
         <select
           name="clawingFingers"
-          value={formData.leprosy.clawingFingers}
-          onChange={(e) => handleInputChange(e, "leprosy")}
+          value={formData.clawingFingers}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
@@ -80,8 +144,8 @@ const LeprosyAssessment = ({ formData, handleInputChange }) => {
         <label style={styles.label}>Inability to close eyelid *</label>
         <select
           name="inabilityToCloseEyelid"
-          value={formData.leprosy.inabilityToCloseEyelid}
-          onChange={(e) => handleInputChange(e, "leprosy")}
+          value={formData.inabilityToCloseEyelid}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
@@ -97,8 +161,8 @@ const LeprosyAssessment = ({ formData, handleInputChange }) => {
         </label>
         <select
           name="weaknessFeet"
-          value={formData.leprosy.weaknessFeet}
-          onChange={(e) => handleInputChange(e, "leprosy")}
+          value={formData.weaknessFeet}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
@@ -107,6 +171,9 @@ const LeprosyAssessment = ({ formData, handleInputChange }) => {
           <option value="No">No</option>
         </select>
       </div>
+      <button type="button" onClick={handleSave}>
+        Save Draft
+      </button>
     </div>
   );
 };

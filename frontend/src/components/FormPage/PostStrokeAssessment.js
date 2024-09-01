@@ -1,36 +1,102 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const PostStrokeAssessment = ({ formData, handleInputChange }) => {
-  const [historyOfStroke, setHistoryOfStroke] = useState(
-    formData.postStroke.historyOfStroke || ""
-  );
+const PostStrokeAssessment = ({ currentFmId }) => {
+  const [formData, setFormData] = useState({
+    history_of_stroke: "",
+    stroke_date: "",
+    present_condition: "",
+    stroke_sign_action: "",
+    referral_center_name: "",
+  });
+
   const [showStrokeDetails, setShowStrokeDetails] = useState(false);
   const [showReferralField, setShowReferralField] = useState(false);
 
   useEffect(() => {
-    // Show or hide stroke details based on historyOfStroke value
-    if (historyOfStroke === "Yes") {
-      setShowStrokeDetails(true);
-    } else {
-      setShowStrokeDetails(false);
-      setShowReferralField(false);
-    }
-  }, [historyOfStroke]);
+    const fetchPostStrokeData = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/post-stroke-assessment/${currentFmId}`
+        );
+        if (response.data.success) {
+          const data = response.data.data;
 
-  const handleStrokeChange = (e) => {
-    setHistoryOfStroke(e.target.value);
-    handleInputChange(e, "postStroke");
+          // Format the date to "yyyy-MM-dd"
+          if (data.stroke_date) {
+            data.stroke_date = new Date(data.stroke_date)
+              .toISOString()
+              .split("T")[0];
+          }
+
+          setFormData(data);
+
+          if (data.history_of_stroke === "Yes") {
+            setShowStrokeDetails(true);
+            if (data.stroke_sign_action === "Referral") {
+              setShowReferralField(true);
+            } else {
+              setShowReferralField(false);
+            }
+          } else {
+            setShowStrokeDetails(false);
+            setShowReferralField(false);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching post-stroke assessment:", error);
+      }
+    };
+
+    if (currentFmId) {
+      fetchPostStrokeData();
+    }
+  }, [currentFmId]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    // Update formData state with the new value
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+
+    // Conditional logic based on the field being changed
+    if (name === "history_of_stroke") {
+      setShowStrokeDetails(value === "Yes");
+      if (value !== "Yes") {
+        setShowReferralField(false);
+        setFormData((prevState) => ({
+          ...prevState,
+          stroke_date: "",
+          present_condition: "",
+          stroke_sign_action: "",
+          referral_center_name: "",
+        }));
+      }
+    }
+
+    if (name === "stroke_sign_action") {
+      setShowReferralField(value === "Referral");
+    }
   };
 
-  const handleActionChange = (e) => {
-    const value = e.target.value;
-    handleInputChange(e, "postStroke");
-
-    if (value === "Referral") {
-      // If "Referral" is selected, show the referred center field
-      setShowReferralField(true);
-    } else {
-      setShowReferralField(false);
+  const handleSave = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}api/post-stroke-assessment`,
+        {
+          fm_id: currentFmId,
+          ...formData,
+        }
+      );
+      if (response.data.success) {
+        alert("Post-stroke assessment saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving post-stroke assessment:", error);
+      alert("Failed to save post-stroke assessment. Please try again.");
     }
   };
 
@@ -60,10 +126,10 @@ const PostStrokeAssessment = ({ formData, handleInputChange }) => {
       <div style={styles.formGroup}>
         <label style={styles.label}>History of Stroke *</label>
         <select
-          name="historyOfStroke"
-          value={historyOfStroke}
-          onChange={handleStrokeChange}
-          required
+          id="history_of_stroke"
+          name="history_of_stroke"
+          value={formData.history_of_stroke || ""}
+          onChange={handleInputChange}
           style={styles.input}
         >
           <option value="">Select</option>
@@ -75,12 +141,13 @@ const PostStrokeAssessment = ({ formData, handleInputChange }) => {
       {showStrokeDetails && (
         <>
           <div style={styles.formGroup}>
-            <label style={styles.label}>Date of Stroke</label>
+            <label style={styles.label}>Date of Stroke *</label>
             <input
               type="date"
-              name="dateOfStroke"
-              value={formData.postStroke.dateOfStroke}
-              onChange={(e) => handleInputChange(e, "postStroke")}
+              id="stroke_date"
+              name="stroke_date"
+              value={formData.stroke_date || ""}
+              onChange={handleInputChange}
               style={styles.input}
             />
           </div>
@@ -88,28 +155,26 @@ const PostStrokeAssessment = ({ formData, handleInputChange }) => {
           <div style={styles.formGroup}>
             <label style={styles.label}>Present Condition *</label>
             <select
-              name="presentCondition"
-              value={formData.postStroke.presentCondition}
-              onChange={(e) => handleInputChange(e, "postStroke")}
-              required
+              id="present_condition"
+              name="present_condition"
+              value={formData.present_condition || ""}
+              onChange={handleInputChange}
               style={styles.input}
             >
               <option value="">Select</option>
               <option value="Recovered">Recovered</option>
-              <option value="Not recovered">Not recovered</option>
+              <option value="Not Recovered">Not Recovered</option>
               <option value="Need Physiotherapy">Need Physiotherapy</option>
             </select>
           </div>
 
           <div style={styles.formGroup}>
-            <label style={styles.label}>
-              If positive for Stroke Symptoms, Action Taken *
-            </label>
+            <label style={styles.label}>Action for Stroke Symptoms *</label>
             <select
-              name="strokeSymptomsAction"
-              value={formData.postStroke.strokeSymptomsAction}
-              onChange={handleActionChange}
-              required
+              id="stroke_sign_action"
+              name="stroke_sign_action"
+              value={formData.stroke_sign_action || ""}
+              onChange={handleInputChange}
               style={styles.input}
             >
               <option value="">Select</option>
@@ -120,18 +185,22 @@ const PostStrokeAssessment = ({ formData, handleInputChange }) => {
 
           {showReferralField && (
             <div style={styles.formGroup}>
-              <label style={styles.label}>Name of the Centre Referred</label>
+              <label style={styles.label}>Referred Centre for Stroke *</label>
               <input
                 type="text"
-                name="referredCenter"
-                value={formData.postStroke.referredCenter}
-                onChange={(e) => handleInputChange(e, "postStroke")}
+                id="referral_center_name"
+                name="referral_center_name"
+                value={formData.referral_center_name || ""}
+                onChange={handleInputChange}
                 style={styles.input}
               />
             </div>
           )}
         </>
       )}
+      <button type="button" onClick={handleSave}>
+        Save Draft
+      </button>
     </div>
   );
 };

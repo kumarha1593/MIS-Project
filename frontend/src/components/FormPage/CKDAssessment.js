@@ -1,40 +1,113 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
 
-const CKDAssessment = ({ formData, handleInputChange }) => {
-  // Function to calculate the CKD risk assessment score
-  const calculateCKDRiskScore = () => {
+const CKDAssessment = ({ currentFmId }) => {
+  const [formData, setFormData] = useState({
+    knownCKD: "",
+    historyCKDStone: "",
+    ageAbove50: "",
+    hypertensionPatient: "",
+    diabetesPatient: "",
+    anemiaPatient: "",
+    historyOfStroke: "",
+    swellingFaceLeg: "",
+    historyNSAIDS: "",
+    ckdRiskScore: 0,
+    riskaAssessment: "",
+  });
+
+  const calculateCKDRiskScore = useCallback(() => {
     let score = 0;
     if (
-      formData.ckd.knownCKD === "Yes, on treatment" ||
-      formData.ckd.knownCKD === "Yes, not on treatment"
-    ) {
+      formData.knownCKD === "Yes, on treatment" ||
+      formData.knownCKD === "Yes, not on treatment"
+    )
       score += 1;
-    }
-    if (formData.ckd.historyCKDStone === "Yes") {
-      score += 1;
-    }
-    if (formData.ckd.age > 50) {
-      score += 1;
-    }
-    if (formData.ckd.hypertensionPatient === "Yes") {
-      score += 1;
-    }
-    if (formData.ckd.diabetesPatient === "Yes") {
-      score += 1;
-    }
-    if (formData.ckd.swellingFaceLeg === "Yes") {
-      score += 1;
-    }
-    if (formData.ckd.historyNSAIDS === "Yes") {
-      score += 1;
-    }
+    if (formData.historyCKDStone === "Yes") score += 1;
+    if (formData.ageAbove50 === "Yes") score += 1;
+    if (formData.hypertensionPatient === "Yes") score += 1;
+    if (formData.diabetesPatient === "Yes") score += 1;
+    if (formData.anemiaPatient === "Yes") score += 1;
+    if (formData.historyOfStroke === "Yes") score += 1;
+    if (formData.swellingFaceLeg === "Yes") score += 1;
+    if (formData.historyNSAIDS === "Yes") score += 1;
     return score;
+  }, [formData]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
   };
 
+  const fetchCKDData = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}api/ckd-assessment/${currentFmId}`
+      );
+      if (response.data.success) {
+        const data = response.data.data;
+        setFormData({
+          knownCKD: data.knownCKD || "",
+          historyCKDStone: data.historyCKDStone || "",
+          ageAbove50: data.ageAbove50 || "",
+          hypertensionPatient: data.hypertensionPatient || "",
+          diabetesPatient: data.diabetesPatient || "",
+          anemiaPatient: data.anemiaPatient || "",
+          historyOfStroke: data.historyOfStroke || "",
+          swellingFaceLeg: data.swellingFaceLeg || "",
+          historyNSAIDS: data.historyNSAIDS || "",
+          ckdRiskScore: data.ckdRiskScore || 0,
+          riskaAssessment: data.riskaAssessment || "",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching CKD assessment:", error);
+    }
+  }, [currentFmId]);
+
+  const handleSubmit = async () => {
+    const ckdRiskScore = calculateCKDRiskScore();
+
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}api/ckd-assessment`,
+        {
+          fm_id: currentFmId,
+          ...formData,
+          ckdRiskScore,
+        }
+      );
+
+      if (response.data.success) {
+        alert("CKD assessment saved successfully!");
+      } else {
+        console.error("Server responded with an error:", response.data);
+        alert(
+          "Failed to save CKD assessment. Please check the console for more details."
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Error saving CKD assessment:",
+        error.response?.data || error.message
+      );
+      alert(
+        "Failed to save CKD assessment. Please check the console for more details."
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (currentFmId) {
+      fetchCKDData();
+    }
+  }, [currentFmId, fetchCKDData]);
+
   const styles = {
-    formSection: {
-      marginBottom: "20px",
-    },
+    formSection: { marginBottom: "20px" },
     formGroup: {
       marginBottom: "15px",
       display: "flex",
@@ -46,21 +119,19 @@ const CKDAssessment = ({ formData, handleInputChange }) => {
       boxSizing: "border-box",
       fontSize: "14px",
     },
-    label: {
-      marginBottom: "5px",
-      fontWeight: "bold",
-    },
+    label: { marginBottom: "5px", fontWeight: "bold" },
   };
 
   return (
     <div style={styles.formSection}>
-      <div className="form-group">
-        <label>Known case of CKD *</label>
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Known case of CKD *</label>
         <select
           name="knownCKD"
-          value={formData.ckd.knownCKD}
-          onChange={(e) => handleInputChange(e, "ckd")}
+          value={formData.knownCKD}
+          onChange={handleInputChange}
           required
+          style={styles.input}
         >
           <option value="">Select</option>
           <option value="Yes, on treatment">Yes, on treatment</option>
@@ -68,75 +139,112 @@ const CKDAssessment = ({ formData, handleInputChange }) => {
           <option value="No">No</option>
         </select>
       </div>
-      <div className="form-group">
-        <label>History of CKD/Stone *</label>
+      <div style={styles.formGroup}>
+        <label style={styles.label}>History of CKD/Stone *</label>
         <select
           name="historyCKDStone"
-          value={formData.ckd.historyCKDStone}
-          onChange={(e) => handleInputChange(e, "ckd")}
+          value={formData.historyCKDStone}
+          onChange={handleInputChange}
           required
+          style={styles.input}
         >
           <option value="">Select</option>
           <option value="Yes">Yes</option>
           <option value="No">No</option>
         </select>
       </div>
-      <div className="form-group">
-        <label>Age (Above 50) *</label>
-        <input
-          type="number"
-          name="age"
-          value={formData.ckd.age}
-          onChange={(e) => handleInputChange(e, "ckd")}
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Age Above 50 *</label>
+        <select
+          name="ageAbove50"
+          value={formData.ageAbove50}
+          onChange={handleInputChange}
           required
-        />
+          style={styles.input}
+        >
+          <option value="">Select</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
       </div>
-      <div className="form-group">
-        <label>Hypertension Patient *</label>
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Hypertension Patient *</label>
         <select
           name="hypertensionPatient"
-          value={formData.ckd.hypertensionPatient}
-          onChange={(e) => handleInputChange(e, "ckd")}
+          value={formData.hypertensionPatient}
+          onChange={handleInputChange}
           required
+          style={styles.input}
         >
           <option value="">Select</option>
           <option value="Yes">Yes</option>
           <option value="No">No</option>
         </select>
       </div>
-      <div className="form-group">
-        <label>Diabetes Patient *</label>
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Diabetes Patient *</label>
         <select
           name="diabetesPatient"
-          value={formData.ckd.diabetesPatient}
-          onChange={(e) => handleInputChange(e, "ckd")}
+          value={formData.diabetesPatient}
+          onChange={handleInputChange}
           required
+          style={styles.input}
         >
           <option value="">Select</option>
           <option value="Yes">Yes</option>
           <option value="No">No</option>
         </select>
       </div>
-      <div className="form-group">
-        <label>Swelling on Face and Leg *</label>
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Anemia Patient *</label>
+        <select
+          name="anemiaPatient"
+          value={formData.anemiaPatient}
+          onChange={handleInputChange}
+          required
+          style={styles.input}
+        >
+          <option value="">Select</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+      <div style={styles.formGroup}>
+        <label style={styles.label}>History of Stroke *</label>
+        <select
+          name="historyOfStroke"
+          value={formData.historyOfStroke}
+          onChange={handleInputChange}
+          required
+          style={styles.input}
+        >
+          <option value="">Select</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Swelling on Face and Leg *</label>
         <select
           name="swellingFaceLeg"
-          value={formData.ckd.swellingFaceLeg}
-          onChange={(e) => handleInputChange(e, "ckd")}
+          value={formData.swellingFaceLeg}
+          onChange={handleInputChange}
           required
+          style={styles.input}
         >
           <option value="">Select</option>
           <option value="Yes">Yes</option>
           <option value="No">No</option>
         </select>
       </div>
-      <div className="form-group">
-        <label>History of NSAIDS/Over the Counter Drug *</label>
+      <div style={styles.formGroup}>
+        <label style={styles.label}>History of NSAIDS *</label>
         <select
           name="historyNSAIDS"
-          value={formData.ckd.historyNSAIDS}
-          onChange={(e) => handleInputChange(e, "ckd")}
+          value={formData.historyNSAIDS}
+          onChange={handleInputChange}
           required
+          style={styles.input}
         >
           <option value="">Select</option>
           <option value="Yes">Yes</option>
@@ -146,30 +254,30 @@ const CKDAssessment = ({ formData, handleInputChange }) => {
       <div style={styles.formGroup}>
         <label style={styles.label}>Risk Score *</label>
         <input
-          type="number"
+          type="text"
           name="ckdRiskScore"
           value={calculateCKDRiskScore()}
-          onChange={(e) => handleInputChange(e, "ckd")}
-          required
           readOnly
           style={styles.input}
         />
       </div>
-
       <div style={styles.formGroup}>
         <label style={styles.label}>Risk Assessment *</label>
         <select
-          name="ckdRiskAssessment"
-          value={formData.ckd.ckdRiskAssessment}
-          onChange={(e) => handleInputChange(e, "ckd")}
+          name="riskaAssessment"
+          value={formData.riskaAssessment}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
           <option value="">Select</option>
-          <option value="1">Risk</option>
-          <option value="2">No Risk</option>
+          <option value="Risk">Risk</option>
+          <option value="No Risk">No Risk</option>
         </select>
       </div>
+      <button type="button" onClick={handleSubmit}>
+        Save CKD Assessment
+      </button>
     </div>
   );
 };

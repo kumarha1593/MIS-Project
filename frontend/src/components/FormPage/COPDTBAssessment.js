@@ -1,72 +1,119 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const COPDTBAssessment = ({ formData, handleInputChange }) => {
-  const [knownRespiratoryDisease, setKnownRespiratoryDisease] = useState(
-    formData.knownRespiratoryDisease || ""
-  );
+const COPDTBAssessment = ({ currentFmId }) => {
+  const [formData, setFormData] = useState({
+    known_case_crd: "",
+    crd_specify: "",
+    occupational_exposure: "",
+    cooking_fuel_type: "",
+    chest_sound: "",
+    chest_sound_action: "",
+    referral_center_name: "",
+    copd_confirmed: "",
+    copd_confirmation_date: "",
+    shortness_of_breath: "",
+    coughing_more_than_2_weeks: "",
+    blood_in_sputum: "",
+    fever_more_than_2_weeks: "",
+    night_sweats: "",
+    taking_anti_tb_drugs: "",
+    family_tb_history: "",
+    history_of_tb: "",
+  });
+
   const [showRespiratoryDiseaseField, setShowRespiratoryDiseaseField] =
     useState(false);
   const [showChestSoundOptions, setShowChestSoundOptions] = useState(false);
   const [showReferralField, setShowReferralField] = useState(false);
-  const [respiratoryConfirmed, setRespiratoryConfirmed] = useState(
-    formData.respiratoryConfirmed || ""
-  );
   const [showRespiratoryConfirmedDate, setShowRespiratoryConfirmedDate] =
     useState(false);
 
   useEffect(() => {
-    if (knownRespiratoryDisease === "Yes") {
-      setShowRespiratoryDiseaseField(true);
-    } else {
-      setShowRespiratoryDiseaseField(false);
-    }
-  }, [knownRespiratoryDisease]);
+    const fetchCOPDTBData = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/copd-tb-assessment/${currentFmId}`
+        );
+        if (response.data.success) {
+          const data = response.data.data;
 
-  useEffect(() => {
-    if (formData.chestSound === "2") {
-      setShowChestSoundOptions(true);
-    } else {
-      setShowChestSoundOptions(false);
-      setShowReferralField(false);
-    }
-  }, [formData.chestSound]);
+          // Format the date to "yyyy-MM-dd"
+          if (data.copd_confirmation_date) {
+            data.copd_confirmation_date = new Date(data.copd_confirmation_date)
+              .toISOString()
+              .split("T")[0];
+          }
 
-  useEffect(() => {
-    if (respiratoryConfirmed === "Yes") {
-      setShowRespiratoryConfirmedDate(true);
-    } else {
-      setShowRespiratoryConfirmedDate(false);
-    }
-  }, [respiratoryConfirmed]);
+          setFormData(data);
 
-  const handleKnownRespiratoryDiseaseChange = (e) => {
-    setKnownRespiratoryDisease(e.target.value);
-    handleInputChange(e);
+          if (data.known_case_crd === "Yes") {
+            setShowRespiratoryDiseaseField(true);
+          }
+          if (data.chest_sound === "Abnormal") {
+            setShowChestSoundOptions(true);
+            if (data.chest_sound_action === "Referral") {
+              setShowReferralField(true);
+            }
+          }
+          if (data.copd_confirmed === "Yes") {
+            setShowRespiratoryConfirmedDate(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching COPD/TB assessment:", error);
+      }
+    };
+
+    if (currentFmId) {
+      fetchCOPDTBData();
+    }
+  }, [currentFmId]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+
+    if (name === "known_case_crd") {
+      setShowRespiratoryDiseaseField(value === "Yes");
+    }
+
+    if (name === "chest_sound") {
+      if (value === "Abnormal") {
+        setShowChestSoundOptions(true);
+      } else {
+        setShowChestSoundOptions(false);
+        setShowReferralField(false);
+      }
+    }
+
+    if (name === "chest_sound_action") {
+      setShowReferralField(value === "Referral");
+    }
+
+    if (name === "copd_confirmed") {
+      setShowRespiratoryConfirmedDate(value === "Yes");
+    }
   };
 
-  const handleChestSoundChange = (e) => {
-    handleInputChange(e);
-
-    if (e.target.value === "2") {
-      setShowChestSoundOptions(true);
-    } else {
-      setShowChestSoundOptions(false);
-      setShowReferralField(false);
-    }
-  };
-
-  const handleRespiratoryConfirmedChange = (e) => {
-    setRespiratoryConfirmed(e.target.value);
-    handleInputChange(e);
-  };
-
-  const handleReferralChange = (e) => {
-    handleInputChange(e);
-
-    if (e.target.value === "2") {
-      setShowReferralField(true);
-    } else {
-      setShowReferralField(false);
+  const handleSave = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}api/copd-tb-assessment`,
+        {
+          fm_id: currentFmId,
+          ...formData,
+        }
+      );
+      if (response.data.success) {
+        alert("COPD/TB assessment saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving COPD/TB assessment:", error);
+      alert("Failed to save COPD/TB assessment. Please try again.");
     }
   };
 
@@ -98,9 +145,9 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
           Known case of chronic respiratory diseases (ASTHMA/COPD/OTHERS) *
         </label>
         <select
-          name="knownRespiratoryDisease"
-          value={knownRespiratoryDisease}
-          onChange={handleKnownRespiratoryDiseaseChange}
+          name="known_case_crd"
+          value={formData.known_case_crd || ""}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
@@ -115,8 +162,8 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
           <label style={styles.label}>Specify Respiratory Disease</label>
           <input
             type="text"
-            name="respiratoryDisease"
-            value={formData.respiratoryDisease}
+            name="crd_specify"
+            value={formData.crd_specify || ""}
             onChange={handleInputChange}
             required
             style={styles.input}
@@ -127,50 +174,54 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
       <div style={styles.formGroup}>
         <label style={styles.label}>Occupational Exposure *</label>
         <select
-          name="occupationalExposure"
-          value={formData.occupationalExposure}
+          name="occupational_exposure"
+          value={formData.occupational_exposure || ""}
           onChange={handleInputChange}
           required
           style={styles.input}
         >
           <option value="">Select</option>
-          <option value="1">Crop residue burning</option>
-          <option value="2">Burning of garbage</option>
-          <option value="3">Working in industries with smoke, gas, dust</option>
+          <option value="Crop residue burning">Crop residue burning</option>
+          <option value="Burning of garbage/leaves">
+            Burning of garbage/leaves
+          </option>
+          <option value="Working in industries with smoke, gas, and dust exposure">
+            Working in industries with smoke, gas, and dust exposure
+          </option>
         </select>
       </div>
 
       <div style={styles.formGroup}>
         <label style={styles.label}>Type of Fuel Used for Cooking *</label>
         <select
-          name="fuelForCooking"
-          value={formData.fuelForCooking}
+          name="cooking_fuel_type"
+          value={formData.cooking_fuel_type || ""}
           onChange={handleInputChange}
           required
           style={styles.input}
         >
           <option value="">Select</option>
-          <option value="1">Firewood</option>
-          <option value="2">Crop Residue</option>
-          <option value="3">Cow dung cake</option>
-          <option value="4">Coal</option>
-          <option value="5">Kerosene</option>
-          <option value="6">LPG</option>
+          <option value="Firewood">Firewood</option>
+          <option value="Crop Residue">Crop Residue</option>
+          <option value="Cow dung cake">Cow dung cake</option>
+          <option value="Coal">Coal</option>
+          <option value="Kerosene">Kerosene</option>
+          <option value="LPG">LPG</option>
         </select>
       </div>
 
       <div style={styles.formGroup}>
         <label style={styles.label}>Chest Sound *</label>
         <select
-          name="chestSound"
-          value={formData.chestSound}
-          onChange={handleChestSoundChange}
+          name="chest_sound"
+          value={formData.chest_sound || ""}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
           <option value="">Select</option>
-          <option value="1">Normal</option>
-          <option value="2">Abnormal</option>
+          <option value="Normal">Normal</option>
+          <option value="Abnormal">Abnormal</option>
         </select>
       </div>
 
@@ -178,15 +229,15 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
         <div style={styles.formGroup}>
           <label style={styles.label}>Action for Abnormal Chest Sound *</label>
           <select
-            name="chestSoundAction"
-            value={formData.chestSoundAction}
-            onChange={handleReferralChange}
+            name="chest_sound_action"
+            value={formData.chest_sound_action || ""}
+            onChange={handleInputChange}
             required
             style={styles.input}
           >
             <option value="">Select</option>
-            <option value="1">Teleconsultation</option>
-            <option value="2">Referral</option>
+            <option value="Teleconsultation">Teleconsultation</option>
+            <option value="Referral">Referral</option>
           </select>
         </div>
       )}
@@ -196,8 +247,8 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
           <label style={styles.label}>Name of the Centre Referred</label>
           <input
             type="text"
-            name="referredCentreCOPD"
-            value={formData.referredCentreCOPD}
+            name="referral_center_name"
+            value={formData.referral_center_name || ""}
             onChange={handleInputChange}
             required
             style={styles.input}
@@ -210,9 +261,9 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
           Respiratory/COPD disease confirmed at PHC/CHC/DH *
         </label>
         <select
-          name="respiratoryConfirmed"
-          value={respiratoryConfirmed}
-          onChange={handleRespiratoryConfirmedChange}
+          name="copd_confirmed"
+          value={formData.copd_confirmed || ""}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
@@ -227,8 +278,8 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
           <label style={styles.label}>Date of Confirmation</label>
           <input
             type="date"
-            name="copdConfirmedDate"
-            value={formData.copdConfirmedDate}
+            name="copd_confirmation_date"
+            value={formData.copd_confirmation_date || ""}
             onChange={handleInputChange}
             required
             style={styles.input}
@@ -236,11 +287,12 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
         </div>
       )}
 
+      {/* Additional questions */}
       <div style={styles.formGroup}>
         <label style={styles.label}>Shortness of Breath *</label>
         <select
-          name="shortnessOfBreath"
-          value={formData.shortnessOfBreath}
+          name="shortness_of_breath"
+          value={formData.shortness_of_breath || ""}
           onChange={handleInputChange}
           required
           style={styles.input}
@@ -254,8 +306,8 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
       <div style={styles.formGroup}>
         <label style={styles.label}>Coughing for More Than 2 Weeks *</label>
         <select
-          name="coughingMoreThan2Weeks"
-          value={formData.coughingMoreThan2Weeks}
+          name="coughing_more_than_2_weeks"
+          value={formData.coughing_more_than_2_weeks || ""}
           onChange={handleInputChange}
           required
           style={styles.input}
@@ -269,8 +321,8 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
       <div style={styles.formGroup}>
         <label style={styles.label}>Blood in Sputum *</label>
         <select
-          name="bloodInSputum"
-          value={formData.bloodInSputum}
+          name="blood_in_sputum"
+          value={formData.blood_in_sputum || ""}
           onChange={handleInputChange}
           required
           style={styles.input}
@@ -284,8 +336,8 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
       <div style={styles.formGroup}>
         <label style={styles.label}>Fever for More Than 2 Weeks *</label>
         <select
-          name="feverMoreThan2Weeks"
-          value={formData.feverMoreThan2Weeks}
+          name="fever_more_than_2_weeks"
+          value={formData.fever_more_than_2_weeks || ""}
           onChange={handleInputChange}
           required
           style={styles.input}
@@ -296,11 +348,30 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
         </select>
       </div>
 
+      {/* Night Sweats Field */}
       <div style={styles.formGroup}>
-        <label style={styles.label}>Loss of Weight *</label>
+        <label style={styles.label}>Night Sweats *</label>
         <select
-          name="lossOfWeight"
-          value={formData.lossOfWeight}
+          name="night_sweats"
+          value={formData.night_sweats || ""}
+          onChange={handleInputChange}
+          required
+          style={styles.input}
+        >
+          <option value="">Select</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+
+      {/* Taking Anti-TB Drugs Field */}
+      <div style={styles.formGroup}>
+        <label style={styles.label}>
+          Are you currently taking anti-TB drugs? *
+        </label>
+        <select
+          name="taking_anti_tb_drugs"
+          value={formData.taking_anti_tb_drugs || ""}
           onChange={handleInputChange}
           required
           style={styles.input}
@@ -316,8 +387,8 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
           Anyone in family currently suffering from TB *
         </label>
         <select
-          name="familyMemberSufferingTB"
-          value={formData.familyMemberSufferingTB}
+          name="family_tb_history"
+          value={formData.family_tb_history || ""}
           onChange={handleInputChange}
           required
           style={styles.input}
@@ -331,8 +402,8 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
       <div style={styles.formGroup}>
         <label style={styles.label}>History of TB *</label>
         <select
-          name="historyOfTB"
-          value={formData.historyOfTB}
+          name="history_of_tb"
+          value={formData.history_of_tb || ""}
           onChange={handleInputChange}
           required
           style={styles.input}
@@ -342,6 +413,9 @@ const COPDTBAssessment = ({ formData, handleInputChange }) => {
           <option value="No">No</option>
         </select>
       </div>
+      <button type="button" onClick={handleSave}>
+        Save Draft
+      </button>
     </div>
   );
 };

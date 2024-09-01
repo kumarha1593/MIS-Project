@@ -1,6 +1,65 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const CataractAssessment = ({ formData, handleInputChange }) => {
+const CataractAssessment = ({ currentFmId }) => {
+  const [formData, setFormData] = useState({
+    cloudyBlurredVision: "",
+    painOrRedness: "",
+    cataractAssessmentResult: "",
+  });
+
+  useEffect(() => {
+    const fetchCataractData = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/cataract-assessment/${currentFmId}`
+        );
+        if (response.data.success) {
+          setFormData({
+            cloudyBlurredVision: response.data.data.cloudy_blurred_vision || "",
+            painOrRedness: response.data.data.pain_or_redness || "",
+            cataractAssessmentResult:
+              response.data.data.cataract_assessment_result || "",
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching Cataract assessment:", error);
+      }
+    };
+
+    if (currentFmId) {
+      fetchCataractData(); // Fetch data only if currentFmId is available
+    }
+  }, [currentFmId]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSave = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}api/cataract-assessment`,
+        {
+          fm_id: currentFmId,
+          cloudyBlurredVision: formData.cloudyBlurredVision,
+          painOrRedness: formData.painOrRedness,
+          cataractAssessmentResult: formData.cataractAssessmentResult,
+        }
+      );
+      if (response.data.success) {
+        alert("Cataract assessment saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving Cataract assessment:", error);
+      alert("Failed to save Cataract assessment. Please try again.");
+    }
+  };
+
   const styles = {
     formSection: {
       marginBottom: "20px",
@@ -29,9 +88,9 @@ const CataractAssessment = ({ formData, handleInputChange }) => {
           Do you have cloudy or blurred vision? *
         </label>
         <select
-          name="cloudyVision"
-          value={formData.cataract.cloudyVision}
-          onChange={(e) => handleInputChange(e, "cataract")}
+          name="cloudyBlurredVision"
+          value={formData.cloudyBlurredVision}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
@@ -46,9 +105,9 @@ const CataractAssessment = ({ formData, handleInputChange }) => {
           Pain or redness in eyes lasting for more than a week *
         </label>
         <select
-          name="eyePain"
-          value={formData.cataract.eyePain}
-          onChange={(e) => handleInputChange(e, "cataract")}
+          name="painOrRedness"
+          value={formData.painOrRedness}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
@@ -61,17 +120,20 @@ const CataractAssessment = ({ formData, handleInputChange }) => {
       <div style={styles.formGroup}>
         <label style={styles.label}>Cataract Assessment Result *</label>
         <select
-          name="cataractResult"
-          value={formData.cataract.cataractResult}
-          onChange={(e) => handleInputChange(e, "cataract")}
+          name="cataractAssessmentResult"
+          value={formData.cataractAssessmentResult}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
           <option value="">Select</option>
-          <option value="1">Suspected</option>
-          <option value="2">Not Suspected</option>
+          <option value="Suspected">Suspected</option>
+          <option value="Not Suspected">Not Suspected</option>
         </select>
       </div>
+      <button type="button" onClick={handleSave}>
+        Save Draft
+      </button>
     </div>
   );
 };
