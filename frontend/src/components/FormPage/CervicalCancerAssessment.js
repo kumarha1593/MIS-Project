@@ -1,90 +1,98 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const CervicalCancerAssessment = ({ formData, handleInputChange }) => {
-  const [bleedingQuestions, setBleedingQuestions] = useState({
-    bleedingBetweenPeriods: formData.bleedingBetweenPeriods || "",
-    bleedingAfterMenopause: formData.bleedingAfterMenopause || "",
-    bleedingAfterIntercourse: formData.bleedingAfterIntercourse || "",
-    foulSmellingDischarge: formData.foulSmellingDischarge || "",
+const CervicalCancerAssessment = ({ currentFmId }) => {
+  const [formData, setFormData] = useState({
+    known_case: "",
+    bleeding_between_periods: "",
+    bleeding_after_menopause: "",
+    bleeding_after_intercourse: "",
+    foul_smelling_discharge: "",
+    via_appointment_date: "",
+    via_result: "",
   });
 
-  const [showReferralField, setShowReferralField] = useState(false);
+  const fetchCervicalCancerData = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}api/cervical-cancer-assessment/${currentFmId}`
+      );
+      if (response.data.success) {
+        const data = response.data.data;
 
-  useEffect(() => {
-    const {
-      bleedingBetweenPeriods,
-      bleedingAfterMenopause,
-      bleedingAfterIntercourse,
-      foulSmellingDischarge,
-    } = bleedingQuestions;
-
-    // If any of the bleeding-related questions are "Yes", show referral field
-    if (
-      bleedingBetweenPeriods === "Yes" ||
-      bleedingAfterMenopause === "Yes" ||
-      bleedingAfterIntercourse === "Yes" ||
-      foulSmellingDischarge === "Yes"
-    ) {
-      setShowReferralField(true);
-    } else {
-      setShowReferralField(false);
+        // Format the date to "yyyy-MM-dd"
+        if (data.via_appointment_date) {
+          data.via_appointment_date = new Date(data.via_appointment_date)
+            .toISOString()
+            .split("T")[0];
+        }
+        setFormData(data);
+      }
+    } catch (error) {
+      console.error("Error fetching cervical cancer assessment:", error);
     }
-  }, [bleedingQuestions]);
-
-  const handleBleedingChange = (e) => {
-    const { name, value } = e.target;
-    setBleedingQuestions((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-    handleInputChange(e);
   };
 
-  const styles = {
-    formSection: {
-      marginBottom: "20px",
-    },
-    formGroup: {
-      marginBottom: "15px",
-      display: "flex",
-      flexDirection: "column",
-    },
-    input: {
-      padding: "8px",
-      width: "100%",
-      boxSizing: "border-box",
-      fontSize: "14px",
-    },
-    label: {
-      marginBottom: "5px",
-      fontWeight: "bold",
-    },
+  useEffect(() => {
+    if (currentFmId) {
+      fetchCervicalCancerData();
+    }
+  }, [currentFmId]);
+
+  const handleSave = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}api/cervical-cancer-assessment`,
+        {
+          fm_id: currentFmId,
+          ...formData,
+        }
+      );
+      if (response.data.success) {
+        alert("Cervical Cancer Assessment saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving cervical cancer assessment:", error);
+      alert("Failed to save cervical cancer assessment. Please try again.");
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
   return (
     <div style={styles.formSection}>
       <div style={styles.formGroup}>
-        <label style={styles.label}>Known case of Cervical Cancer *</label>
+        <label style={styles.label}>Known Case *</label>
         <select
-          name="knownCervicalCancer"
-          value={formData.knownCervicalCancer}
+          id="known_case"
+          name="known_case"
+          value={formData.known_case}
           onChange={handleInputChange}
           required
           style={styles.input}
         >
           <option value="">Select</option>
-          <option value="1">Yes, and on treatment</option>
-          <option value="2">Yes, but not on treatment</option>
-          <option value="3">No</option>
+          <option value="Yes and on treatment">Yes and on treatment</option>
+          <option value="Yes and not on treatment">
+            Yes and not on treatment
+          </option>
+          <option value="No">No</option>
         </select>
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>Bleeding between periods *</label>
+        <label style={styles.label}>Bleeding Between Periods *</label>
         <select
-          name="bleedingBetweenPeriods"
-          value={bleedingQuestions.bleedingBetweenPeriods}
-          onChange={handleBleedingChange}
+          id="bleeding_between_periods"
+          name="bleeding_between_periods"
+          value={formData.bleeding_between_periods}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
@@ -95,11 +103,12 @@ const CervicalCancerAssessment = ({ formData, handleInputChange }) => {
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>Bleeding after menopause *</label>
+        <label style={styles.label}>Bleeding After Menopause *</label>
         <select
-          name="bleedingAfterMenopause"
-          value={bleedingQuestions.bleedingAfterMenopause}
-          onChange={handleBleedingChange}
+          id="bleeding_after_menopause"
+          name="bleeding_after_menopause"
+          value={formData.bleeding_after_menopause}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
@@ -110,11 +119,12 @@ const CervicalCancerAssessment = ({ formData, handleInputChange }) => {
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>Bleeding after intercourse *</label>
+        <label style={styles.label}>Bleeding After Intercourse *</label>
         <select
-          name="bleedingAfterIntercourse"
-          value={bleedingQuestions.bleedingAfterIntercourse}
-          onChange={handleBleedingChange}
+          id="bleeding_after_intercourse"
+          name="bleeding_after_intercourse"
+          value={formData.bleeding_after_intercourse}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
@@ -125,11 +135,12 @@ const CervicalCancerAssessment = ({ formData, handleInputChange }) => {
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>Foul-smelling vaginal discharge *</label>
+        <label style={styles.label}>Foul Smelling Discharge *</label>
         <select
-          name="foulSmellingDischarge"
-          value={bleedingQuestions.foulSmellingDischarge}
-          onChange={handleBleedingChange}
+          id="foul_smelling_discharge"
+          name="foul_smelling_discharge"
+          value={formData.foul_smelling_discharge}
+          onChange={handleInputChange}
           required
           style={styles.input}
         >
@@ -139,39 +150,24 @@ const CervicalCancerAssessment = ({ formData, handleInputChange }) => {
         </select>
       </div>
 
-      {showReferralField && (
-        <div style={styles.formGroup}>
-          <label style={styles.label}>
-            Referred Centre for Cervical Cancer *
-          </label>
-          <input
-            type="text"
-            name="referredCentreCervicalCancer"
-            value={formData.referredCentreCervicalCancer}
-            onChange={handleInputChange}
-            required
-            style={styles.input}
-          />
-        </div>
-      )}
-
       <div style={styles.formGroup}>
-        <label style={styles.label}>VIA Date of Appointment *</label>
+        <label style={styles.label}>VIA Appointment Date *</label>
         <input
           type="date"
-          name="viaAppointmentDate"
-          value={formData.viaAppointmentDate}
+          id="via_appointment_date"
+          name="via_appointment_date"
+          value={formData.via_appointment_date}
           onChange={handleInputChange}
-          required
           style={styles.input}
         />
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>VIA +/- *</label>
+        <label style={styles.label}>VIA Result *</label>
         <select
-          name="viaResult"
-          value={formData.viaResult}
+          id="via_result"
+          name="via_result"
+          value={formData.via_result}
           onChange={handleInputChange}
           required
           style={styles.input}
@@ -182,23 +178,47 @@ const CervicalCancerAssessment = ({ formData, handleInputChange }) => {
         </select>
       </div>
 
-      {formData.viaResult === "Positive" && (
-        <div style={styles.formGroup}>
-          <label style={styles.label}>
-            If VIA+, name of the referred centre *
-          </label>
-          <input
-            type="text"
-            name="referredCentreVIA"
-            value={formData.referredCentreVIA}
-            onChange={handleInputChange}
-            required
-            style={styles.input}
-          />
-        </div>
-      )}
+      <button type="button" onClick={handleSave} style={styles.button}>
+        Save Draft
+      </button>
     </div>
   );
+};
+
+const styles = {
+  formSection: {
+    padding: "20px",
+    maxWidth: "500px",
+    margin: "0 auto",
+  },
+  formGroup: {
+    marginBottom: "20px",
+  },
+  label: {
+    display: "block",
+    marginBottom: "5px",
+    fontWeight: "bold",
+  },
+  input: {
+    width: "100%",
+    padding: "10px",
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+  },
+  button: {
+    backgroundColor: "#4CAF50",
+    border: "none",
+    color: "white",
+    padding: "15px 32px",
+    textAlign: "center",
+    textDecoration: "none",
+    display: "inline-block",
+    fontSize: "16px",
+    margin: "4px 2px",
+    cursor: "pointer",
+    borderRadius: "4px",
+  },
 };
 
 export default CervicalCancerAssessment;
