@@ -145,7 +145,9 @@ const FieldDashboard = () => {
       if (response.data.success) {
         setShowModal(false);
         fetchFamilyMembers();
-        navigate("/FormPage", { state: { familyId: response.data.fm_id } });
+        navigate("/FieldDashboard", {
+          state: { familyId: response.data.fm_id },
+        });
       }
     } catch (error) {
       console.error("Error saving new head:", error);
@@ -336,7 +338,7 @@ const FieldDashboard = () => {
                 {row.status === 0 ? (
                   <button
                     onClick={() => handleCompleteForm(row.id)}
-                    style={{ padding: "3px", backgroundColor: "red"}}
+                    style={{ padding: "3px", backgroundColor: "red" }}
                   >
                     Pending
                   </button>

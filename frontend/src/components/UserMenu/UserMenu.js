@@ -10,6 +10,7 @@ const UserMenu = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const handleHome = () => {
+    localStorage.removeItem("current_fm_id");
     navigate("/FieldDashboard");
     setIsOpen(false);
   };
@@ -17,6 +18,8 @@ const UserMenu = () => {
   const handleLogout = () => {
     // Remove only the authentication token
     localStorage.removeItem("token");
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("current_fm_id");
 
     // Redirect to login page
     navigate("/");

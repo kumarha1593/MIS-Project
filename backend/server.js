@@ -2279,6 +2279,236 @@ app.get("/api/ckd-assessment/:fm_id", async (req, res) => {
   }
 });
 
+app.post("/api/cervical-cancer-assessment", async (req, res) => {
+  const {
+    fm_id,
+    known_case = null,
+    bleeding_between_periods = null,
+    bleeding_after_menopause = null,
+    bleeding_after_intercourse = null,
+    foul_smelling_discharge = null,
+    via_appointment_date = null,
+    via_result = null,
+  } = req.body;
+
+  try {
+    await db.promise().beginTransaction();
+
+    const sanitizedValues = [
+      known_case === "" ? null : known_case,
+      bleeding_between_periods === "" ? null : bleeding_between_periods,
+      bleeding_after_menopause === "" ? null : bleeding_after_menopause,
+      bleeding_after_intercourse === "" ? null : bleeding_after_intercourse,
+      foul_smelling_discharge === "" ? null : foul_smelling_discharge,
+      via_appointment_date === "" ? null : via_appointment_date,
+      via_result === "" ? null : via_result,
+    ];
+
+    let cervical_cancer_id;
+
+    // Insert or update cervical cancer assessment
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT cervical_cancer_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].cervical_cancer_id) {
+      // Update existing cervical cancer assessment and set updated_at
+      cervical_cancer_id = masterData[0].cervical_cancer_id;
+      await db.promise().query(
+        `UPDATE cervicalcancer SET
+        known_case = ?, bleeding_between_periods = ?, bleeding_after_menopause = ?, 
+        bleeding_after_intercourse = ?, foul_smelling_discharge = ?, 
+        via_appointment_date = ?, via_result = ?, updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, cervical_cancer_id]
+      );
+    } else {
+      // Insert new cervical cancer assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO cervicalcancer 
+        (known_case, bleeding_between_periods, bleeding_after_menopause, 
+         bleeding_after_intercourse, foul_smelling_discharge, 
+         via_appointment_date, via_result, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      cervical_cancer_id = result.insertId;
+
+      // Update master_data table with the new cervical_cancer_id
+      await db
+        .promise()
+        .query(
+          `UPDATE master_data SET cervical_cancer_id = ? WHERE fm_id = ?`,
+          [cervical_cancer_id, fm_id]
+        );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Cervical cancer assessment saved successfully",
+      cervical_cancer_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving cervical cancer assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/cervical-cancer-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT cervical_cancer_id FROM master_data WHERE fm_id = ?`, [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].cervical_cancer_id) {
+      const [cervicalCancerData] = await db
+        .promise()
+        .query(`SELECT * FROM cervicalcancer WHERE id = ?`, [
+          masterData[0].cervical_cancer_id,
+        ]);
+
+      if (cervicalCancerData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: cervicalCancerData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Cervical cancer assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message:
+          "No cervical cancer assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching cervical cancer assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// CVD Assessment POST Endpoint
+app.post("/api/cvd-assessment", async (req, res) => {
+  const {
+    fm_id,
+    known_case = null,
+    heart_sound = null,
+    symptom = null,
+    cvd_date = null,
+    suspected_cvd = null,
+  } = req.body;
+
+  try {
+    await db.promise().beginTransaction();
+
+    const sanitizedValues = [
+      known_case === "" ? null : known_case,
+      heart_sound === "" ? null : heart_sound,
+      symptom === "" ? null : symptom,
+      cvd_date === "" ? null : cvd_date,
+      suspected_cvd === "" ? null : suspected_cvd,
+    ];
+
+    let cvd_id;
+
+    // Insert or update CVD assessment
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT CVD_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].CVD_id) {
+      // Update existing CVD assessment and set updated_at
+      cvd_id = masterData[0].CVD_id;
+      await db.promise().query(
+        `UPDATE cvd SET
+        known_case = ?, heart_sound = ?, symptom = ?, cvd_date = ?, suspected_cvd = ?, 
+        updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, cvd_id]
+      );
+    } else {
+      // Insert new CVD assessment and set created_at and updated_at
+      const [result] = await db.promise().query(
+        `INSERT INTO cvd 
+        (known_case, heart_sound, symptom, cvd_date, suspected_cvd, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      cvd_id = result.insertId;
+
+      // Update master_data table with the new CVD_id
+      await db
+        .promise()
+        .query(`UPDATE master_data SET CVD_id = ? WHERE fm_id = ?`, [
+          cvd_id,
+          fm_id,
+        ]);
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "CVD assessment saved successfully",
+      cvd_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving CVD assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// CVD Assessment GET Endpoint
+app.get("/api/cvd-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT CVD_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].CVD_id) {
+      const [cvdData] = await db
+        .promise()
+        .query(`SELECT * FROM cvd WHERE id = ?`, [masterData[0].CVD_id]);
+
+      if (cvdData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: cvdData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "CVD assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No CVD assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching CVD assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

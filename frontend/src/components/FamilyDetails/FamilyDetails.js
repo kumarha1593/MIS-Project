@@ -23,7 +23,7 @@ const FamilyDetails = () => {
       if (headOfFamily) {
         try {
           const response = await axios.get(
-            `http://localhost:5000/api/family-members/${headOfFamily}`
+            `${process.env.REACT_APP_BASE_URL}api/family-members/${headOfFamily}`
           );
           setFamilyData({
             headOfFamily: headOfFamily,
@@ -54,7 +54,7 @@ const FamilyDetails = () => {
   const handleSubmitNewMember = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/family-members",
+        `${process.env.REACT_APP_BASE_URL}api/family-members`,
         {
           ...newMemberData,
           headOfFamily: familyData.headOfFamily,
