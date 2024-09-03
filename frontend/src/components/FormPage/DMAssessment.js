@@ -107,13 +107,23 @@ const DMAssessment = ({ currentFmId }) => {
     input: {
       padding: "8px",
       width: "100%",
-      maxWidth: "300px",
       boxSizing: "border-box",
       fontSize: "14px",
     },
     label: {
       marginBottom: "5px",
       fontWeight: "bold",
+    },
+    button: {
+      padding: "10px 20px",
+      fontSize: "14px",
+      cursor: "pointer",
+      backgroundColor: "#8BC34A",
+      color: "#fff",
+      border: "none",
+      borderRadius: "4px",
+      marginTop: "20px",
+      width: "98%",
     },
   };
 
@@ -126,6 +136,7 @@ const DMAssessment = ({ currentFmId }) => {
           name="case_of_dm"
           value={formData.case_of_dm || ""}
           onChange={handleInputChange}
+          style={styles.input}
         >
           <option value="">Select</option>
           <option value="yes and on treatment">Yes and on Treatment</option>
@@ -143,6 +154,7 @@ const DMAssessment = ({ currentFmId }) => {
           name="RBS"
           value={formData.RBS || ""}
           onChange={handleInputChange}
+          style={styles.input}
         >
           <option value="">Select</option>
           <option value="fasting">Fasting</option>
@@ -166,6 +178,7 @@ const DMAssessment = ({ currentFmId }) => {
           name="blood_sugar"
           value={formData.blood_sugar || ""}
           onChange={handleInputChange}
+          style={styles.input}
         />
       </div>
 
@@ -177,6 +190,7 @@ const DMAssessment = ({ currentFmId }) => {
             name="action_high_bs"
             value={formData.action_high_bs || ""}
             onChange={handleInputChange}
+            style={styles.input}
           >
             <option value="">Select</option>
             <option value="referral">Referral</option>
@@ -194,6 +208,7 @@ const DMAssessment = ({ currentFmId }) => {
             name="referral_center"
             value={formData.referral_center || ""}
             onChange={handleInputChange}
+            style={styles.input}
           />
         </div>
       )}
@@ -208,9 +223,10 @@ const DMAssessment = ({ currentFmId }) => {
           name="DM_date"
           value={formData.DM_date || ""}
           onChange={handleInputChange}
+          style={styles.input}
         />
       </div>
-      <button type="button" onClick={handleSave}>
+      <button type="button" onClick={handleSave} style={styles.button}>
         Save Draft
       </button>
     </div>

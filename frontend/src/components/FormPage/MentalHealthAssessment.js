@@ -29,13 +29,13 @@ const MentalHealthAssessment = ({ currentFmId }) => {
             mentalHealthProblem: data.mental_health_problem || "",
             historyOfFits: data.history_of_fits || "",
             otherMentalDisorder: data.other_mental_disorder || "",
-            briefIntervention: data.brief_intervention_given || "", // Updated to match schema
+            briefIntervention: data.brief_intervention_given || "",
             interventionType: data.intervention_type || "",
           });
 
           const score =
-            (parseInt(data.little_interest_or_pleasure) || 0) +
-            (parseInt(data.feeling_down_or_depressed) || 0);
+            calculateScore(data.little_interest_or_pleasure) +
+            calculateScore(data.feeling_down_or_depressed);
           setMentalHealthScore(score);
         }
       } catch (error) {
@@ -48,8 +48,24 @@ const MentalHealthAssessment = ({ currentFmId }) => {
     }
   }, [currentFmId]);
 
+  const calculateScore = (value) => {
+    switch (value) {
+      case "Not at all":
+        return 0;
+      case "Several days":
+        return 1;
+      case "More than half the day":
+        return 2;
+      case "Nearly every day":
+        return 3;
+      default:
+        return 0;
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    console.log(`Input changed: ${name} = ${value}`);
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -61,28 +77,17 @@ const MentalHealthAssessment = ({ currentFmId }) => {
     ) {
       const newScore =
         (name === "littleInterestOrPleasure"
-          ? parseInt(value || 0)
-          : parseInt(formData.littleInterestOrPleasure || 0)) +
+          ? calculateScore(value)
+          : calculateScore(formData.littleInterestOrPleasure)) +
         (name === "feelingDownOrDepressed"
-          ? parseInt(value || 0)
-          : parseInt(formData.feelingDownOrDepressed || 0));
+          ? calculateScore(value)
+          : calculateScore(formData.feelingDownOrDepressed));
       setMentalHealthScore(newScore);
     }
   };
 
   const handleSave = async () => {
-    console.log("Data being sent to backend:", {
-      fm_id: currentFmId,
-      little_interest_or_pleasure: formData.littleInterestOrPleasure,
-      feeling_down_or_depressed: formData.feelingDownOrDepressed,
-      mental_health_score: mentalHealthScore,
-      mental_health_problem: formData.mentalHealthProblem,
-      history_of_fits: formData.historyOfFits,
-      other_mental_disorder: formData.otherMentalDisorder,
-      brief_intervention_given: formData.briefIntervention,
-      intervention_type: formData.interventionType,
-    });
-
+    console.log("Form data being sent:", formData);
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/mental-health-assessment`,
@@ -109,7 +114,6 @@ const MentalHealthAssessment = ({ currentFmId }) => {
       alert("Failed to save mental health assessment. Please try again.");
     }
   };
-
   const styles = {
     formGroup: {
       marginBottom: "15px",
@@ -137,6 +141,17 @@ const MentalHealthAssessment = ({ currentFmId }) => {
       fontWeight: "bold",
       marginTop: "10px",
     },
+    button: {
+      padding: "10px 20px",
+      fontSize: "14px",
+      cursor: "pointer",
+      backgroundColor: "#8BC34A",
+      color: "#fff",
+      border: "none",
+      borderRadius: "4px",
+      marginTop: "20px",
+      width: "98%",
+    },
   };
 
   return (
@@ -158,10 +173,10 @@ const MentalHealthAssessment = ({ currentFmId }) => {
           style={styles.select}
         >
           <option value="">Select</option>
-          <option value="0">Not at all</option>
-          <option value="1">Several days</option>
-          <option value="2">More than half the day</option>
-          <option value="3">Nearly every day</option>
+          <option value="Not at all">Not at all</option>
+          <option value="Several days">Several days</option>
+          <option value="More than half the day">More than half the day</option>
+          <option value="Nearly every day">Nearly every day</option>
         </select>
       </div>
       <div style={styles.formGroup}>
@@ -176,10 +191,10 @@ const MentalHealthAssessment = ({ currentFmId }) => {
           style={styles.select}
         >
           <option value="">Select</option>
-          <option value="0">Not at all</option>
-          <option value="1">Several days</option>
-          <option value="2">More than half the day</option>
-          <option value="3">Nearly every day</option>
+          <option value="Not at all">Not at all</option>
+          <option value="Several days">Several days</option>
+          <option value="More than half the day">More than half the day</option>
+          <option value="Nearly every day">Nearly every day</option>
         </select>
       </div>
       <div style={styles.formGroup}>
@@ -245,8 +260,8 @@ const MentalHealthAssessment = ({ currentFmId }) => {
       <div style={styles.formGroup}>
         <label style={styles.label}>Brief intervention given? *</label>
         <select
-          name="mentalHealthProblemDetected"
-          value={formData.mentalHealthProblemDetected || ""}
+          name="briefIntervention"
+          value={formData.briefIntervention}
           onChange={handleInputChange}
           required
           style={styles.select}
@@ -257,14 +272,12 @@ const MentalHealthAssessment = ({ currentFmId }) => {
         </select>
       </div>
 
-      {formData.mentalHealthProblemDetected === "Yes" && (
+      {formData.briefIntervention === "Yes" && (
         <div style={styles.formGroup}>
-          <label style={styles.label}>
-            If detected, Brief intervention given *
-          </label>
+          <label style={styles.label}>If yes, Brief intervention given *</label>
           <select
-            name="briefIntervention"
-            value={formData.briefIntervention || ""}
+            name="interventionType"
+            value={formData.interventionType}
             onChange={handleInputChange}
             required
             style={styles.select}
@@ -280,7 +293,7 @@ const MentalHealthAssessment = ({ currentFmId }) => {
         </div>
       )}
 
-      <button type="button" onClick={handleSave}>
+      <button type="button" onClick={handleSave} style={styles.button}>
         Save Draft
       </button>
     </div>

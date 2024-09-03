@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./FieldDashboard.css";
-import { FaPencilAlt, FaFilter, FaSearch } from "react-icons/fa";
+import { FaPencilAlt, FaFilter } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -128,7 +128,14 @@ const FieldDashboard = () => {
   };
 
   const handleModalInputChange = (e) => {
-    setNewHeadData({ ...newHeadData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "aadharNumber") {
+      // Allow only numbers
+      if (!/^\d*$/.test(value)) return;
+    }
+
+    setNewHeadData({ ...newHeadData, [name]: value });
   };
 
   const handleSaveAndContinue = async () => {
@@ -145,15 +152,14 @@ const FieldDashboard = () => {
       if (response.data.success) {
         setShowModal(false);
         fetchFamilyMembers();
-        navigate("/FormPage", { state: { familyId: response.data.fm_id } });
       }
     } catch (error) {
       console.error("Error saving new head:", error);
     }
   };
 
-  const handleRowClick = (headOfFamily) => {
-    navigate("/FamilyDetails", { state: { headOfFamily } });
+  const handleRowClick = (headOfFamily, headId) => {
+    navigate("/FamilyDetails", { state: { headOfFamily, headId } });
   };
 
   const handleCompleteForm = (fm_id) => {
@@ -327,7 +333,7 @@ const FieldDashboard = () => {
         <tbody>
           {filteredData.map((row) => (
             <tr key={row.id}>
-              <td onClick={() => handleRowClick(row.headOfFamily)}>
+              <td onClick={() => handleRowClick(row.name, row.id)}>
                 {row.name}
               </td>
               <td>{row.familyMemberCount}</td>
@@ -336,7 +342,7 @@ const FieldDashboard = () => {
                 {row.status === 0 ? (
                   <button
                     onClick={() => handleCompleteForm(row.id)}
-                    style={{ padding: "3px", backgroundColor: "red"}}
+                    style={{ padding: "3px", backgroundColor: "red" }}
                   >
                     Pending
                   </button>
@@ -363,15 +369,38 @@ const FieldDashboard = () => {
               value={newHeadData.headOfFamily}
               onChange={handleModalInputChange}
               placeholder="Head of Family Name"
+              required
             />
+            {!newHeadData.headOfFamily && (
+              <p style={{ color: "red" }}>Name is required.</p>
+            )}
+
             <input
               type="text"
               name="aadharNumber"
               value={newHeadData.aadharNumber}
               onChange={handleModalInputChange}
               placeholder="Aadhaar number"
+              maxLength="12"
+              pattern="\d{12}"
+              required
             />
-            <button onClick={handleSaveAndContinue}>Save & Continue</button>
+            {newHeadData.aadharNumber.length > 0 &&
+              !/^\d{12}$/.test(newHeadData.aadharNumber) && (
+                <p style={{ color: "red" }}>
+                  Aadhaar number must be 12 digits.
+                </p>
+              )}
+
+            <button
+              onClick={handleSaveAndContinue}
+              disabled={
+                !newHeadData.headOfFamily ||
+                !/^\d{12}$/.test(newHeadData.aadharNumber)
+              }
+            >
+              Save & Continue
+            </button>
             <button onClick={() => setShowModal(false)}>Cancel</button>
           </div>
         </div>

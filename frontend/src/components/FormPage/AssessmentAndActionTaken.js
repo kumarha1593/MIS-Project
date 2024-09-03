@@ -96,6 +96,17 @@ const AssessmentAndActionTaken = ({ formData, handleInputChange }) => {
     h3: {
       marginBottom: "15px",
     },
+    button: {
+      padding: "10px 20px",
+      fontSize: "14px",
+      cursor: "pointer",
+      backgroundColor: "#8BC34A",
+      color: "#fff",
+      border: "none",
+      borderRadius: "4px",
+      marginTop: "20px",
+      width: "98%",
+    },
   };
 
   return (
