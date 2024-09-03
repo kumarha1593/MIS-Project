@@ -14,8 +14,8 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "$Anshika28$",
-  database: "manipur",
+  password: "$Mumuksh14$",
+  database: "user_management",
 });
 
 db.connect((err) => {
@@ -2746,8 +2746,34 @@ app.get("/api/assessment-and-action-taken/:fm_id", async (req, res) => {
   }
 });
 
+app.post("/api/final-submit", async (req, res) => {
+  const { fm_id } = req.body;
+
+  try {
+    // Update the family_members table's status field to 1 for the given fm_id
+    const [result] = await db
+      .promise()
+      .query(`UPDATE family_members SET status = 1 WHERE id = ?`, [fm_id]);
+
+    if (result.affectedRows > 0) {
+      res.status(200).json({
+        success: true,
+        message: "Data submitted successfully",
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "Family member not found",
+      });
+    }
+  } catch (error) {
+    console.error("Error updating family member status:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
