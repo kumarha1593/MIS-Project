@@ -297,7 +297,7 @@ const FormPage = () => {
     if (currentPage < 19) {
       setCurrentPage(currentPage + 1);
     } else {
-      navigate("/review", { state: { formData } });
+      navigate("/review", { state: { currentFmId } });
     }
   };
 

@@ -1,13 +1,140 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Review.css";
 
 const Review = () => {
   const location = useLocation();
+  const { currentFmId } = location.state || {};
   const navigate = useNavigate();
   const [formData, setFormData] = useState({});
   const [emptyFields, setEmptyFields] = useState([]);
   const [showModal, setShowModal] = useState(false);
+
+  const [personalInfo, setPersonalInfo] = useState(null);
+  const [healthProfile, setHealthProfile] = useState(null);
+  const [htnAssessment, setHtnAssessment] = useState(null);
+  const [dmAssessment, setDmAssessment] = useState(null);
+  const [riskAssessment, setRiskAssessment] = useState(null);
+  const [oralCancerAssessment, setOralCancerAssessment] = useState(null);
+  const [breastCancerAssessment, setBreastCancerAssessment] = useState(null);
+  const [cervicalCancerAssessment, setCervicalCancerAssessment] =
+    useState(null);
+  const [cvdAssessment, setCvdAssessment] = useState(null);
+  const [postStrokeAssessment, setPostStrokeAssessment] = useState(null);
+  const [ckdAssessment, setCkdAssessment] = useState(null);
+  const [copdTbAssessment, setCopdTbAssessment] = useState(null);
+  const [cataractAssessment, setCataractAssessment] = useState(null);
+  const [hearingIssueAssessment, setHearingIssueAssessment] = useState(null);
+  const [leprosyAssessment, setLeprosyAssessment] = useState(null);
+  const [elderlyAssessment, setElderlyAssessment] = useState(null);
+  const [mentalHealthAssessment, setMentalHealthAssessment] = useState(null);
+  const [abhaIdStatus, setAbhaIdStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const personalInfoResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/personal-info/${currentFmId}`
+        );
+        setPersonalInfo(personalInfoResponse.data.data);
+
+        const healthProfileResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/health-measurements/${currentFmId}`
+        );
+        setHealthProfile(healthProfileResponse.data.data);
+
+        const htnAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/htn-assessment/${currentFmId}`
+        );
+        setHtnAssessment(htnAssessmentResponse.data.data);
+
+        const dmAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/dm-assessment/${currentFmId}`
+        );
+        setDmAssessment(dmAssessmentResponse.data.data);
+
+        const riskAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/risk-assessment/${currentFmId}`
+        );
+        setRiskAssessment(riskAssessmentResponse.data.data);
+
+        const oralCancerAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/oral-cancer-assessment/${currentFmId}`
+        );
+        setOralCancerAssessment(oralCancerAssessmentResponse.data.data);
+
+        const breastCancerAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/breast-cancer-assessment/${currentFmId}`
+        );
+        setBreastCancerAssessment(breastCancerAssessmentResponse.data.data);
+
+        const cervicalCancerAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/cervical-cancer-assessment/${currentFmId}`
+        );
+        setCervicalCancerAssessment(cervicalCancerAssessmentResponse.data.data);
+
+        const cvdAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/cvd-assessment/${currentFmId}`
+        );
+        setCvdAssessment(cvdAssessmentResponse.data.data);
+
+        const postStrokeAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/post-stroke-assessment/${currentFmId}`
+        );
+        setPostStrokeAssessment(postStrokeAssessmentResponse.data.data);
+
+        const ckdAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/ckd-assessment/${currentFmId}`
+        );
+        setCkdAssessment(ckdAssessmentResponse.data.data);
+
+        const copdTbAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/copd-tb-assessment/${currentFmId}`
+        );
+        setCopdTbAssessment(copdTbAssessmentResponse.data.data);
+
+        const cataractAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/cataract-assessment/${currentFmId}`
+        );
+        setCataractAssessment(cataractAssessmentResponse.data.data);
+
+        const hearingIssueAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/hearing-issue-assessment/${currentFmId}`
+        );
+        setHearingIssueAssessment(hearingIssueAssessmentResponse.data.data);
+
+        const leprosyAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/leprosy-assessment/${currentFmId}`
+        );
+        setLeprosyAssessment(leprosyAssessmentResponse.data.data);
+
+        const elderlyAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/elderly-assessment/${currentFmId}`
+        );
+        setElderlyAssessment(elderlyAssessmentResponse.data.data);
+
+        const mentalHealthAssessmentResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/mental-health-assessment/${currentFmId}`
+        );
+        setMentalHealthAssessment(mentalHealthAssessmentResponse.data.data);
+
+        const abhaIdStatusResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/abhaid-assessment/${currentFmId}`
+        );
+        setAbhaIdStatus(abhaIdStatusResponse.data.data);
+
+        setLoading(false);
+      } catch (err) {
+        setError(err);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [currentFmId]);
 
   useEffect(() => {
     if (location.state && location.state.formData) {
@@ -15,155 +142,537 @@ const Review = () => {
     }
   }, [location.state]);
 
-  const handleSubmit = () => {
-    const empty = Object.entries(formData).flatMap(([key, value]) => {
-      if (typeof value === "object") {
-        return Object.entries(value)
-          .filter(([, v]) => v === "")
-          .map(([k]) => `${key}.${k}`);
-      }
-      return value === "" ? [key] : [];
-    });
-
-    if (empty.length > 0) {
-      setEmptyFields(empty);
-      setShowModal(true);
-    } else {
-      console.log("Form submitted:", formData);
-      // Add your form submission logic here
-    }
-  };
-
   const handleBack = () => {
     navigate("/FormPage");
   };
 
-  const renderFormSection = (sectionName, sectionData) => {
-    return (
-      <div key={sectionName} className="review-section">
-        <h3>{sectionName}</h3>
-        {Object.entries(sectionData).map(([key, value]) => (
-          <div key={`${sectionName}-${key}`} className="review-item">
-            <span>{key}:</span>
-            <span>{value || "N/A"}</span>
-          </div>
-        ))}
-      </div>
-    );
+  const handleFinalSubmit = async () => {
+    try {
+      await axios.post(`${process.env.REACT_APP_BASE_URL}api/final-submit`, {
+        fm_id: currentFmId,
+      });
+
+      alert("Data submitted successfully!");
+      navigate("/FieldDashboard");
+    } catch (error) {
+      console.error("Error submitting data:", error);
+      alert("Failed to submit data. Please try again.");
+    }
   };
 
-  const renderFormData = () => {
-    const sections = [
-      {
-        name: "Health Profile",
-        keys: [
-          "patientName",
-          "identifier",
-          "cardNumber",
-          "dob",
-          "sex",
-          "phone",
-          "address",
-          "insurance",
-          "disability",
-        ],
-      },
-      {
-        name: "Health Measurements",
-        keys: ["height", "weight", "bmi", "temp", "spo2"],
-      },
-      {
-        name: "HTN Assessment",
-        keys: [
-          "knownHTN",
-          "bp",
-          "highBPAction",
-          "referredCentreHTN",
-          "htnConfirmed",
-        ],
-      },
-      {
-        name: "DM Assessment",
-        keys: [
-          "knownDM",
-          "rbs",
-          "highBSAction",
-          "referredCentreDM",
-          "fasting",
-          "pp",
-          "random",
-          "dmConfirmed",
-        ],
-      },
-      {
-        name: "Risk Assessment",
-        keys: [
-          "age",
-          "tobacco",
-          "alcohol",
-          "waistFemale",
-          "waistMale",
-          "physicalActivity",
-          "familyHistory",
-          "riskScore",
-        ],
-      },
-      { name: "Oral Cancer Assessment", keys: ["oralCancer"] },
-      { name: "Breast Cancer Assessment", keys: ["breastCancer"] },
-      { name: "Cervical Cancer Assessment", keys: ["cervicalCancer"] },
-      { name: "CVD Assessment", keys: ["cvd"] },
-      { name: "Post Stroke Assessment", keys: ["postStroke"] },
-      { name: "CKD Assessment", keys: ["ckd"] },
-      { name: "COPD/TB Assessment", keys: ["copdTb"] },
-      { name: "Cataract Assessment", keys: ["cataract"] },
-      { name: "Hearing Issue", keys: ["hearingIssue"] },
-      { name: "Leprosy Assessment", keys: ["leprosy"] },
-      { name: "Elderly Assessment", keys: ["elderly"] },
-      { name: "Mental Health Assessment", keys: ["mentalHealth"] },
-      {
-        name: "Assessment and Action Taken",
-        keys: [
-          "assessmentAction",
-          "majorNCDDetected",
-          "otherDiseaseDetected",
-          "knownCaseDMWithHTN",
-          "telemedicine",
-          "medicineDistributed",
-          "otherAdvices",
-        ],
-      },
-      { name: "ABHA ID Status", keys: ["abhaIdStatus"] },
-    ];
-
-    return sections.map((section) => {
-      const sectionData = section.keys.reduce((acc, key) => {
-        if (formData[key]) {
-          if (typeof formData[key] === "object") {
-            Object.entries(formData[key]).forEach(([subKey, value]) => {
-              acc[subKey] = value || "N/A";
-            });
-          } else {
-            acc[key] = formData[key];
-          }
-        } else {
-          acc[key] = "N/A";
-        }
-        return acc;
-      }, {});
-
-      return renderFormSection(section.name, sectionData);
-    });
-  };
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error fetching data: {error.message}</div>;
 
   return (
     <div className="review-page">
       <h1>Review Your Submission</h1>
-      {renderFormData()}
+      <div>
+        <h2>Health Profile</h2>
+        <p>Name: {personalInfo.name || "Not filled"}</p>
+        <p>Identifier: {personalInfo.identifier || "Not filled"}</p>
+        <p>Card Number: {personalInfo.card_number || "Not filled"}</p>
+        <p>Date of Birth: {personalInfo.dob || "Not filled"}</p>
+        <p>Sex: {personalInfo.sex || "Not filled"}</p>
+        <p>Telephone Number: {personalInfo.tel_no || "Not filled"}</p>
+        <p>Address: {personalInfo.address || "Not filled"}</p>
+        <p>
+          State Health Insurance:{" "}
+          {personalInfo.state_health_insurance || "Not filled"}
+        </p>
+        <p>
+          State Health Insurance Remark:{" "}
+          {personalInfo.state_health_insurance_remark || "Not filled"}
+        </p>
+        <p>Disability: {personalInfo.disability || "Not filled"}</p>
+        <p>
+          Disability Remark: {personalInfo.disability_remark || "Not filled"}
+        </p>
+      </div>
+
+      <h2>Health Measurements</h2>
+      <div>
+        <p>
+          <strong>Height:</strong> {healthProfile.height || "Not Filled"}
+        </p>
+        <p>
+          <strong>Weight:</strong> {healthProfile.weight || "Not Filled"}
+        </p>
+        <p>
+          <strong>BMI:</strong> {healthProfile.bmi || "Not Filled"}
+        </p>
+        <p>
+          <strong>Temperature:</strong> {healthProfile.temp || "Not Filled"}
+        </p>
+        <p>
+          <strong>SpO2:</strong> {healthProfile.spO2 || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>HTN Assessment</h2>
+      <div>
+        <p>
+          <strong>Case of HTN:</strong>{" "}
+          {htnAssessment?.case_of_htn || "Not Filled"}
+        </p>
+        <p>
+          <strong>Blood Pressure:</strong>{" "}
+          {htnAssessment?.blood_pressure || "Not Filled"}
+        </p>
+        <p>
+          <strong>Action High BP:</strong>{" "}
+          {htnAssessment?.action_high_bp || "Not Filled"}
+        </p>
+        <p>
+          <strong>Referral Center:</strong>{" "}
+          {htnAssessment?.referral_center || "Not Filled"}
+        </p>
+        <p>
+          <strong>HTN Date:</strong> {htnAssessment?.htn_date || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>DM Assessment</h2>
+      <div>
+        <p>
+          <strong>Case of DM:</strong>{" "}
+          {dmAssessment?.case_of_dm || "Not Filled"}
+        </p>
+        <p>
+          <strong>RBS:</strong> {dmAssessment?.RBS || "Not Filled"}
+        </p>
+        <p>
+          <strong>Blood Sugar:</strong>{" "}
+          {dmAssessment?.blood_sugar || "Not Filled"}
+        </p>
+        <p>
+          <strong>Action High BS:</strong>{" "}
+          {dmAssessment?.action_high_bs || "Not Filled"}
+        </p>
+        <p>
+          <strong>Referral Center:</strong>{" "}
+          {dmAssessment?.referral_center || "Not Filled"}
+        </p>
+        <p>
+          <strong>DM Date:</strong> {dmAssessment?.DM_date || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>Risk Assessment</h2>
+      <div>
+        <p>
+          <strong>Age:</strong> {riskAssessment?.age || "Not Filled"}
+        </p>
+        <p>
+          <strong>Tobacco Use:</strong>{" "}
+          {riskAssessment?.tobacco_use || "Not Filled"}
+        </p>
+        <p>
+          <strong>Alcohol Use:</strong>{" "}
+          {riskAssessment?.alcohol_use || "Not Filled"}
+        </p>
+        <p>
+          <strong>Waist Circumference (Female):</strong>{" "}
+          {riskAssessment?.waist_female || "Not Filled"}
+        </p>
+        <p>
+          <strong>Waist Circumference (Male):</strong>{" "}
+          {riskAssessment?.waist_male || "Not Filled"}
+        </p>
+        <p>
+          <strong>Physical Activity:</strong>{" "}
+          {riskAssessment?.physical_activity || "Not Filled"}
+        </p>
+        <p>
+          <strong>Family Diabetes History:</strong>{" "}
+          {riskAssessment?.family_diabetes_history || "Not Filled"}
+        </p>
+        <p>
+          <strong>Risk:</strong>{" "}
+          {riskAssessment?.risk_score > 5 ? "High" : "Low" || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>Oral Cancer Assessment</h2>
+      <div>
+        <p>
+          <strong>Known Case:</strong>{" "}
+          {oralCancerAssessment?.known_case || "Not Filled"}
+        </p>
+        <p>
+          <strong>Persistent Ulcer:</strong>{" "}
+          {oralCancerAssessment?.persistent_ulcer || "Not Filled"}
+        </p>
+        <p>
+          <strong>Persistent Patch:</strong>{" "}
+          {oralCancerAssessment?.persistent_patch || "Not Filled"}
+        </p>
+        <p>
+          <strong>Difficulty Chewing:</strong>{" "}
+          {oralCancerAssessment?.difficulty_chewing || "Not Filled"}
+        </p>
+        <p>
+          <strong>Difficulty Opening Mouth:</strong>{" "}
+          {oralCancerAssessment?.difficulty_opening_mouth || "Not Filled"}
+        </p>
+        <p>
+          <strong>Growth in Mouth:</strong>{" "}
+          {oralCancerAssessment?.growth_in_mouth || "Not Filled"}
+        </p>
+        <p>
+          <strong>Swelling in Neck:</strong>{" "}
+          {oralCancerAssessment?.swelling_in_neck || "Not Filled"}
+        </p>
+        <p>
+          <strong>Suspected Oral Cancer:</strong>{" "}
+          {oralCancerAssessment?.suspected_oral_cancer || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>Breast Cancer Assessment</h2>
+      <div>
+        <p>
+          <strong>Known Case:</strong>{" "}
+          {breastCancerAssessment?.known_case || "Not Filled"}
+        </p>
+        <p>
+          <strong>Lump in Breast:</strong>{" "}
+          {breastCancerAssessment?.lump_in_breast || "Not Filled"}
+        </p>
+        <p>
+          <strong>Blood-Stained Discharge:</strong>{" "}
+          {breastCancerAssessment?.blood_stained_discharge || "Not Filled"}
+        </p>
+        <p>
+          <strong>Change in Shape:</strong>{" "}
+          {breastCancerAssessment?.change_in_shape || "Not Filled"}
+        </p>
+        <p>
+          <strong>Constant Pain or Swelling:</strong>{" "}
+          {breastCancerAssessment?.constant_pain_or_swelling || "Not Filled"}
+        </p>
+        <p>
+          <strong>Redness or Ulcer:</strong>{" "}
+          {breastCancerAssessment?.redness_or_ulcer || "Not Filled"}
+        </p>
+        <p>
+          <strong>Suspected Breast Cancer:</strong>{" "}
+          {breastCancerAssessment?.suspected_breast_cancer || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>Cervical Cancer Assessment</h2>
+      <div>
+        <p>
+          <strong>Known Case:</strong>{" "}
+          {cervicalCancerAssessment?.known_case || "Not Filled"}
+        </p>
+        <p>
+          <strong>Bleeding Between Periods:</strong>{" "}
+          {cervicalCancerAssessment?.bleeding_between_periods || "Not Filled"}
+        </p>
+        <p>
+          <strong>Bleeding After Menopause:</strong>{" "}
+          {cervicalCancerAssessment?.bleeding_after_menopause || "Not Filled"}
+        </p>
+        <p>
+          <strong>Bleeding After Intercourse:</strong>{" "}
+          {cervicalCancerAssessment?.bleeding_after_intercourse || "Not Filled"}
+        </p>
+        <p>
+          <strong>Foul-Smelling Discharge:</strong>{" "}
+          {cervicalCancerAssessment?.foul_smelling_discharge || "Not Filled"}
+        </p>
+        <p>
+          <strong>VIA Appointment Date:</strong>{" "}
+          {cervicalCancerAssessment?.via_appointment_date || "Not Filled"}
+        </p>
+        <p>
+          <strong>VIA Result:</strong>{" "}
+          {cervicalCancerAssessment?.via_result || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>CVD Assessment</h2>
+      <div>
+        <p>
+          <strong>Known Case:</strong>{" "}
+          {cvdAssessment?.known_case || "Not Filled"}
+        </p>
+        <p>
+          <strong>Heart Sound:</strong>{" "}
+          {cvdAssessment?.heart_sound || "Not Filled"}
+        </p>
+        <p>
+          <strong>Symptom:</strong> {cvdAssessment?.symptom || "Not Filled"}
+        </p>
+        <p>
+          <strong>CVD Date:</strong> {cvdAssessment?.cvd_date || "Not Filled"}
+        </p>
+        <p>
+          <strong>Suspected CVD:</strong>{" "}
+          {cvdAssessment?.suspected_cvd || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>Post Stroke Assessment</h2>
+      <div>
+        <p>
+          <strong>History of Stroke:</strong>{" "}
+          {postStrokeAssessment?.history_of_stroke || "Not Filled"}
+        </p>
+        <p>
+          <strong>Stroke Date:</strong>{" "}
+          {postStrokeAssessment?.stroke_date || "Not Filled"}
+        </p>
+        <p>
+          <strong>Present Condition:</strong>{" "}
+          {postStrokeAssessment?.present_condition || "Not Filled"}
+        </p>
+        <p>
+          <strong>Stroke Sign Action:</strong>{" "}
+          {postStrokeAssessment?.stroke_sign_action || "Not Filled"}
+        </p>
+        <p>
+          <strong>Referral Center Name:</strong>{" "}
+          {postStrokeAssessment?.referral_center_name || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>CKD Assessment</h2>
+      <div>
+        <p>
+          <strong>Known CKD:</strong> {ckdAssessment?.knownCKD || "Not Filled"}
+        </p>
+        <p>
+          <strong>History of CKD Stone:</strong>{" "}
+          {ckdAssessment?.historyCKDStone || "Not Filled"}
+        </p>
+        <p>
+          <strong>Age Above 50:</strong>{" "}
+          {ckdAssessment?.ageAbove50 || "Not Filled"}
+        </p>
+        <p>
+          <strong>Hypertension Patient:</strong>{" "}
+          {ckdAssessment?.hypertensionPatient || "Not Filled"}
+        </p>
+        <p>
+          <strong>Diabetes Patient:</strong>{" "}
+          {ckdAssessment?.diabetesPatient || "Not Filled"}
+        </p>
+        <p>
+          <strong>Anemia Patient:</strong>{" "}
+          {ckdAssessment?.anemiaPatient || "Not Filled"}
+        </p>
+        <p>
+          <strong>History of Stroke:</strong>{" "}
+          {ckdAssessment?.historyOfStroke || "Not Filled"}
+        </p>
+        <p>
+          <strong>Swelling Face/Leg:</strong>{" "}
+          {ckdAssessment?.swellingFaceLeg || "Not Filled"}
+        </p>
+        <p>
+          <strong>History of NSAIDS:</strong>{" "}
+          {ckdAssessment?.historyNSAIDS || "Not Filled"}
+        </p>
+        <p>
+          <strong>CKD Risk Score:</strong>{" "}
+          {ckdAssessment?.ckdRiskScore || "Not Filled"}
+        </p>
+        <p>
+          <strong>Risk Assessment:</strong>{" "}
+          {ckdAssessment?.riskaAssessment || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>COPD/TB Assessment</h2>
+      <div>
+        <p>
+          <strong>Known Case CRD:</strong>{" "}
+          {copdTbAssessment?.known_case_crd || "Not Filled"}
+        </p>
+        <p>
+          <strong>CRD Specify:</strong>{" "}
+          {copdTbAssessment?.crd_specify || "Not Filled"}
+        </p>
+        <p>
+          <strong>Occupational Exposure:</strong>{" "}
+          {copdTbAssessment?.occupational_exposure || "Not Filled"}
+        </p>
+        <p>
+          <strong>Cooking Fuel Type:</strong>{" "}
+          {copdTbAssessment?.cooking_fuel_type || "Not Filled"}
+        </p>
+        <p>
+          <strong>Chest Sound:</strong>{" "}
+          {copdTbAssessment?.chest_sound || "Not Filled"}
+        </p>
+        <p>
+          <strong>Chest Sound Action:</strong>{" "}
+          {copdTbAssessment?.chest_sound_action || "Not Filled"}
+        </p>
+        <p>
+          <strong>Referral Center Name:</strong>{" "}
+          {copdTbAssessment?.referral_center_name || "Not Filled"}
+        </p>
+        <p>
+          <strong>COPD Confirmed:</strong>{" "}
+          {copdTbAssessment?.copd_confirmed || "Not Filled"}
+        </p>
+        <p>
+          <strong>COPD Confirmation Date:</strong>{" "}
+          {copdTbAssessment?.copd_confirmation_date || "Not Filled"}
+        </p>
+        <p>
+          <strong>Shortness of Breath:</strong>{" "}
+          {copdTbAssessment?.shortness_of_breath || "Not Filled"}
+        </p>
+        <p>
+          <strong>Coughing More Than 2 Weeks:</strong>{" "}
+          {copdTbAssessment?.coughing_more_than_2_weeks || "Not Filled"}
+        </p>
+        <p>
+          <strong>Blood in Sputum:</strong>{" "}
+          {copdTbAssessment?.blood_in_sputum || "Not Filled"}
+        </p>
+        <p>
+          <strong>Fever More Than 2 Weeks:</strong>{" "}
+          {copdTbAssessment?.fever_more_than_2_weeks || "Not Filled"}
+        </p>
+        <p>
+          <strong>Night Sweats:</strong>{" "}
+          {copdTbAssessment?.night_sweats || "Not Filled"}
+        </p>
+        <p>
+          <strong>Taking Anti-TB Drugs:</strong>{" "}
+          {copdTbAssessment?.taking_anti_tb_drugs || "Not Filled"}
+        </p>
+        <p>
+          <strong>Family TB History:</strong>{" "}
+          {copdTbAssessment?.family_tb_history || "Not Filled"}
+        </p>
+        <p>
+          <strong>History of TB:</strong>{" "}
+          {copdTbAssessment?.history_of_tb || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>Cataract Assessment</h2>
+      <div>
+        <p>
+          <strong>Cloudy/Blurred Vision:</strong>{" "}
+          {cataractAssessment?.cloudy_blurred_vision || "Not Filled"}
+        </p>
+        <p>
+          <strong>Pain or Redness:</strong>{" "}
+          {cataractAssessment?.pain_or_redness || "Not Filled"}
+        </p>
+        <p>
+          <strong>Cataract Assessment Result:</strong>{" "}
+          {cataractAssessment?.cataract_assessment_result || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>Hearing Issue</h2>
+      <div>
+        <p>
+          <strong>Difficulty Hearing:</strong>{" "}
+          {hearingIssueAssessment?.difficulty_hearing || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>Leprosy Assessment</h2>
+      <div>
+        <p>
+          <strong>Hypopigmented Patch:</strong>{" "}
+          {leprosyAssessment?.hypopigmented_patch || "Not Filled"}
+        </p>
+        <p>
+          <strong>Recurrent Ulceration:</strong>{" "}
+          {leprosyAssessment?.recurrent_ulceration || "Not Filled"}
+        </p>
+        <p>
+          <strong>Clawing of Fingers:</strong>{" "}
+          {leprosyAssessment?.clawing_of_fingers || "Not Filled"}
+        </p>
+        <p>
+          <strong>Inability to Close Eyelid:</strong>{" "}
+          {leprosyAssessment?.inability_to_close_eyelid || "Not Filled"}
+        </p>
+        <p>
+          <strong>Difficulty Holding Objects:</strong>{" "}
+          {leprosyAssessment?.difficulty_holding_objects || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>Elderly Assessment</h2>
+      <div>
+        <p>
+          <strong>Unsteady Walking:</strong>{" "}
+          {elderlyAssessment?.unsteady_walking || "Not Filled"}
+        </p>
+        <p>
+          <strong>Physical Disability:</strong>{" "}
+          {elderlyAssessment?.physical_disability || "Not Filled"}
+        </p>
+        <p>
+          <strong>Help from Others:</strong>{" "}
+          {elderlyAssessment?.help_from_others || "Not Filled"}
+        </p>
+        <p>
+          <strong>Forget Names:</strong>{" "}
+          {elderlyAssessment?.forget_names || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>Mental Health Assessment</h2>
+      <div>
+        <p>
+          <strong>Little Interest or Pleasure:</strong>{" "}
+          {mentalHealthAssessment?.little_interest_or_pleasure || "Not Filled"}
+        </p>
+        <p>
+          <strong>Feeling Down or Depressed:</strong>{" "}
+          {mentalHealthAssessment?.feeling_down_or_depressed || "Not Filled"}
+        </p>
+        <p>
+          <strong>Mental Health Score:</strong>{" "}
+          {mentalHealthAssessment?.mental_health_score || "Not Filled"}
+        </p>
+        <p>
+          <strong>Mental Health Problem:</strong>{" "}
+          {mentalHealthAssessment?.mental_health_problem || "Not Filled"}
+        </p>
+        <p>
+          <strong>History of Fits:</strong>{" "}
+          {mentalHealthAssessment?.history_of_fits || "Not Filled"}
+        </p>
+        <p>
+          <strong>Other Mental Disorder:</strong>{" "}
+          {mentalHealthAssessment?.other_mental_disorder || "Not Filled"}
+        </p>
+        <p>
+          <strong>Brief Intervention Given:</strong>{" "}
+          {mentalHealthAssessment?.brief_intervention_given || "Not Filled"}
+        </p>
+        <p>
+          <strong>Intervention Type:</strong>{" "}
+          {mentalHealthAssessment?.intervention_type || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>ABHA ID Status</h2>
+      <div>
+        <p>
+          <strong>ABHA ID Status:</strong>{" "}
+          {abhaIdStatus?.abhaid_status || "Not Filled"}
+        </p>
+      </div>
       <div className="button-container">
         <button onClick={handleBack} className="back-button">
           Back
         </button>
-        <button onClick={handleSubmit} className="submit-button">
+        <button className="submit-button" onClick={handleFinalSubmit}>
           Final Submit
         </button>
       </div>

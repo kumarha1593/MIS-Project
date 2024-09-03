@@ -1,50 +1,51 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const PostStrokeAssessment = ({ currentFmId }) => {
+const HTNAssessment = ({ currentFmId }) => {
   const [formData, setFormData] = useState({
-    history_of_stroke: "",
-    date_of_stroke: "",
-    present_condition: "",
-    stroke_symptoms_action: "",
+    case_of_htn: "",
+    blood_pressure: "",
+    action_high_bp: "",
     referral_center: "",
+    htn_date: "",
   });
 
-  const [showStrokeDetails, setShowStrokeDetails] = useState(false);
+  const [showHighBPOptions, setShowHighBPOptions] = useState(false);
   const [showReferralField, setShowReferralField] = useState(false);
 
   useEffect(() => {
-    const fetchPostStrokeData = async () => {
+    const fetchHtnData = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/post-stroke-assessment/${currentFmId}`
+          `${process.env.REACT_APP_BASE_URL}api/htn-assessment/${currentFmId}`
         );
         if (response.data.success) {
           const data = response.data.data;
 
           // Format the date to "yyyy-MM-dd"
-          if (data.date_of_stroke) {
-            data.date_of_stroke = new Date(data.date_of_stroke)
-              .toISOString()
-              .split("T")[0];
+          if (data.htn_date) {
+            data.htn_date = new Date(data.htn_date).toISOString().split("T")[0];
           }
 
+          // Set the formData with the fetched data
           setFormData(data);
 
-          if (data.history_of_stroke === "yes") {
-            setShowStrokeDetails(true);
-            if (data.stroke_symptoms_action === "referral") {
+          // Check if BP is high and set the state accordingly
+          const [upperBP, lowerBP] = data.blood_pressure.split("/").map(Number);
+          if (upperBP > 140 || lowerBP < 90) {
+            setShowHighBPOptions(true);
+            if (data.action_high_bp === "referral") {
               setShowReferralField(true);
             }
           }
         }
       } catch (error) {
-        console.error("Error fetching post-stroke assessment:", error);
+        console.error("Error fetching HTN assessment:", error);
       }
     };
 
     if (currentFmId) {
-      fetchPostStrokeData();
+      fetchHtnData(); // Ensure the fetch is only attempted if currentFmId is available
     }
   }, [currentFmId]);
 
@@ -55,33 +56,40 @@ const PostStrokeAssessment = ({ currentFmId }) => {
       [name]: value,
     });
 
-    if (name === "history_of_stroke") {
-      setShowStrokeDetails(value === "yes");
-      if (value !== "yes") {
+    // Handle BP field change specifically
+    if (name === "blood_pressure") {
+      const [upperBP, lowerBP] = value.split("/").map(Number);
+      if (upperBP > 140 || lowerBP < 90) {
+        setShowHighBPOptions(true);
+      } else {
+        setShowHighBPOptions(false);
         setShowReferralField(false);
       }
     }
 
-    if (name === "stroke_symptoms_action") {
-      setShowReferralField(value === "referral");
+    // Handle action_high_bp field change
+    if (name === "action_high_bp" && value === "referral") {
+      setShowReferralField(true);
+    } else if (name === "action_high_bp") {
+      setShowReferralField(false);
     }
   };
 
   const handleSave = async () => {
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}api/post-stroke-assessment`,
+        `${process.env.REACT_APP_BASE_URL}api/htn-assessment`,
         {
           fm_id: currentFmId,
           ...formData,
         }
       );
       if (response.data.success) {
-        alert("Post-stroke assessment saved successfully!");
+        alert("HTN assessment saved successfully!");
       }
     } catch (error) {
-      console.error("Error saving post-stroke assessment:", error);
-      alert("Failed to save post-stroke assessment. Please try again.");
+      console.error("Error saving HTN assessment:", error);
+      alert("Failed to save HTN assessment. Please try again.");
     }
   };
 
@@ -109,85 +117,79 @@ const PostStrokeAssessment = ({ currentFmId }) => {
   return (
     <div style={styles.formSection}>
       <div style={styles.formGroup}>
-        <label style={styles.label}>History of Stroke *</label>
+        <label style={styles.label}>Known case of HTN *</label>
         <select
-          id="history_of_stroke"
-          name="history_of_stroke"
-          value={formData.history_of_stroke || ""}
+          id="case_of_htn"
+          name="case_of_htn"
+          value={formData.case_of_htn || ""}
           onChange={handleInputChange}
-          style={styles.input}
         >
           <option value="">Select</option>
-          <option value="yes">Yes</option>
-          <option value="no">No</option>
+          <option value="yes and on treatment">Yes and on Treatment</option>
+          <option value="yes and not on treatment">
+            Yes and Not on Treatment
+          </option>
+          <option value="No">No</option>
         </select>
       </div>
 
-      {showStrokeDetails && (
-        <>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Date of Stroke *</label>
-            <input
-              type="date"
-              id="date_of_stroke"
-              name="date_of_stroke"
-              value={formData.date_of_stroke || ""}
-              onChange={handleInputChange}
-              style={styles.input}
-            />
-          </div>
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Blood Pressure (mmHg) *</label>
+        <input
+          type="number"
+          id="blood_pressure"
+          name="blood_pressure"
+          value={formData.blood_pressure || ""}
+          onChange={handleInputChange}
+        />
+      </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Present Condition *</label>
-            <select
-              id="present_condition"
-              name="present_condition"
-              value={formData.present_condition || ""}
-              onChange={handleInputChange}
-              style={styles.input}
-            >
-              <option value="">Select</option>
-              <option value="recovered">Recovered</option>
-              <option value="not_recovered">Not recovered</option>
-              <option value="need_physiotherapy">Need Physiotherapy</option>
-            </select>
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Action for Stroke Symptoms *</label>
-            <select
-              id="stroke_symptoms_action"
-              name="stroke_symptoms_action"
-              value={formData.stroke_symptoms_action || ""}
-              onChange={handleInputChange}
-              style={styles.input}
-            >
-              <option value="">Select</option>
-              <option value="referral">Referral</option>
-              <option value="teleconsultation">Teleconsultation</option>
-            </select>
-          </div>
-
-          {showReferralField && (
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Referred Centre for Stroke *</label>
-              <input
-                type="text"
-                id="referral_center"
-                name="referral_center"
-                value={formData.referral_center || ""}
-                onChange={handleInputChange}
-                style={styles.input}
-              />
-            </div>
-          )}
-        </>
+      {showHighBPOptions && (
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Action for High BP *</label>
+          <select
+            id="action_high_bp"
+            name="action_high_bp"
+            value={formData.action_high_bp || ""}
+            onChange={handleInputChange}
+          >
+            <option value="">Select</option>
+            <option value="referral">Referral</option>
+            <option value="teleconsultation">Teleconsultation</option>
+          </select>
+        </div>
       )}
+
+      {showReferralField && (
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Referred Centre for HTN *</label>
+          <input
+            type="text"
+            id="referral_center"
+            name="referral_center"
+            value={formData.referral_center || ""}
+            onChange={handleInputChange}
+          />
+        </div>
+      )}
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>
+          HTN Confirmed at PHC/CHC/DH and Date *
+        </label>
+        <input
+          type="date"
+          id="htn_date"
+          name="htn_date"
+          value={formData.htn_date || ""}
+          onChange={handleInputChange}
+        />
+      </div>
       <button type="button" onClick={handleSave}>
-        Save Draft
+        Save HTN Assessment
       </button>
     </div>
   );
 };
 
-export default PostStrokeAssessment;
+export default HTNAssessment;
