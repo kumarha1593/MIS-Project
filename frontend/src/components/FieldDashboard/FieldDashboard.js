@@ -152,6 +152,9 @@ const FieldDashboard = () => {
       if (response.data.success) {
         setShowModal(false);
         fetchFamilyMembers();
+        navigate("/FieldDashboard", {
+          state: { familyId: response.data.fm_id },
+        });
       }
     } catch (error) {
       console.error("Error saving new head:", error);

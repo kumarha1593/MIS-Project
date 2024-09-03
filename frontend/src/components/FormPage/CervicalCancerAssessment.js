@@ -18,15 +18,16 @@ const CervicalCancerAssessment = ({ currentFmId }) => {
         `${process.env.REACT_APP_BASE_URL}api/cervical-cancer-assessment/${currentFmId}`
       );
       if (response.data.success) {
-        const data = response.data.data;
-
+        const fetchedData = response.data.data;
         // Format the date to "yyyy-MM-dd"
-        if (data.via_appointment_date) {
-          data.via_appointment_date = new Date(data.via_appointment_date)
+        if (fetchedData.via_appointment_date) {
+          fetchedData.via_appointment_date = new Date(
+            fetchedData.via_appointment_date
+          )
             .toISOString()
             .split("T")[0];
         }
-        setFormData(data);
+        setFormData(fetchedData);
       }
     } catch (error) {
       console.error("Error fetching cervical cancer assessment:", error);

@@ -341,12 +341,7 @@ const FormPage = () => {
       case 8:
         return <CervicalCancerAssessment currentFmId={currentFmId} />;
       case 9:
-        return (
-          <CVDAssessment
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <CVDAssessment currentFmId={currentFmId} />;
       case 10:
         return <PostStrokeAssessment currentFmId={currentFmId} />;
 
