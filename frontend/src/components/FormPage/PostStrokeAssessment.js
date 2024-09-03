@@ -119,6 +119,17 @@ const PostStrokeAssessment = ({ currentFmId }) => {
       marginBottom: "5px",
       fontWeight: "bold",
     },
+    button: {
+      padding: "10px 20px",
+      fontSize: "14px",
+      cursor: "pointer",
+      backgroundColor: "#8BC34A",
+      color: "#fff",
+      border: "none",
+      borderRadius: "4px",
+      marginTop: "20px",
+      width: "98%",
+    },
   };
 
   return (
@@ -198,7 +209,7 @@ const PostStrokeAssessment = ({ currentFmId }) => {
           )}
         </>
       )}
-      <button type="button" onClick={handleSave}>
+      <button type="button" onClick={handleSave} style={styles.button}>
         Save Draft
       </button>
     </div>

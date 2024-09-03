@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { FaPlusCircle } from "react-icons/fa";
 import axios from "axios";
 import "./FamilyDetails.css";
 
 const FamilyDetails = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const location = useLocation();
   const [familyData, setFamilyData] = useState({
     headOfFamily: location.state?.headOfFamily || "Unknown",
     members: [],
   });
+  const [headId, setHeadId] = useState(location.state?.headId);
+
   const [showModal, setShowModal] = useState(false);
   const [newMemberData, setNewMemberData] = useState({
     name: "",
@@ -18,30 +20,25 @@ const FamilyDetails = () => {
   });
 
   useEffect(() => {
-    const fetchFamilyData = async () => {
-      const headOfFamily = location.state?.headOfFamily;
-      if (headOfFamily) {
-        try {
-          const response = await axios.get(
-            `${process.env.REACT_APP_BASE_URL}api/family-members/${headOfFamily}`
-          );
-          setFamilyData({
-            headOfFamily: headOfFamily,
-            members: response.data.members || [],
-          });
-        } catch (error) {
-          console.error("Error fetching family data:", error);
-          // In case of error, we still set the headOfFamily
-          setFamilyData({
-            headOfFamily: headOfFamily,
-            members: [],
-          });
-        }
+    const fetchFamilyMembers = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/family-members/${headId}`
+        );
+
+        setFamilyData((prevData) => ({
+          ...prevData,
+          members: response.data,
+        }));
+      } catch (error) {
+        console.error("Error fetching family members:", error);
       }
     };
 
-    fetchFamilyData();
-  }, [location.state]);
+    if (headId) {
+      fetchFamilyMembers();
+    }
+  }, [headId]);
 
   const handleAddMember = () => {
     setShowModal(true);
@@ -52,17 +49,27 @@ const FamilyDetails = () => {
   };
 
   const handleSubmitNewMember = async () => {
+    const user_id = localStorage.getItem("user_id");
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/family-members`,
         {
-          ...newMemberData,
-          headOfFamily: familyData.headOfFamily,
+          fc_id: user_id,
+          name: newMemberData.name,
+          aadhar: newMemberData.aadharNumber,
+          head_id: headId,
         }
       );
       if (response.data.success) {
         setShowModal(false);
-        navigate("/FormPage", { state: { familyId: response.data.fm_id } });
+        // Refresh the family members list
+        const updatedMembers = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/family-members/${headId}`
+        );
+        setFamilyData((prevData) => ({
+          ...prevData,
+          members: updatedMembers.data,
+        }));
       }
     } catch (error) {
       console.error("Error adding new family member:", error);
@@ -84,8 +91,8 @@ const FamilyDetails = () => {
           {familyData.members.map((member) => (
             <tr key={member.id}>
               <td>{member.name}</td>
-              <td>{member.aadharNumber}</td>
-              <td>{member.status}</td>
+              <td>{member.Aadhar}</td>
+              <td>{member.status === 0 ? "Pending" : "Completed"}</td>
             </tr>
           ))}
           {familyData.members.length === 0 && (
@@ -120,7 +127,7 @@ const FamilyDetails = () => {
               onChange={handleModalInputChange}
               placeholder="Aadhar Number"
             />
-            <button onClick={handleSubmitNewMember}>Submit and Next</button>
+            <button onClick={handleSubmitNewMember}>Submit</button>
             <button onClick={() => setShowModal(false)}>Cancel</button>
           </div>
         </div>

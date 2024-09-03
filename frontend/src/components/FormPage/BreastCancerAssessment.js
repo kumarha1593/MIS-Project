@@ -189,37 +189,33 @@ const BreastCancerAssessment = ({ currentFmId }) => {
 
 const styles = {
   formSection: {
-    padding: "20px",
-    maxWidth: "500px",
-    margin: "0 auto",
-  },
-  formGroup: {
     marginBottom: "20px",
   },
+  formGroup: {
+    marginBottom: "15px",
+    display: "flex",
+    flexDirection: "column",
+  },
+  input: {
+    padding: "8px",
+    width: "100%",
+    boxSizing: "border-box",
+    fontSize: "14px",
+  },
   label: {
-    display: "block",
     marginBottom: "5px",
     fontWeight: "bold",
   },
-  input: {
-    width: "100%",
-    padding: "10px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
-    borderRadius: "4px",
-  },
   button: {
-    backgroundColor: "#4CAF50",
-    border: "none",
-    color: "white",
-    padding: "15px 32px",
-    textAlign: "center",
-    textDecoration: "none",
-    display: "inline-block",
-    fontSize: "16px",
-    margin: "4px 2px",
+    padding: "10px 20px",
+    fontSize: "14px",
     cursor: "pointer",
+    backgroundColor: "#8BC34A",
+    color: "#fff",
+    border: "none",
     borderRadius: "4px",
+    marginTop: "20px",
+    width: "100%",
   },
 };
 

@@ -224,6 +224,73 @@ app.get("/api/family-members/:user_id", async (req, res) => {
   }
 });
 
+//Adding family members under a family head
+app.post("/api/family-members", async (req, res) => {
+  const { fc_id, name, aadhar, head_id } = req.body; // Ensure fc_id is included
+
+  try {
+    await db.promise().beginTransaction();
+
+    const [familyResult] = await db.promise().query(
+      `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, status, date)
+       VALUES (?, ?, ?, ?, NULL, 0, NOW())`,
+      [fc_id, name, aadhar, head_id || 0] // fc_id should be inserted here
+    );
+
+    const fm_id = familyResult.insertId;
+
+    const [masterDataResult] = await db
+      .promise()
+      .query(`INSERT INTO master_data (fm_id) VALUES (?)`, [fm_id]);
+
+    const master_data_id = masterDataResult.insertId;
+
+    await db
+      .promise()
+      .query(`UPDATE family_members SET master_data_id = ? WHERE id = ?`, [
+        master_data_id,
+        fm_id,
+      ]);
+
+    await db.promise().commit();
+
+    res.status(201).json({
+      success: true,
+      message: "Family member added successfully",
+      fm_id,
+      master_data_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error inserting family member:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+// Fetch family members associated with a specific headId
+app.get("/api/family-members/:headId", async (req, res) => {
+  const headId = req.params.headId;
+
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT fm.id, fm.name, fm.Aadhar, fm.status, fm.fc_id
+       FROM family_members fm
+       WHERE fm.head_id = ?`,
+      [headId]
+    );
+
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No family members found for this headId" });
+    }
+
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error("Error fetching family members:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 //FORM DATA
 
 //PERSONAL INFO

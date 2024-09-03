@@ -77,13 +77,23 @@ const HealthMeasurements = ({ currentFmId }) => {
     input: {
       padding: "8px",
       width: "100%",
-      //maxWidth: "300px", // Adjust this value to your desired width
       boxSizing: "border-box",
       fontSize: "14px",
     },
     label: {
       marginBottom: "5px",
       fontWeight: "bold",
+    },
+    button: {
+      padding: "10px 20px",
+      fontSize: "14px",
+      cursor: "pointer",
+      backgroundColor: "#8BC34A",
+      color: "#fff",
+      border: "none",
+      borderRadius: "4px",
+      marginTop: "20px",
+      width: "98%",
     },
   };
 
@@ -158,7 +168,7 @@ const HealthMeasurements = ({ currentFmId }) => {
           style={styles.input}
         />
       </div>
-      <button type="button" onClick={handleSave}>
+      <button type="button" onClick={handleSave} style={styles.button}>
         Save Draft
       </button>
     </div>

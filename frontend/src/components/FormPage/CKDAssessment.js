@@ -120,6 +120,17 @@ const CKDAssessment = ({ currentFmId }) => {
       fontSize: "14px",
     },
     label: { marginBottom: "5px", fontWeight: "bold" },
+    button: {
+      padding: "10px 20px",
+      fontSize: "14px",
+      cursor: "pointer",
+      backgroundColor: "#8BC34A",
+      color: "#fff",
+      border: "none",
+      borderRadius: "4px",
+      marginTop: "20px",
+      width: "98%",
+    },
   };
 
   return (
@@ -275,7 +286,7 @@ const CKDAssessment = ({ currentFmId }) => {
           <option value="No Risk">No Risk</option>
         </select>
       </div>
-      <button type="button" onClick={handleSubmit}>
+      <button type="button" onClick={handleSubmit} style={styles.button}>
         Save CKD Assessment
       </button>
     </div>
