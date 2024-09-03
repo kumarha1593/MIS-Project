@@ -2575,6 +2575,176 @@ app.get("/api/cvd-assessment/:fm_id", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+// API endpoint to get detected diseases based on fm_id
+app.get("/api/diseases/:fm_id", (req, res) => {
+  const { fm_id } = req.params;
+
+  const queries = [
+    `SELECT 'HTN' as disease FROM htn WHERE fm_id = ? AND case_of_htn IN ('yes and on treatment', 'yes and not on treatment')`,
+    `SELECT 'DM' as disease FROM dm WHERE fm_id = ? AND case_of_dm IN ('yes and on treatment', 'yes and not on treatment')`,
+    `SELECT 'CVD' as disease FROM cvd WHERE fm_id = ? AND suspected_cvd = 'yes'`,
+    `SELECT 'Oral Cancer' as disease FROM oralcancer WHERE fm_id = ? AND suspected_oral_cancer = 'yes'`,
+    `SELECT 'Breast Cancer' as disease FROM breastcancer WHERE fm_id = ? AND suspected_breast_cancer = 'yes'`,
+    `SELECT 'Cervical Cancer' as disease FROM cervicalcancer WHERE fm_id = ? AND via_result = 'yes'`,
+    `SELECT 'Post Stroke' as disease FROM poststroke WHERE fm_id = ? AND history_of_stroke = 'yes'`,
+    `SELECT 'CKD' as disease FROM ckd_assessment WHERE fm_id = ? AND ckdRiskScore >= 5`,
+    `SELECT 'COPD/TB' as disease FROM copdtb WHERE fm_id = ? AND known_case_crd = 'yes'`,
+    `SELECT 'Cataract' as disease FROM cataract WHERE fm_id = ? AND cataract_assessment_result = 'suspected'`,
+    `SELECT 'Leprosy' as disease FROM leprosy WHERE fm_id = ? AND (hypopigmented_patch = 'Yes' OR recurrent_ulceration = 'Yes' OR clawing_of_fingers = 'Yes' OR inability_to_close_eyelid = 'Yes' OR difficulty_holding_objects = 'Yes')`,
+    `SELECT 'Elderly Condition' as disease FROM elderly WHERE fm_id = ? AND (unsteady_walking = 'Yes' OR physical_disability = 'Yes' OR help_from_others = 'Yes' OR forget_names = 'Yes')`,
+    `SELECT 'Mental Health Problem' as disease FROM mentalhealth WHERE fm_id = ? AND mental_health_score > 3`,
+    `SELECT 'Risk' as disease FROM risk_assessment WHERE fm_id = ? AND risk_score > 4`,
+  ];
+
+  const diseasePromises = queries.map((query) => {
+    return new Promise((resolve, reject) => {
+      db.query(query, [fm_id], (err, results) => {
+        if (err) reject(err);
+        resolve(results.map((row) => row.disease));
+      });
+    });
+  });
+
+  Promise.all(diseasePromises)
+    .then((diseaseArrays) => {
+      const diseases = [].concat(...diseaseArrays);
+      res.json({ diseases });
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err.message });
+    });
+});
+app.post("/api/assessment-and-action-taken", async (req, res) => {
+  const {
+    fm_id,
+    majorNCDDetected = null,
+    anyOtherDiseaseDetected = null,
+    knownCaseDMWithHTN = null,
+    teleconsultation = null,
+    prescriptionGiven = null,
+    otherAdvices = null,
+    remarks = null,
+  } = req.body;
+
+  console.log(`Received fm_id: ${fm_id}`);
+
+  try {
+    await db.promise().beginTransaction();
+
+    const sanitizedValues = [
+      majorNCDDetected === "" ? null : majorNCDDetected,
+      anyOtherDiseaseDetected === "" ? null : anyOtherDiseaseDetected,
+      knownCaseDMWithHTN === "" ? null : knownCaseDMWithHTN,
+      teleconsultation === "" ? null : teleconsultation,
+      prescriptionGiven === "" ? null : prescriptionGiven,
+      otherAdvices === "" ? null : otherAdvices,
+      remarks === "" ? null : remarks,
+    ];
+
+    let assesmentandaction_id;
+
+    // Check if the family member already has an assessment and action ID in the master_data
+    const [masterData] = await db
+      .promise()
+      .query("SELECT assesmentandaction_id FROM master_data WHERE fm_id = ?", [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].assesmentandaction_id) {
+      // Update existing assessment record
+      assesmentandaction_id = masterData[0].assesmentandaction_id;
+      await db.promise().query(
+        `UPDATE assessment_and_action_taken SET
+        major_ncd_detected = ?, any_other_disease_detected = ?, known_case_dm_htn = ?, 
+        teleconsultation = ?, prescription_given = ?, other_advices = ?, remarks = ?, 
+        updated_at = NOW()
+        WHERE id = ?`,
+        [...sanitizedValues, assesmentandaction_id]
+      );
+      console.log(
+        `Updated assessment and action taken with ID: ${assesmentandaction_id}`
+      );
+    } else {
+      // Insert a new assessment record
+      const [result] = await db.promise().query(
+        `INSERT INTO assessment_and_action_taken 
+        (major_ncd_detected, any_other_disease_detected, known_case_dm_htn, 
+         teleconsultation, prescription_given, other_advices, remarks, 
+         created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        sanitizedValues
+      );
+      assesmentandaction_id = result.insertId;
+      console.log(
+        `Inserted new assessment and action taken with ID: ${assesmentandaction_id}`
+      );
+
+      // Update the master_data table with the new assessmentandaction_id
+      const [updateResult] = await db
+        .promise()
+        .query(
+          "UPDATE master_data SET assesmentandaction_id = ? WHERE fm_id = ?",
+          [assesmentandaction_id, fm_id]
+        );
+      console.log(
+        `Affected rows in master_data update: ${updateResult.affectedRows}`
+      );
+    }
+
+    await db.promise().commit();
+
+    res.status(200).json({
+      success: true,
+      message: "Assessment and action taken saved successfully",
+      assesmentandaction_id,
+    });
+  } catch (error) {
+    await db.promise().rollback();
+    console.error("Error saving assessment and action taken:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/assessment-and-action-taken/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query("SELECT assesmentandaction_id FROM master_data WHERE fm_id = ?", [
+        fm_id,
+      ]);
+
+    if (masterData.length > 0 && masterData[0].assesmentandaction_id) {
+      const [assessmentData] = await db
+        .promise()
+        .query("SELECT * FROM assessment_and_action_taken WHERE id = ?", [
+          masterData[0].assesmentandaction_id,
+        ]);
+
+      if (assessmentData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: assessmentData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Assessment and action taken not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message:
+          "No assessment and action taken associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching assessment and action taken:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;
