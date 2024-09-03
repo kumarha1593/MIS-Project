@@ -17,7 +17,7 @@ const CVDAssessment = ({ currentFmId }) => {
   const fetchCVDData = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5001/api/cvd-assessment/${currentFmId}`
+        `http://localhost:5000/api/cvd-assessment/${currentFmId}`
       );
       if (response.data.success) {
         const fetchedData = response.data.data;
@@ -53,7 +53,7 @@ const CVDAssessment = ({ currentFmId }) => {
   const handleSave = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5001/api/cvd-assessment",
+        "http://localhost:5000/api/cvd-assessment",
         {
           fm_id: currentFmId,
           ...formData,

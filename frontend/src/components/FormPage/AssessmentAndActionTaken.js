@@ -1,73 +1,60 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const AssessmentAndActionTaken = ({ formData, handleInputChange }) => {
-  // Function to check if the user is a known case of DM with HTN
-  const isKnownCaseDMWithHTN = () => {
-    return (
-      (formData.knownHTN === "Yes and on treatment" &&
-        formData.knownDM === "Yes and on treatment") ||
-      (formData.knownHTN === "Yes and on treatment" &&
-        formData.knownDM === "Yes and not on treatment") ||
-      (formData.knownHTN === "Yes and not on treatment" &&
-        formData.knownDM === "Yes and not on treatment") ||
-      (formData.knownHTN === "Yes and not on treatment" &&
-        formData.knownDM === "Yes and on treatment")
-    );
+const AssessmentAndActionTaken = ({ currentFmId }) => {
+  const [formData, setFormData] = useState({
+    majorNCDDetected: "",
+    anyOtherDiseaseDetected: "",
+    knownCaseDMWithHTN: "",
+    teleconsultation: "",
+    prescriptionGiven: "",
+    otherAdvices: "",
+    remarks: "",
+  });
+
+  useEffect(() => {
+    const fetchAssessmentData = async () => {
+      if (!currentFmId) return;
+
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/assessment-and-action-taken/${currentFmId}`
+        );
+        if (response.data.success) {
+          setFormData(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching assessment and action taken:", error);
+      }
+    };
+
+    fetchAssessmentData();
+  }, [currentFmId]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
-  // Function to get detected diseases
-  const getDetectedDiseases = () => {
-    const diseases = [];
-
-    if (formData.knownHTN === "Yes and on treatment" || formData.knownHTN === "Yes and not on treatment") {
-      diseases.push("HTN");
+  const handleSave = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}api/assessment-and-action-taken`,
+        {
+          fm_id: currentFmId,
+          ...formData,
+        }
+      );
+      if (response.data.success) {
+        alert("Assessment and action taken saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving assessment and action taken:", error);
+      alert("Failed to save assessment and action taken. Please try again.");
     }
-
-    if (formData.knownDM === "Yes and on treatment" || formData.knownDM === "Yes and not on treatment") {
-      diseases.push("DM");
-    }
-
-    if (formData.cvd?.suspectedHeartDisease === "Yes") {
-      diseases.push("CVD");
-    }
-
-    if (formData.knownRespiratoryDisease === "Yes") {
-      diseases.push("COPD");
-    }
-
-    if (formData.suspectedOralCancer === "Yes") {
-      diseases.push("Oral CA");
-    }
-
-    if (formData.suspectedBreastCancer === "Yes") {
-      diseases.push("Breast CA");
-    }
-
-    if (formData.knownCervicalCancer === "Yes and on treatment" || formData.knownCervicalCancer === "Yes and not on treatment") {
-      diseases.push("Cx CA");
-    }
-
-    if (formData.postStroke?.historyOfStroke === "Yes") {
-      diseases.push("Post Stroke");
-    }
-
-    if (formData.mentalHealth?.briefInterventionGiven === "Yes") {
-      diseases.push("Mental Health Problem");
-    }
-
-    if (formData.ckd?.ckdRiskAssessment === "Risk") {
-      diseases.push("CKD");
-    }
-
-    if (formData.knownRespiratoryDisease === "Yes") {
-      diseases.push("TB");
-    }
-
-    if (formData.cataract?.cataractResult === "Suspected") {
-      diseases.push("Cataract");
-    }
-
-    return diseases.join(", ");
   };
 
   const styles = {
@@ -93,9 +80,6 @@ const AssessmentAndActionTaken = ({ formData, handleInputChange }) => {
       marginBottom: "5px",
       fontWeight: "bold",
     },
-    h3: {
-      marginBottom: "15px",
-    },
     button: {
       padding: "10px 20px",
       fontSize: "14px",
@@ -110,102 +94,93 @@ const AssessmentAndActionTaken = ({ formData, handleInputChange }) => {
   };
 
   return (
-    <div style={styles.formGroup}>
-      {/* Major NCD Detected */}
+    <div>
       <div style={styles.formGroup}>
         <label style={styles.label}>Major NCD Detected</label>
         <input
           type="text"
           name="majorNCDDetected"
-          value={getDetectedDiseases()}
-          readOnly
+          value={formData.majorNCDDetected || ""}
+          onChange={handleInputChange}
           style={styles.input}
         />
       </div>
 
-      {/* Other Disease Detected */}
       <div style={styles.formGroup}>
         <label style={styles.label}>Any Other Disease Detected</label>
         <textarea
-          name="otherDiseaseDetected"
-          value={formData.otherDiseaseDetected}
+          name="anyOtherDiseaseDetected"
+          value={formData.anyOtherDiseaseDetected || ""}
           onChange={handleInputChange}
-          placeholder="Specify any other disease detected"
           rows="2"
           style={styles.textarea}
         ></textarea>
       </div>
 
-      {/* Known Case of DM with HTN */}
       <div style={styles.formGroup}>
         <label style={styles.label}>Known Case of DM with HTN</label>
         <input
           type="text"
           name="knownCaseDMWithHTN"
-          value={isKnownCaseDMWithHTN() ? "Yes" : "No"}
+          value={formData.knownCaseDMWithHTN || ""}
           onChange={handleInputChange}
-          readOnly
           style={styles.input}
         />
       </div>
 
-      {/* Telemedicine */}
       <div style={styles.formGroup}>
-        <label style={styles.label}>Telemedicine</label>
+        <label style={styles.label}>Teleconsultation</label>
         <select
-          name="telemedicine"
-          value={formData.telemedicine}
+          name="teleconsultation"
+          value={formData.teleconsultation || ""}
           onChange={handleInputChange}
-          required
           style={styles.input}
         >
           <option value="">Select</option>
-          <option value="yes">Yes</option>
-          <option value="no">No</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
         </select>
       </div>
 
-      {/* Medicine Distributed */}
       <div style={styles.formGroup}>
-        <label style={styles.label}>Medicine Distributed</label>
+        <label style={styles.label}>Prescription Given</label>
         <select
-          name="medicineDistributed"
-          value={formData.medicineDistributed}
+          name="prescriptionGiven"
+          value={formData.prescriptionGiven || ""}
           onChange={handleInputChange}
-          required
           style={styles.input}
         >
           <option value="">Select</option>
-          <option value="yes">Yes</option>
-          <option value="no">No</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
         </select>
       </div>
 
-      {/* Other Advices */}
       <div style={styles.formGroup}>
         <label style={styles.label}>Other Advices</label>
         <textarea
           name="otherAdvices"
-          value={formData.otherAdvices}
+          value={formData.otherAdvices || ""}
           onChange={handleInputChange}
-          placeholder="Enter any other advices"
           rows="3"
           style={styles.textarea}
         ></textarea>
       </div>
 
-      {/* Remarks */}
       <div style={styles.formGroup}>
         <label style={styles.label}>Remarks</label>
         <textarea
           name="remarks"
-          value={formData.remarks}
+          value={formData.remarks || ""}
           onChange={handleInputChange}
-          placeholder="Enter remarks (e.g., referral status, other health observations)"
           rows="3"
           style={styles.textarea}
         ></textarea>
       </div>
+
+      <button type="button" style={styles.button} onClick={handleSave}>
+        Save Draft
+      </button>
     </div>
   );
 };

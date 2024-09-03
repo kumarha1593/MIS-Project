@@ -360,12 +360,7 @@ const FormPage = () => {
       case 17:
         return <MentalHealthAssessment currentFmId={currentFmId} />;
       case 18:
-        return (
-          <AssessmentAndActionTaken
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        );
+        return <AssessmentAndActionTaken currentFmId={currentFmId} />;
       case 19:
         return <ABHAIdStatus currentFmId={currentFmId} />;
       default:
