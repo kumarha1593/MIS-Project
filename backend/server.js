@@ -14,8 +14,8 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "$Mumuksh14$",
-  database: "user_management",
+  password: "$Anshika28$",
+  database: "manipur",
 });
 
 db.connect((err) => {
@@ -901,26 +901,26 @@ app.post("/api/risk-assessment", async (req, res) => {
       risk_score,
     ];
 
-    let risk_assessment_id;
+    let risk_assesment_id;
 
     // Insert or update Risk Assessment
     const [masterData] = await db
       .promise()
-      .query(`SELECT risk_assessment_id FROM master_data WHERE fm_id = ?`, [
+      .query(`SELECT risk_assesment_id FROM master_data WHERE fm_id = ?`, [
         fm_id,
       ]);
 
-    if (masterData.length > 0 && masterData[0].risk_assessment_id) {
+    if (masterData.length > 0 && masterData[0].risk_assesment_id) {
       // Update existing Risk Assessment and set updated_at
-      risk_assessment_id = masterData[0].risk_assessment_id;
+      risk_assesment_id = masterData[0].risk_assesment_id;
       await db.promise().query(
         `UPDATE risk_assessment SET
         age = ?, tobacco_use = ?, alcohol_use = ?, waist_female = ?, waist_male = ?, physical_activity = ?, 
         family_diabetes_history = ?, risk_score = ?, updated_at = NOW()
         WHERE id = ?`,
-        [...sanitizedValues, risk_assessment_id]
+        [...sanitizedValues, risk_assesment_id]
       );
-      console.log(`Updated risk assessment with ID: ${risk_assessment_id}`);
+      console.log(`Updated risk assessment with ID: ${risk_assesment_id}`);
     } else {
       // Insert new Risk Assessment and set created_at and updated_at
       const [result] = await db.promise().query(
@@ -930,23 +930,21 @@ app.post("/api/risk-assessment", async (req, res) => {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         sanitizedValues
       );
-      risk_assessment_id = result.insertId;
-      console.log(
-        `Inserted new risk assessment with ID: ${risk_assessment_id}`
-      );
+      risk_assesment_id = result.insertId;
+      console.log(`Inserted new risk assessment with ID: ${risk_assesment_id}`);
 
       // Log fm_id and risk_assessment_id before the update query
       console.log(
-        `Updating master_data for fm_id: ${fm_id} with risk_assessment_id: ${risk_assessment_id}`
+        `Updating master_data for fm_id: ${fm_id} with risk_assesment_id: ${risk_assesment_id}`
       );
 
       // Update master_data table with the new risk_assessment_id
       const [updateResult] = await db
         .promise()
-        .query(
-          `UPDATE master_data SET risk_assessment_id = ? WHERE fm_id = ?`,
-          [risk_assessment_id, fm_id]
-        );
+        .query(`UPDATE master_data SET risk_assesment_id = ? WHERE fm_id = ?`, [
+          risk_assesment_id,
+          fm_id,
+        ]);
       console.log(
         `Affected rows in master_data update: ${updateResult.affectedRows}`
       );
@@ -957,7 +955,7 @@ app.post("/api/risk-assessment", async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Risk assessment saved successfully",
-      risk_assessment_id,
+      risk_assesment_id,
     });
   } catch (error) {
     await db.promise().rollback();
@@ -972,15 +970,15 @@ app.get("/api/risk-assessment/:fm_id", async (req, res) => {
   try {
     const [masterData] = await db
       .promise()
-      .query(`SELECT risk_assessment_id FROM master_data WHERE fm_id = ?`, [
+      .query(`SELECT risk_assesment_id FROM master_data WHERE fm_id = ?`, [
         fm_id,
       ]);
 
-    if (masterData.length > 0 && masterData[0].risk_assessment_id) {
+    if (masterData.length > 0 && masterData[0].risk_assesment_id) {
       const [riskData] = await db
         .promise()
         .query(`SELECT * FROM risk_assessment WHERE id = ?`, [
-          masterData[0].risk_assessment_id,
+          masterData[0].risk_assesment_id,
         ]);
 
       if (riskData.length > 0) {
@@ -2798,7 +2796,7 @@ app.post("/api/final-submit", async (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

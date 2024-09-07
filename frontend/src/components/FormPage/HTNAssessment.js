@@ -196,7 +196,7 @@ const HTNAssessment = ({ currentFmId }) => {
           onChange={handleInputChange}
         />
       </div>
-      <button type="button" onClick={handleSave}>
+      <button type="button" onClick={handleSave} style={styles.button}>
         Save HTN Assessment
       </button>
     </div>

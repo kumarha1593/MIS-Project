@@ -15,3 +15,10 @@
   flex: 1;
   overflow-y: auto;
 }
+
+.logo {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 70px;
+}
