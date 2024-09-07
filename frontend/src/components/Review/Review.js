@@ -29,6 +29,8 @@ const Review = () => {
   const [leprosyAssessment, setLeprosyAssessment] = useState(null);
   const [elderlyAssessment, setElderlyAssessment] = useState(null);
   const [mentalHealthAssessment, setMentalHealthAssessment] = useState(null);
+  const [assessmentAndActionTaken, setAssessmentAndActionTaken] =
+    useState(null);
   const [abhaIdStatus, setAbhaIdStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -125,6 +127,11 @@ const Review = () => {
           `${process.env.REACT_APP_BASE_URL}api/abhaid-assessment/${currentFmId}`
         );
         setAbhaIdStatus(abhaIdStatusResponse.data.data);
+
+        const assessmentAndActionTakenResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/assessment-and-action-taken/${currentFmId}`
+        );
+        setAssessmentAndActionTaken(assessmentAndActionTakenResponse.data.data);
 
         setLoading(false);
       } catch (err) {
@@ -658,6 +665,38 @@ const Review = () => {
         <p>
           <strong>Intervention Type:</strong>{" "}
           {mentalHealthAssessment?.intervention_type || "Not Filled"}
+        </p>
+      </div>
+
+      <h2>Assessment and Action Taken</h2>
+      <div>
+        <p>
+          <strong>Major NCD Detected:</strong>{" "}
+          {assessmentAndActionTaken?.major_ncd_detected || "Not Filled"}
+        </p>
+        <p>
+          <strong>Any Other Disease Detected:</strong>{" "}
+          {assessmentAndActionTaken?.any_other_disease_detected || "Not Filled"}
+        </p>
+        <p>
+          <strong>Known Case DM/HTN:</strong>{" "}
+          {assessmentAndActionTaken?.known_case_dm_htn || "Not Filled"}
+        </p>
+        <p>
+          <strong>Teleconsultation:</strong>{" "}
+          {assessmentAndActionTaken?.teleconsultation || "Not Filled"}
+        </p>
+        <p>
+          <strong>Prescription Given:</strong>{" "}
+          {assessmentAndActionTaken?.prescription_given || "Not Filled"}
+        </p>
+        <p>
+          <strong>Other Advices:</strong>{" "}
+          {assessmentAndActionTaken?.other_advices || "Not Filled"}
+        </p>
+        <p>
+          <strong>Remarks:</strong>{" "}
+          {assessmentAndActionTaken?.remarks || "Not Filled"}
         </p>
       </div>
 
