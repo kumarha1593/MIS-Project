@@ -29,6 +29,8 @@ const FormPage = () => {
   const [currentFmId, setCurrentFmId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [nextAction, setNextAction] = useState(null);
   const [formData, setFormData] = useState({
     // Page 1: Health Profile Form
     name: "",
@@ -242,7 +244,6 @@ const FormPage = () => {
     if (fm_id) {
       setCurrentFmId(fm_id);
       fetchPersonalInfo(fm_id);
-      // localStorage.removeItem("current_fm_id");
     }
   }, []);
 
@@ -253,37 +254,18 @@ const FormPage = () => {
       );
       if (response.data.success) {
         const fetchedData = response.data.data;
-        // Format the date properly
         const formattedDate = fetchedData.dob
           ? new Date(fetchedData.dob).toISOString().split("T")[0]
           : "";
-        setFormData({
-          ...fetchedData,
-          dob: formattedDate,
-        });
+        setFormData({ ...fetchedData, dob: formattedDate });
+
+        // Store sex in localStorage
+        localStorage.setItem("sex", fetchedData.sex);
       }
     } catch (error) {
       console.error("Error fetching personal information:", error);
     }
   };
-
-  // const handleInputChange = (e, section = null) => {
-  //   const { name, value } = e.target;
-  //   if (section) {
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       [section]: {
-  //         ...prevData[section],
-  //         [name]: value,
-  //       },
-  //     }));
-  //   } else {
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       [name]: value,
-  //     }));
-  //   }
-  // };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -301,23 +283,35 @@ const FormPage = () => {
     }
   };
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-    setIsSidebarOpen(false);
-  };
-
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
-  const handleSaveDraft = () => {
-    console.log("Saving draft...");
-  };
-
   const handleBack = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
+
+  const handleModalAction = () => {
+    if (nextAction === "next") {
+      handleNext();
+    } else if (nextAction === "back") {
+      handleBack();
+    }
+    setIsModalOpen(false);
+  };
+
+  const openModal = (action) => {
+    setNextAction(action);
+    setIsModalOpen(true);
+  };
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    setIsSidebarOpen(false);
+  };
+
   const renderFormPage = () => {
+    const sex = localStorage.getItem("sex");
     switch (currentPage) {
       case 1:
         return (
@@ -337,9 +331,17 @@ const FormPage = () => {
       case 6:
         return <OralCancerAssessment currentFmId={currentFmId} />;
       case 7:
-        return <BreastCancerAssessment currentFmId={currentFmId} />;
+        return sex === "Female" ? (
+          <BreastCancerAssessment currentFmId={currentFmId} />
+        ) : (
+          <div>Breast Cancer Assessment is not applicable.</div>
+        );
       case 8:
-        return <CervicalCancerAssessment currentFmId={currentFmId} />;
+        return sex === "Female" ? (
+          <CervicalCancerAssessment currentFmId={currentFmId} />
+        ) : (
+          <div>Cervical Cancer Assessment is not applicable.</div>
+        );
       case 9:
         return <CVDAssessment currentFmId={currentFmId} />;
       case 10:
@@ -378,11 +380,12 @@ const FormPage = () => {
         {renderFormPage()}
       </main>
       <footer className="form-footer">
-        <button onClick={handleBack} disabled={currentPage === 1}>
+        <button onClick={() => openModal("back")} disabled={currentPage === 1}>
           Back
         </button>
-        {/* <button onClick={handleSaveDraft}>Save Draft</button> */}
-        <button onClick={handleNext}>
+        <button
+          onClick={() => openModal(currentPage === 19 ? "submit" : "next")}
+        >
           {currentPage === 19 ? "Submit" : "Next"}
         </button>
       </footer>
@@ -397,6 +400,26 @@ const FormPage = () => {
           setIsSidebarOpen(false);
         }}
       />
+      {isModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <p>
+              Are you sure you want to {nextAction}? Please click on Save Draft
+              first to keep your progress and come back to it later.
+            </p>
+            <button onClick={() => setIsModalOpen(false)}>
+              No, Let's Save
+            </button>
+            <button onClick={handleModalAction}>
+              {nextAction === "back"
+                ? "Back"
+                : nextAction === "next"
+                ? "Next"
+                : "Submit"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
