@@ -1,0 +1,52 @@
+CREATE TABLE oralcancer (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  known_case ENUM('Yes and on treatment', 'Yes and not on treatment', 'No') DEFAULT NULL,
+  persistent_ulcer ENUM('Yes', 'No') DEFAULT NULL,
+  persistent_patch ENUM('Yes', 'No') DEFAULT NULL,
+  difficulty_chewing ENUM('Yes', 'No') DEFAULT NULL,
+  difficulty_opening_mouth ENUM('Yes', 'No') DEFAULT NULL,
+  growth_in_mouth ENUM('Yes', 'No') DEFAULT NULL,
+  swelling_in_neck ENUM('Yes', 'No') DEFAULT NULL,
+  suspected_oral_cancer ENUM('Yes', 'No') DEFAULT NULL,
+  created_at TIMESTAMP NULL DEFAULT NULL,
+  updated_at TIMESTAMP NULL DEFAULT NULL
+);
+
+CREATE TABLE breastcancer (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  known_case ENUM('Yes and on treatment', 'Yes and not on treatment', 'No') DEFAULT NULL,
+  lump_in_breast ENUM('Yes', 'No') DEFAULT NULL,
+  blood_stained_discharge ENUM('Yes', 'No') DEFAULT NULL,
+  change_in_shape ENUM('Yes', 'No') DEFAULT NULL,
+  constant_pain_or_swelling ENUM('Yes', 'No') DEFAULT NULL,
+  redness_or_ulcer ENUM('Yes', 'No') DEFAULT NULL,
+  suspected_breast_cancer ENUM('Yes', 'No') DEFAULT NULL,
+  created_at TIMESTAMP NULL DEFAULT NULL,
+  updated_at TIMESTAMP NULL DEFAULT NULL
+);
+
+CREATE TABLE cervicalcancer (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  known_case ENUM('Yes and on treatment', 'Yes and not on treatment', 'No') DEFAULT NULL,
+  bleeding_between_periods ENUM('Yes', 'No') DEFAULT NULL,
+  bleeding_after_menopause ENUM('Yes', 'No') DEFAULT NULL,
+  bleeding_after_intercourse ENUM('Yes', 'No') DEFAULT NULL,
+  foul_smelling_discharge ENUM('Yes', 'No') DEFAULT NULL,
+  via_appointment_date DATE DEFAULT NULL,
+  via_result ENUM('Positive', 'Negative') DEFAULT NULL,
+  created_at TIMESTAMP NULL DEFAULT NULL,
+  updated_at TIMESTAMP NULL DEFAULT NULL
+);
+
+CREATE TABLE cvd (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  known_case ENUM('Yes and on treatment', 'Yes and not on treatment', 'No') DEFAULT NULL,
+  heart_sound ENUM('Normal', 'Abnormal') DEFAULT NULL,
+  symptom ENUM('Yes', 'No') DEFAULT NULL,
+  cvd_date DATE DEFAULT NULL,
+  suspected_cvd ENUM('Yes', 'No') DEFAULT NULL,
+  created_at TIMESTAMP NULL DEFAULT NULL,
+  updated_at TIMESTAMP NULL DEFAULT NULL
+);
+
+manipuR123$Manipur

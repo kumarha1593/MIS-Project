@@ -158,53 +158,6 @@ app.get("/api/user_district_info/:user_id", (req, res) => {
   });
 });
 
-// Add new family member (head of family)
-app.post("/api/family-members", async (req, res) => {
-  const { fc_id, name, aadhar } = req.body;
-
-  try {
-    // Start a transaction
-    await db.promise().beginTransaction();
-
-    // Insert the new family member
-    const [familyResult] = await db.promise().query(
-      `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, status, date)
-       VALUES (?, ?, ?, 0, NULL, 0, NOW())`,
-      [fc_id, name, aadhar]
-    );
-    const fm_id = familyResult.insertId;
-
-    // Insert into master_data
-    const [masterDataResult] = await db
-      .promise()
-      .query(`INSERT INTO master_data (fm_id) VALUES (?)`, [fm_id]);
-    const master_data_id = masterDataResult.insertId;
-
-    // Update family_members with master_data_id
-    await db
-      .promise()
-      .query(`UPDATE family_members SET master_data_id = ? WHERE id = ?`, [
-        master_data_id,
-        fm_id,
-      ]);
-
-    // Commit the transaction
-    await db.promise().commit();
-
-    res.status(201).json({
-      success: true,
-      message: "Family member added successfully",
-      fm_id,
-      master_data_id,
-    });
-  } catch (error) {
-    // If there's an error, rollback the transaction
-    await db.promise().rollback();
-    console.error("Error inserting family member:", error);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
 // Fetch family members for a user
 app.get("/api/family-members/:user_id", async (req, res) => {
   const user_id = req.params.user_id;
@@ -226,68 +179,140 @@ app.get("/api/family-members/:user_id", async (req, res) => {
 
 //Adding family members under a family head
 app.post("/api/family-members", async (req, res) => {
-  const { fc_id, name, aadhar, head_id } = req.body; // Ensure fc_id is included
+  const { fc_id, name, aadhar, head_id } = req.body;
+  console.log("Received request to add family member:", {
+    fc_id,
+    name,
+    aadhar,
+    head_id,
+  });
+
+  // Validate head_id
+  if (!head_id || isNaN(parseInt(head_id, 10))) {
+    console.error(
+      "Invalid or missing head_id provided in the request:",
+      head_id
+    );
+    return res
+      .status(400)
+      .json({ success: false, message: "Valid head_id is required" });
+  }
+
+  const parsedHeadId = parseInt(head_id, 10);
 
   try {
     await db.promise().beginTransaction();
 
-    const [familyResult] = await db.promise().query(
-      `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, status, date)
-       VALUES (?, ?, ?, ?, NULL, 0, NOW())`,
-      [fc_id, name, aadhar, head_id || 0] // fc_id should be inserted here
+    const insertQuery = `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, status, date)
+                         VALUES (?, ?, ?, ?, NULL, 0, NOW())`;
+    const insertValues = [fc_id, name, aadhar, parsedHeadId];
+    console.log(
+      "Executing insert query:",
+      insertQuery,
+      "with values:",
+      insertValues
     );
 
+    const [familyResult] = await db.promise().query(insertQuery, insertValues);
+
+    console.log("Insert result:", familyResult);
+
     const fm_id = familyResult.insertId;
+    console.log("Inserted family member with ID:", fm_id);
 
     const [masterDataResult] = await db
       .promise()
       .query(`INSERT INTO master_data (fm_id) VALUES (?)`, [fm_id]);
-
     const master_data_id = masterDataResult.insertId;
 
-    await db
-      .promise()
-      .query(`UPDATE family_members SET master_data_id = ? WHERE id = ?`, [
-        master_data_id,
-        fm_id,
-      ]);
+    console.log("Inserted master_data with ID:", master_data_id);
+
+    const updateQuery = `UPDATE family_members SET master_data_id = ? WHERE id = ?`;
+    const updateValues = [master_data_id, fm_id];
+    console.log(
+      "Executing update query:",
+      updateQuery,
+      "with values:",
+      updateValues
+    );
+
+    const [updateResult] = await db.promise().query(updateQuery, updateValues);
+
+    console.log("Update result:", updateResult);
 
     await db.promise().commit();
+
+    console.log("Transaction committed successfully");
+
+    // Fetch the inserted record to verify
+    const [verifyResult] = await db
+      .promise()
+      .query("SELECT * FROM family_members WHERE id = ?", [fm_id]);
+    console.log("Verification of inserted record:", verifyResult[0]);
 
     res.status(201).json({
       success: true,
       message: "Family member added successfully",
       fm_id,
       master_data_id,
+      verifiedRecord: verifyResult[0],
     });
   } catch (error) {
     await db.promise().rollback();
     console.error("Error inserting family member:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+      stack: error.stack,
+    });
   }
 });
 // Fetch family members associated with a specific headId
-app.get("/api/family-members/:headId", async (req, res) => {
-  const headId = req.params.headId;
-
+// Get a single family member by ID
+app.get("/api/family-members/:id", async (req, res) => {
+  const { id } = req.params;
   try {
-    const [rows] = await db.promise().query(
-      `SELECT fm.id, fm.name, fm.Aadhar, fm.status, fm.fc_id
-       FROM family_members fm
-       WHERE fm.head_id = ?`,
-      [headId]
-    );
-
-    if (rows.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No family members found for this headId" });
+    const [member] = await db
+      .promise()
+      .query(`SELECT * FROM family_members WHERE id = ?`, [id]);
+    if (member.length > 0) {
+      res.status(200).json({
+        success: true,
+        data: member,
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "Family member not found",
+      });
     }
+  } catch (error) {
+    console.error("Error fetching family member:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
 
-    res.status(200).json(rows);
+// Get all family members for a given head_id
+app.get("/api/family-members", async (req, res) => {
+  const { head_id } = req.query;
+  try {
+    const [familyMembers] = await db
+      .promise()
+      .query(`SELECT * FROM family_members WHERE head_id = ?`, [head_id]);
+    res.status(200).json({
+      success: true,
+      data: familyMembers,
+    });
   } catch (error) {
     console.error("Error fetching family members:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 });
 

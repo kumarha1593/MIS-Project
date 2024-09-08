@@ -37,7 +37,7 @@ function App() {
             }
           />
           <Route
-            path="/FamilyDetails"
+            path="/family-details/:headId"
             element={
               <AppLayout>
                 <FamilyDetails />

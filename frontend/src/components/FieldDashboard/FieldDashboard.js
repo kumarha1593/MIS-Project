@@ -161,8 +161,9 @@ const FieldDashboard = () => {
     }
   };
 
-  const handleRowClick = (headOfFamily, headId) => {
-    navigate("/FamilyDetails", { state: { headOfFamily, headId } });
+  const handleRowClick = (id) => {
+    // Pass the id of the clicked person to FamilyDetails page
+    navigate(`/family-details/${id}`);
   };
 
   const handleCompleteForm = (fm_id) => {
@@ -336,9 +337,7 @@ const FieldDashboard = () => {
         <tbody>
           {filteredData.map((row) => (
             <tr key={row.id}>
-              <td onClick={() => handleRowClick(row.name, row.id)}>
-                {row.name}
-              </td>
+              <td onClick={() => handleRowClick(row.id)}>{row.name}</td>
               <td>{row.familyMemberCount}</td>
               <td>{row.Aadhar}</td>
               <td>
