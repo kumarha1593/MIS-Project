@@ -327,8 +327,8 @@ const FieldDashboard = () => {
       <table className="family-table">
         <thead>
           <tr>
-            <th>Head of Family Name</th>
-            <th>Number of Family Members</th>
+            <th>Family Head Name</th>
+            <th className="family-members">No. of Family Members</th>
             <th>Aadhaar Number</th>
             <th>Status</th>
           </tr>

@@ -427,9 +427,21 @@ app.get("/api/personal-info/:fm_id", async (req, res) => {
         ]);
 
       if (personalInfo.length > 0) {
+        // Map the single-character sex value back to the full word
+        const genderMap = {
+          M: "male",
+          F: "female",
+          O: "others",
+        };
+
+        const formattedPersonalInfo = {
+          ...personalInfo[0],
+          sex: genderMap[personalInfo[0].sex] || personalInfo[0].sex,
+        };
+
         res.status(200).json({
           success: true,
-          data: personalInfo[0],
+          data: formattedPersonalInfo,
         });
       } else {
         res.status(404).json({

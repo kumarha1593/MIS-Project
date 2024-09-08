@@ -161,9 +161,9 @@ const HealthProfileForm = ({ formData, handleInputChange, currentFmId }) => {
           onChange={handleInputChange}
         >
           <option value="">Select</option>
-          <option value="M">Male</option>
-          <option value="F">Female</option>
-          <option value="O">Others</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="others">Others</option>
         </select>
       </div>
       <div style={styles.formGroup}>
@@ -229,7 +229,9 @@ const HealthProfileForm = ({ formData, handleInputChange, currentFmId }) => {
           onChange={handleInputChange}
         />
       </div>
-      <button onClick={handleSave} style={styles.button}>Save Draft</button>
+      <button onClick={handleSave} style={styles.button}>
+        Save Draft
+      </button>
     </div>
   );
 };

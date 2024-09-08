@@ -29,8 +29,6 @@ const FormPage = () => {
   const [currentFmId, setCurrentFmId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [nextAction, setNextAction] = useState(null);
   const [formData, setFormData] = useState({
     // Page 1: Health Profile Form
     name: "",
@@ -289,20 +287,6 @@ const FormPage = () => {
     }
   };
 
-  const handleModalAction = () => {
-    if (nextAction === "next") {
-      handleNext();
-    } else if (nextAction === "back") {
-      handleBack();
-    }
-    setIsModalOpen(false);
-  };
-
-  const openModal = (action) => {
-    setNextAction(action);
-    setIsModalOpen(true);
-  };
-
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const handlePageChange = (pageNumber) => {
@@ -331,13 +315,13 @@ const FormPage = () => {
       case 6:
         return <OralCancerAssessment currentFmId={currentFmId} />;
       case 7:
-        return sex === "Female" ? (
+        return sex === "F" ? (
           <BreastCancerAssessment currentFmId={currentFmId} />
         ) : (
           <div>Breast Cancer Assessment is not applicable.</div>
         );
       case 8:
-        return sex === "Female" ? (
+        return sex === "F" ? (
           <CervicalCancerAssessment currentFmId={currentFmId} />
         ) : (
           <div>Cervical Cancer Assessment is not applicable.</div>
@@ -346,7 +330,6 @@ const FormPage = () => {
         return <CVDAssessment currentFmId={currentFmId} />;
       case 10:
         return <PostStrokeAssessment currentFmId={currentFmId} />;
-
       case 11:
         return <CKDAssessment currentFmId={currentFmId} />;
       case 12:
@@ -380,12 +363,10 @@ const FormPage = () => {
         {renderFormPage()}
       </main>
       <footer className="form-footer">
-        <button onClick={() => openModal("back")} disabled={currentPage === 1}>
+        <button onClick={handleBack} disabled={currentPage === 1}>
           Back
         </button>
-        <button
-          onClick={() => openModal(currentPage === 19 ? "submit" : "next")}
-        >
+        <button onClick={handleNext}>
           {currentPage === 19 ? "Submit" : "Next"}
         </button>
       </footer>
@@ -400,26 +381,6 @@ const FormPage = () => {
           setIsSidebarOpen(false);
         }}
       />
-      {isModalOpen && (
-        <div className="modal">
-          <div className="modal-content">
-            <p>
-              Are you sure you want to {nextAction}? Please click on Save Draft
-              first to keep your progress and come back to it later.
-            </p>
-            <button onClick={() => setIsModalOpen(false)}>
-              No, Let's Save
-            </button>
-            <button onClick={handleModalAction}>
-              {nextAction === "back"
-                ? "Back"
-                : nextAction === "next"
-                ? "Next"
-                : "Submit"}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
