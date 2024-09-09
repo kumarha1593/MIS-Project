@@ -207,7 +207,7 @@ const RiskAssessment = ({ currentFmId }) => {
         </select>
       </div>
 
-      {sex === "F" ? (
+      {sex === "female" ? (
         <div style={styles.formGroup}>
           <label style={styles.label}>Waist Circumference (Female) *</label>
           <select

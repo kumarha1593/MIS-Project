@@ -158,6 +158,53 @@ app.get("/api/user_district_info/:user_id", (req, res) => {
   });
 });
 
+// Add new family member (head of family)
+app.post("/api/family-members-head", async (req, res) => {
+  const { fc_id, name, aadhar } = req.body;
+
+  try {
+    // Start a transaction
+    await db.promise().beginTransaction();
+
+    // Insert the new family member
+    const [familyResult] = await db.promise().query(
+      `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, status, date)
+       VALUES (?, ?, ?, 0, NULL, 0, NOW())`,
+      [fc_id, name, aadhar]
+    );
+    const fm_id = familyResult.insertId;
+
+    // Insert into master_data
+    const [masterDataResult] = await db
+      .promise()
+      .query(`INSERT INTO master_data (fm_id) VALUES (?)`, [fm_id]);
+    const master_data_id = masterDataResult.insertId;
+
+    // Update family_members with master_data_id
+    await db
+      .promise()
+      .query(`UPDATE family_members SET master_data_id = ? WHERE id = ?`, [
+        master_data_id,
+        fm_id,
+      ]);
+
+    // Commit the transaction
+    await db.promise().commit();
+
+    res.status(201).json({
+      success: true,
+      message: "Family member added successfully",
+      fm_id,
+      master_data_id,
+    });
+  } catch (error) {
+    // If there's an error, rollback the transaction
+    await db.promise().rollback();
+    console.error("Error inserting family member:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Fetch family members for a user
 app.get("/api/family-members/:user_id", async (req, res) => {
   const user_id = req.params.user_id;

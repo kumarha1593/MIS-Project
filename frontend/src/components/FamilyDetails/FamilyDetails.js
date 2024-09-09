@@ -167,7 +167,7 @@ const FamilyDetails = () => {
           <tr>
             <th>Name of Family Member</th>
             <th>Aadhar Number</th>
-            <th>Relation</th>
+            {/* <th>Relation</th> */}
             <th>Status</th>
           </tr>
         </thead>
@@ -180,6 +180,7 @@ const FamilyDetails = () => {
                 {familyData.head.status === 0 ? (
                   <button
                     onClick={() => handleCompleteForm(familyData.head.id)}
+                    style={{ padding: "1px", backgroundColor: "red" }}
                   >
                     Pending
                   </button>
@@ -193,7 +194,7 @@ const FamilyDetails = () => {
             <tr key={member.id}>
               <td>{member.name}</td>
               <td>{member.Aadhar}</td>
-              <td>Member</td>
+              {/* <td>Member</td> */}
               <td>
                 {member.status === 0 ? (
                   <button onClick={() => handleCompleteForm(member.id)}>
