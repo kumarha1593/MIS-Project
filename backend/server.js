@@ -14,8 +14,8 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "$Anshika28$",
-  database: "manipur",
+  password: "$Mumuksh14$",
+  database: "user_management",
 });
 
 db.connect((err) => {
@@ -317,31 +317,31 @@ app.post("/api/family-members", async (req, res) => {
 });
 // Fetch family members associated with a specific headId
 // Get a single family member by ID
-app.get("/api/family-members/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const [member] = await db
-      .promise()
-      .query(`SELECT * FROM family_members WHERE id = ?`, [id]);
-    if (member.length > 0) {
-      res.status(200).json({
-        success: true,
-        data: member,
-      });
-    } else {
-      res.status(404).json({
-        success: false,
-        message: "Family member not found",
-      });
-    }
-  } catch (error) {
-    console.error("Error fetching family member:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
-  }
-});
+// app.get("/api/family-members/:id", async (req, res) => {
+//   const { id } = req.params;
+//   try {
+//     const [member] = await db
+//       .promise()
+//       .query(`SELECT * FROM family_members WHERE id = ?`, [id]);
+//     if (member.length > 0) {
+//       res.status(200).json({
+//         success: true,
+//         data: member,
+//       });
+//     } else {
+//       res.status(404).json({
+//         success: false,
+//         message: "Family member not found",
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error fetching family member:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Server error",
+//     });
+//   }
+// });
 
 // Get all family members for a given head_id
 app.get("/api/family-members", async (req, res) => {
@@ -349,7 +349,10 @@ app.get("/api/family-members", async (req, res) => {
   try {
     const [familyMembers] = await db
       .promise()
-      .query(`SELECT * FROM family_members WHERE head_id = ?`, [head_id]);
+      .query(`SELECT * FROM family_members WHERE head_id = ? OR id = ?`, [
+        head_id,
+        head_id,
+      ]);
     res.status(200).json({
       success: true,
       data: familyMembers,
@@ -2855,7 +2858,7 @@ app.post("/api/final-submit", async (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
