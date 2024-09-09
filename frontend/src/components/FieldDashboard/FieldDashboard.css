@@ -50,9 +50,16 @@
   background-color: #45a049;
 }
 
+.filter-add-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 /* Filter dropdown and buttons */
 .filter-container {
-  margin-bottom: 20px;
+  margin-bottom: 0px;
 }
 
 .filter-button {
@@ -91,19 +98,18 @@
 /* Family table styling */
 .family-table {
   width: 100%;
-  max-width: 100%; 
+  max-width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
   margin-bottom: 20px;
 }
-
 
 .family-table th,
 .family-table td {
   border: 1px solid #ddd;
   padding: 6px;
   text-align: left;
-  font-size: 0.9 em; 
+  font-size: 0.9 em;
   word-wrap: break-word;
 }
 
@@ -113,7 +119,7 @@
 
 .family-table td button {
   padding: 2px 5px;
-  font-size: 0.8em; 
+  font-size: 0.8em;
 }
 
 /* Button to add a new head */

@@ -274,55 +274,60 @@ const FieldDashboard = () => {
           </>
         )}
       </div>
+      <div className="filter-add-container">
+        <div className="filter-container">
+          <button onClick={handleFilterClick} className="filter-button">
+            <FaFilter /> Filter
+          </button>
+          {showFilterDropdown && (
+            <div className="filter-dropdown">
+              <div className="filter-option">
+                <label>From Date:</label>
+                <DatePicker
+                  selected={fromDate}
+                  onChange={(date) => setFromDate(date)}
+                  placeholderText="Select From Date"
+                />
+              </div>
+              <div className="filter-option">
+                <label>To Date:</label>
+                <DatePicker
+                  selected={toDate}
+                  onChange={(date) => setToDate(date)}
+                  placeholderText="Select To Date"
+                />
+              </div>
+              <div className="filter-option">
+                <label>Status:</label>
+                <select
+                  value={statusFilter || ""}
+                  onChange={(e) => setStatusFilter(e.target.value || null)}
+                >
+                  <option value="">All</option>
+                  <option value="pending">Pending</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+              <div className="filter-option">
+                <label>Search:</label>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search by name or Aadhaar"
+                />
+              </div>
+              <div className="filter-actions">
+                <button onClick={applyFilters}>Apply Filters</button>
+                <button onClick={resetFilters}>Reset Filters</button>
+              </div>
+            </div>
+          )}
+        </div>
 
-      <div className="filter-container">
-        <button onClick={handleFilterClick} className="filter-button">
-          <FaFilter /> Filter
+        <button onClick={handleAddRow} className="add-row-button">
+          Add New Head
         </button>
-        {showFilterDropdown && (
-          <div className="filter-dropdown">
-            <div className="filter-option">
-              <label>From Date:</label>
-              <DatePicker
-                selected={fromDate}
-                onChange={(date) => setFromDate(date)}
-                placeholderText="Select From Date"
-              />
-            </div>
-            <div className="filter-option">
-              <label>To Date:</label>
-              <DatePicker
-                selected={toDate}
-                onChange={(date) => setToDate(date)}
-                placeholderText="Select To Date"
-              />
-            </div>
-            <div className="filter-option">
-              <label>Status:</label>
-              <select
-                value={statusFilter || ""}
-                onChange={(e) => setStatusFilter(e.target.value || null)}
-              >
-                <option value="">All</option>
-                <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
-              </select>
-            </div>
-            <div className="filter-option">
-              <label>Search:</label>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by name or Aadhaar"
-              />
-            </div>
-            <div className="filter-actions">
-              <button onClick={applyFilters}>Apply Filters</button>
-              <button onClick={resetFilters}>Reset Filters</button>
-            </div>
-          </div>
-        )}
       </div>
 
       <table className="family-table">
@@ -356,10 +361,6 @@ const FieldDashboard = () => {
           ))}
         </tbody>
       </table>
-
-      <button onClick={handleAddRow} className="add-row-button">
-        Add New Head
-      </button>
 
       {showModal && (
         <div className="modal-overlay">
