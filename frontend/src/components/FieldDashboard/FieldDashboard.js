@@ -142,7 +142,7 @@ const FieldDashboard = () => {
     const user_id = localStorage.getItem("user_id");
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}api/family-members`,
+        `${process.env.REACT_APP_BASE_URL}api/family-members-head`,
         {
           fc_id: user_id,
           name: newHeadData.headOfFamily,
@@ -328,8 +328,8 @@ const FieldDashboard = () => {
       <table className="family-table">
         <thead>
           <tr>
-            <th>Head of Family Name</th>
-            <th>Number of Family Members</th>
+            <th>Family Head Name</th>
+            <th className="family-members">No. of Family Members</th>
             <th>Aadhaar Number</th>
             <th>Status</th>
           </tr>

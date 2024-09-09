@@ -160,7 +160,7 @@ const FamilyDetails = () => {
           <tr>
             <th>Name of Family Member</th>
             <th>Aadhar Number</th>
-            <th>Relation</th>
+            {/* <th>Relation</th> */}
             <th>Status</th>
           </tr>
         </thead>

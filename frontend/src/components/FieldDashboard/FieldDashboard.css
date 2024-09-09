@@ -91,19 +91,20 @@
 /* Family table styling */
 .family-table {
   width: 100%;
-  max-width: 100%; /* Prevents the table from exceeding the container width */
-  table-layout: fixed; /* Ensures columns don't exceed table width */
+  max-width: 100%; 
+  table-layout: fixed;
   border-collapse: collapse;
   margin-bottom: 20px;
 }
 
+
 .family-table th,
 .family-table td {
   border: 1px solid #ddd;
-  padding: 8px; /* Reduced padding for compactness */
+  padding: 6px;
   text-align: left;
-  font-size: 0.9 em; /* Reduced font size */
-  word-wrap: break-word; /* Ensures long text breaks to next line */
+  font-size: 0.9 em; 
+  word-wrap: break-word;
 }
 
 .family-table th {
@@ -111,8 +112,8 @@
 }
 
 .family-table td button {
-  padding: 2px 5px; /* Smaller padding */
-  font-size: 0.8em; /* Smaller font size */
+  padding: 2px 5px;
+  font-size: 0.8em; 
 }
 
 /* Button to add a new head */

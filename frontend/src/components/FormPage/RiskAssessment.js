@@ -12,7 +12,7 @@ const RiskAssessment = ({ currentFmId }) => {
     family_diabetes_history: "",
     risk_score: 0,
   });
-
+  const [sex, setSex] = useState("");
   const mapValueToScore = (field, value) => {
     const mappings = {
       age: {
@@ -79,6 +79,11 @@ const RiskAssessment = ({ currentFmId }) => {
 
     if (currentFmId) {
       fetchRiskData();
+    }
+
+    const storedSex = localStorage.getItem("sex");
+    if (storedSex) {
+      setSex(storedSex);
     }
   }, [currentFmId]);
 
@@ -202,39 +207,41 @@ const RiskAssessment = ({ currentFmId }) => {
         </select>
       </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Waist Circumference (Female) *</label>
-        <select
-          id="waist_female"
-          name="waist_female"
-          value={formData.waist_female}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="80 cm or less">80 cm or less</option>
-          <option value="81-90 cm">81-90 cm</option>
-          <option value="More than 90 cm">More than 90 cm</option>
-        </select>
-      </div>
-
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Waist Circumference (Male) *</label>
-        <select
-          id="waist_male"
-          name="waist_male"
-          value={formData.waist_male}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="90 cm or less">90 cm or less</option>
-          <option value="91-100 cm">91-100 cm</option>
-          <option value="More than 100 cm">More than 100 cm</option>
-        </select>
-      </div>
+      {sex === "female" ? (
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Waist Circumference (Female) *</label>
+          <select
+            id="waist_female"
+            name="waist_female"
+            value={formData.waist_female}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="80 cm or less">80 cm or less</option>
+            <option value="81-90 cm">81-90 cm</option>
+            <option value="More than 90 cm">More than 90 cm</option>
+          </select>
+        </div>
+      ) : (
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Waist Circumference (Male) *</label>
+          <select
+            id="waist_male"
+            name="waist_male"
+            value={formData.waist_male}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="90 cm or less">90 cm or less</option>
+            <option value="91-100 cm">91-100 cm</option>
+            <option value="More than 100 cm">More than 100 cm</option>
+          </select>
+        </div>
+      )}
 
       <div style={styles.formGroup}>
         <label style={styles.label}>Physical Activity *</label>
