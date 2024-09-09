@@ -166,7 +166,13 @@ app.post("/api/family-members-head", async (req, res) => {
     // Start a transaction
     await db.promise().beginTransaction();
 
-    // Insert the new family member
+    // Insert into personal_info table
+    const [personalInfoResult] = await db
+      .promise()
+      .query(`INSERT INTO personal_info (name) VALUES (?)`, [name]);
+    const personal_info_id = personalInfoResult.insertId;
+
+    // Insert the new family member into family_members table
     const [familyResult] = await db.promise().query(
       `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, status, date)
        VALUES (?, ?, ?, 0, NULL, 0, NOW())`,
@@ -174,10 +180,13 @@ app.post("/api/family-members-head", async (req, res) => {
     );
     const fm_id = familyResult.insertId;
 
-    // Insert into master_data
+    // Insert into master_data and update personal_info_id
     const [masterDataResult] = await db
       .promise()
-      .query(`INSERT INTO master_data (fm_id) VALUES (?)`, [fm_id]);
+      .query(
+        `INSERT INTO master_data (fm_id, personal_info_id) VALUES (?, ?)`,
+        [fm_id, personal_info_id]
+      );
     const master_data_id = masterDataResult.insertId;
 
     // Update family_members with master_data_id
@@ -196,6 +205,7 @@ app.post("/api/family-members-head", async (req, res) => {
       message: "Family member added successfully",
       fm_id,
       master_data_id,
+      personal_info_id,
     });
   } catch (error) {
     // If there's an error, rollback the transaction
