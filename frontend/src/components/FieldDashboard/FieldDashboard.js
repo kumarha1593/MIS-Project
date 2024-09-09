@@ -338,7 +338,7 @@ const FieldDashboard = () => {
           {filteredData.map((row) => (
             <tr key={row.id}>
               <td onClick={() => handleRowClick(row.id)}>{row.name}</td>
-              <td>{row.familyMemberCount}</td>
+              <td>{row.familyMemberCount + 1}</td>
               <td>{row.Aadhar}</td>
               <td>
                 {row.status === 0 ? (

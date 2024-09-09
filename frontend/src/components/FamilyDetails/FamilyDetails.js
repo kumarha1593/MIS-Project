@@ -19,14 +19,7 @@ const FamilyDetails = () => {
 
   useEffect(() => {
     const fetchFamilyData = async () => {
-      if (!headId) {
-        setError("No headId provided");
-        setLoading(false);
-        return;
-      }
-
       try {
-        console.log(`Fetching head data for headId: ${headId}`);
         const headResponse = await axios.get(
           `${process.env.REACT_APP_BASE_URL}api/family-members/${headId}`
         );
@@ -34,7 +27,7 @@ const FamilyDetails = () => {
 
         console.log(`Fetching members data for headId: ${headId}`);
         const membersResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/family-members?head_id=${headId}`
+          `${process.env.REACT_APP_BASE_URL}api/family-members?head_id=${headId}&includeHead=true`
         );
         console.log("Members response:", membersResponse.data);
 
@@ -172,39 +165,51 @@ const FamilyDetails = () => {
           </tr>
         </thead>
         <tbody>
+          {/* Show the Head of Family first */}
           {familyData.head && (
             <tr key={familyData.head.id}>
               <td>{familyData.head.name}</td>
               <td>{familyData.head.Aadhar}</td>
+              <td>Head of Family</td>{" "}
+              {/* Display relation as 'Head of Family' */}
               <td>
                 {familyData.head.status === 0 ? (
                   <button
                     onClick={() => handleCompleteForm(familyData.head.id)}
+                    style={{ padding: "3px", backgroundColor: "red" }}
                   >
                     Pending
                   </button>
                 ) : (
-                  "Completed"
+                  <span style={{ color: "green" }}>Completed</span>
                 )}
               </td>
             </tr>
           )}
+
+          {/* Show other Family Members */}
           {familyData.members.map((member) => (
             <tr key={member.id}>
               <td>{member.name}</td>
               <td>{member.Aadhar}</td>
-              <td>Member</td>
+              <td>Family Member</td>{" "}
+              {/* All other members are shown as 'Member' */}
               <td>
                 {member.status === 0 ? (
-                  <button onClick={() => handleCompleteForm(member.id)}>
+                  <button
+                    onClick={() => handleCompleteForm(member.id)}
+                    style={{ padding: "3px", backgroundColor: "red" }}
+                  >
                     Pending
                   </button>
                 ) : (
-                  "Completed"
+                  <span style={{ color: "green" }}>Completed</span>
                 )}
               </td>
             </tr>
           ))}
+
+          {/* Handle case where no family members are found */}
           {familyData.members.length === 0 && !familyData.head && (
             <tr>
               <td colSpan="4" style={{ textAlign: "center" }}>
@@ -214,11 +219,14 @@ const FamilyDetails = () => {
           )}
         </tbody>
       </table>
+
+      {/* Add New Family Member Section */}
       <div className="add-member-container">
         <FaPlusCircle className="add-member-icon" onClick={handleAddMember} />
         <span>Add New Family Member</span>
       </div>
 
+      {/* Modal for Adding New Family Member */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
