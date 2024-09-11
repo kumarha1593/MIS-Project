@@ -258,8 +258,16 @@ app.post("/api/family-members", async (req, res) => {
   const parsedHeadId = parseInt(head_id, 10);
 
   try {
+    // Start a transaction
     await db.promise().beginTransaction();
 
+    // Insert into personal_info table
+    const [personalInfoResult] = await db
+      .promise()
+      .query(`INSERT INTO personal_info (name) VALUES (?)`, [name]);
+    const personal_info_id = personalInfoResult.insertId;
+
+    // Insert into family_members table
     const insertQuery = `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, status, date)
                          VALUES (?, ?, ?, ?, NULL, 0, NOW())`;
     const insertValues = [fc_id, name, aadhar, parsedHeadId];
@@ -271,19 +279,20 @@ app.post("/api/family-members", async (req, res) => {
     );
 
     const [familyResult] = await db.promise().query(insertQuery, insertValues);
-
-    console.log("Insert result:", familyResult);
-
     const fm_id = familyResult.insertId;
     console.log("Inserted family member with ID:", fm_id);
 
+    // Insert into master_data and associate with personal_info_id
     const [masterDataResult] = await db
       .promise()
-      .query(`INSERT INTO master_data (fm_id) VALUES (?)`, [fm_id]);
+      .query(
+        `INSERT INTO master_data (fm_id, personal_info_id) VALUES (?, ?)`,
+        [fm_id, personal_info_id]
+      );
     const master_data_id = masterDataResult.insertId;
-
     console.log("Inserted master_data with ID:", master_data_id);
 
+    // Update family_members with master_data_id
     const updateQuery = `UPDATE family_members SET master_data_id = ? WHERE id = ?`;
     const updateValues = [master_data_id, fm_id];
     console.log(
@@ -294,11 +303,10 @@ app.post("/api/family-members", async (req, res) => {
     );
 
     const [updateResult] = await db.promise().query(updateQuery, updateValues);
-
     console.log("Update result:", updateResult);
 
+    // Commit the transaction
     await db.promise().commit();
-
     console.log("Transaction committed successfully");
 
     // Fetch the inserted record to verify
@@ -312,9 +320,11 @@ app.post("/api/family-members", async (req, res) => {
       message: "Family member added successfully",
       fm_id,
       master_data_id,
+      personal_info_id,
       verifiedRecord: verifyResult[0],
     });
   } catch (error) {
+    // Rollback the transaction in case of an error
     await db.promise().rollback();
     console.error("Error inserting family member:", error);
     res.status(500).json({
@@ -325,33 +335,6 @@ app.post("/api/family-members", async (req, res) => {
     });
   }
 });
-// Fetch family members associated with a specific headId
-// Get a single family member by ID
-// app.get("/api/family-members/:id", async (req, res) => {
-//   const { id } = req.params;
-//   try {
-//     const [member] = await db
-//       .promise()
-//       .query(`SELECT * FROM family_members WHERE id = ?`, [id]);
-//     if (member.length > 0) {
-//       res.status(200).json({
-//         success: true,
-//         data: member,
-//       });
-//     } else {
-//       res.status(404).json({
-//         success: false,
-//         message: "Family member not found",
-//       });
-//     }
-//   } catch (error) {
-//     console.error("Error fetching family member:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Server error",
-//     });
-//   }
-// });
 
 // Get all family members for a given head_id
 app.get("/api/family-members", async (req, res) => {
@@ -944,16 +927,78 @@ app.post("/api/risk-assessment", async (req, res) => {
     family_diabetes_history = null,
   } = req.body;
 
+  // Define the mappings
+  const mappings = {
+    age: {
+      "30-39 years": 0,
+      "40-49 years": 1,
+      "50-59 years": 2,
+      "60 years or above": 3,
+    },
+    tobacco_use: {
+      Never: 0,
+      "Used to consume in the past/ Sometimes now": 1,
+      Daily: 2,
+    },
+    alcohol_use: { No: 0, Yes: 1 },
+    waist_female: {
+      "80 cm or less": 0,
+      "81-90 cm": 1,
+      "More than 90 cm": 2,
+    },
+    waist_male: {
+      "90 cm or less": 0,
+      "91-100 cm": 1,
+      "More than 100 cm": 2,
+    },
+    physical_activity: {
+      "At least 150 minutes in a week": 0,
+      "Less than 150 minutes in a week": 1,
+    },
+    family_diabetes_history: { No: 0, Yes: 1 },
+  };
+
+  // Function to calculate risk score based on the mappings
   const calculateRiskScore = () => {
     let score = 0;
-    if (age !== null) score += parseInt(age);
-    if (tobacco_use !== null) score += parseInt(tobacco_use);
-    if (alcohol_use !== null) score += parseInt(alcohol_use);
-    if (waist_female !== null) score += parseInt(waist_female);
-    if (waist_male !== null) score += parseInt(waist_male);
-    if (physical_activity !== null) score += parseInt(physical_activity);
-    if (family_diabetes_history !== null)
-      score += parseInt(family_diabetes_history);
+
+    // Calculate score for each field using the mappings
+    if (age && mappings.age[age] !== undefined) {
+      score += mappings.age[age];
+    }
+
+    if (tobacco_use && mappings.tobacco_use[tobacco_use] !== undefined) {
+      score += mappings.tobacco_use[tobacco_use];
+    }
+
+    if (alcohol_use && mappings.alcohol_use[alcohol_use] !== undefined) {
+      score += mappings.alcohol_use[alcohol_use];
+    }
+
+    if (waist_female && mappings.waist_female[waist_female] !== undefined) {
+      score += mappings.waist_female[waist_female];
+    }
+
+    if (waist_male && mappings.waist_male[waist_male] !== undefined) {
+      score += mappings.waist_male[waist_male];
+    }
+
+    if (
+      physical_activity &&
+      mappings.physical_activity[physical_activity] !== undefined
+    ) {
+      score += mappings.physical_activity[physical_activity];
+    }
+
+    if (
+      family_diabetes_history &&
+      mappings.family_diabetes_history[family_diabetes_history] !== undefined
+    ) {
+      score += mappings.family_diabetes_history[family_diabetes_history];
+    }
+
+    console.log("Calculated risk score:", score); // Log the calculated score
+
     return isNaN(score) ? 0 : score; // Fallback to 0 if score is NaN
   };
 
@@ -973,26 +1018,26 @@ app.post("/api/risk-assessment", async (req, res) => {
       risk_score,
     ];
 
-    let risk_assesment_id;
+    let risk_assessment_id;
 
     // Insert or update Risk Assessment
     const [masterData] = await db
       .promise()
-      .query(`SELECT risk_assesment_id FROM master_data WHERE fm_id = ?`, [
+      .query(`SELECT risk_assessment_id FROM master_data WHERE fm_id = ?`, [
         fm_id,
       ]);
 
-    if (masterData.length > 0 && masterData[0].risk_assesment_id) {
+    if (masterData.length > 0 && masterData[0].risk_assessment_id) {
       // Update existing Risk Assessment and set updated_at
-      risk_assesment_id = masterData[0].risk_assesment_id;
+      risk_assessment_id = masterData[0].risk_assessment_id;
       await db.promise().query(
         `UPDATE risk_assessment SET
         age = ?, tobacco_use = ?, alcohol_use = ?, waist_female = ?, waist_male = ?, physical_activity = ?, 
         family_diabetes_history = ?, risk_score = ?, updated_at = NOW()
         WHERE id = ?`,
-        [...sanitizedValues, risk_assesment_id]
+        [...sanitizedValues, risk_assessment_id]
       );
-      console.log(`Updated risk assessment with ID: ${risk_assesment_id}`);
+      console.log(`Updated risk assessment with ID: ${risk_assessment_id}`);
     } else {
       // Insert new Risk Assessment and set created_at and updated_at
       const [result] = await db.promise().query(
@@ -1002,24 +1047,18 @@ app.post("/api/risk-assessment", async (req, res) => {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         sanitizedValues
       );
-      risk_assesment_id = result.insertId;
-      console.log(`Inserted new risk assessment with ID: ${risk_assesment_id}`);
-
-      // Log fm_id and risk_assessment_id before the update query
+      risk_assessment_id = result.insertId;
       console.log(
-        `Updating master_data for fm_id: ${fm_id} with risk_assesment_id: ${risk_assesment_id}`
+        `Inserted new risk assessment with ID: ${risk_assessment_id}`
       );
 
       // Update master_data table with the new risk_assessment_id
-      const [updateResult] = await db
+      await db
         .promise()
-        .query(`UPDATE master_data SET risk_assesment_id = ? WHERE fm_id = ?`, [
-          risk_assesment_id,
-          fm_id,
-        ]);
-      console.log(
-        `Affected rows in master_data update: ${updateResult.affectedRows}`
-      );
+        .query(
+          `UPDATE master_data SET risk_assessment_id = ? WHERE fm_id = ?`,
+          [risk_assessment_id, fm_id]
+        );
     }
 
     await db.promise().commit();
@@ -1027,7 +1066,7 @@ app.post("/api/risk-assessment", async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Risk assessment saved successfully",
-      risk_assesment_id,
+      risk_assessment_id,
     });
   } catch (error) {
     await db.promise().rollback();
@@ -1040,23 +1079,36 @@ app.get("/api/risk-assessment/:fm_id", async (req, res) => {
   const { fm_id } = req.params;
 
   try {
+    // Fetch risk_assessment_id from master_data
     const [masterData] = await db
       .promise()
-      .query(`SELECT risk_assesment_id FROM master_data WHERE fm_id = ?`, [
+      .query(`SELECT risk_assessment_id FROM master_data WHERE fm_id = ?`, [
         fm_id,
       ]);
 
-    if (masterData.length > 0 && masterData[0].risk_assesment_id) {
+    // Check if there is an associated risk assessment
+    if (masterData.length > 0 && masterData[0].risk_assessment_id) {
+      // Fetch risk assessment data
       const [riskData] = await db
         .promise()
         .query(`SELECT * FROM risk_assessment WHERE id = ?`, [
-          masterData[0].risk_assesment_id,
+          masterData[0].risk_assessment_id,
         ]);
 
+      // Check if data exists
       if (riskData.length > 0) {
+        const assessmentData = riskData[0];
+
+        // Return the fetched risk assessment data
         res.status(200).json({
           success: true,
-          data: riskData[0],
+          data: {
+            risk_score: assessmentData.risk_score || 0, // Set default if not found
+            alcohol_consumption: assessmentData.alcohol_consumption || "select", // Set default if not found
+            family_history_diabetes:
+              assessmentData.family_history_diabetes || "select", // Set default if not found
+            ...assessmentData, // Include other fields from the assessment
+          },
         });
       } else {
         res.status(404).json({

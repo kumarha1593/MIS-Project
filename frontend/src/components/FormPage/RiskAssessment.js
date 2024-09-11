@@ -64,11 +64,12 @@ const RiskAssessment = ({ currentFmId }) => {
           setFormData({
             age: data.age,
             tobacco_use: data.tobacco_use,
-            alcohol_use: data.alcohol_use,
+            alcohol_use: data.alcohol_use === "1" ? "No" : "Yes",
             waist_female: data.waist_female,
             waist_male: data.waist_male,
             physical_activity: data.physical_activity,
-            family_diabetes_history: data.family_diabetes_history,
+            family_diabetes_history:
+              data.family_diabetes_history === "1" ? "No" : "Yes",
             risk_score: parseInt(data.risk_score),
           });
         }
