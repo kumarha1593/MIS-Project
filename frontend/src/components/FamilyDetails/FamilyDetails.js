@@ -154,7 +154,8 @@ const FamilyDetails = () => {
     } catch (error) {
       console.error("Error adding new family member:", error);
       setAddMemberError(
-        "Error adding new family member. Please check name and aadhar number (should be unique and 12 digits)."
+        "Error adding new family member: " +
+          (error.response?.data?.message || error.message || "Unknown error")
       );
     }
   };
@@ -179,6 +180,7 @@ const FamilyDetails = () => {
           <tr>
             <th>Name of Family Member</th>
             <th>Aadhar Number</th>
+            <th>Relation</th>
             <th>Status</th>
           </tr>
         </thead>
