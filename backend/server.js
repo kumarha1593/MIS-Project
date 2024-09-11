@@ -14,8 +14,8 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "$Mumuksh14$",
-  database: "user_management",
+  password: "$Anshika28$",
+  database: "manipur",
 });
 
 db.connect((err) => {
@@ -2318,9 +2318,10 @@ app.post("/api/ckd-assessment", async (req, res) => {
     historyOfStroke = null,
     swellingFaceLeg = null,
     historyNSAIDS = null,
-    ckdRiskScore = 0, // This will be passed from the frontend
-    riskaAssessment = null,
+    ckdRiskScore = 0,
   } = req.body;
+
+  const riskaAssessment = ckdRiskScore >= 5 ? "Risk" : "No Risk";
 
   try {
     await db.promise().beginTransaction();
@@ -2336,7 +2337,7 @@ app.post("/api/ckd-assessment", async (req, res) => {
       swellingFaceLeg || null,
       historyNSAIDS || null,
       ckdRiskScore || 0,
-      riskaAssessment || null,
+      riskaAssessment,
     ];
 
     let ckd_assessment_id;
@@ -2390,43 +2391,6 @@ app.post("/api/ckd-assessment", async (req, res) => {
   } catch (error) {
     await db.promise().rollback();
     console.error("Error saving CKD assessment:", error);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-app.get("/api/ckd-assessment/:fm_id", async (req, res) => {
-  const { fm_id } = req.params;
-
-  try {
-    const [masterData] = await db
-      .promise()
-      .query(`SELECT CKD_id FROM master_data WHERE fm_id = ?`, [fm_id]);
-
-    if (masterData.length > 0 && masterData[0].CKD_id) {
-      const [ckdData] = await db
-        .promise()
-        .query(`SELECT * FROM ckd_assessment WHERE id = ?`, [
-          masterData[0].CKD_id,
-        ]);
-
-      if (ckdData.length > 0) {
-        res.status(200).json({
-          success: true,
-          data: ckdData[0],
-        });
-      } else {
-        res.status(404).json({
-          success: false,
-          message: "CKD assessment not found",
-        });
-      }
-    } else {
-      res.status(404).json({
-        success: false,
-        message: "No CKD assessment associated with this family member",
-      });
-    }
-  } catch (error) {
-    console.error("Error fetching CKD assessment:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -2858,7 +2822,7 @@ app.post("/api/final-submit", async (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
