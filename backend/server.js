@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "$Anshika28$",
+  password: "$Mumuksh14$",
   database: "manipur",
 });
 
@@ -2884,7 +2884,7 @@ app.post("/api/final-submit", async (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
