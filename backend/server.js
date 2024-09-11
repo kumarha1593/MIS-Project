@@ -15,7 +15,7 @@ const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "$Mumuksh14$",
-  database: "manipur",
+  database: "user_management",
 });
 
 db.connect((err) => {
@@ -2868,7 +2868,7 @@ app.post("/api/final-submit", async (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

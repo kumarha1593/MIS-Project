@@ -10,6 +10,7 @@ const Review = () => {
   const [formData, setFormData] = useState({});
   const [emptyFields, setEmptyFields] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [sex, setSex] = useState(null);
 
   const [personalInfo, setPersonalInfo] = useState(null);
   const [healthProfile, setHealthProfile] = useState(null);
@@ -147,6 +148,8 @@ const Review = () => {
     if (location.state && location.state.formData) {
       setFormData(location.state.formData);
     }
+    const storedSex = localStorage.getItem("sex");
+    setSex(storedSex);
   }, [location.state]);
 
   const handleBack = () => {
@@ -168,7 +171,7 @@ const Review = () => {
   };
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error fetching data: {error.message}</div>;
+  // if (error) return <div>Error fetching data: {error.message}</div>;
 
   return (
     <div className="review-page">
@@ -334,70 +337,78 @@ const Review = () => {
           {oralCancerAssessment?.suspected_oral_cancer || "Not Filled"}
         </p>
       </div>
+      {sex !== "male" && (
+        <>
+          <h2>Breast Cancer Assessment</h2>
+          <div>
+            <p>
+              <strong>Known Case:</strong>{" "}
+              {breastCancerAssessment?.known_case || "Not Filled"}
+            </p>
+            <p>
+              <strong>Lump in Breast:</strong>{" "}
+              {breastCancerAssessment?.lump_in_breast || "Not Filled"}
+            </p>
+            <p>
+              <strong>Blood-Stained Discharge:</strong>{" "}
+              {breastCancerAssessment?.blood_stained_discharge || "Not Filled"}
+            </p>
+            <p>
+              <strong>Change in Shape:</strong>{" "}
+              {breastCancerAssessment?.change_in_shape || "Not Filled"}
+            </p>
+            <p>
+              <strong>Constant Pain or Swelling:</strong>{" "}
+              {breastCancerAssessment?.constant_pain_or_swelling ||
+                "Not Filled"}
+            </p>
+            <p>
+              <strong>Redness or Ulcer:</strong>{" "}
+              {breastCancerAssessment?.redness_or_ulcer || "Not Filled"}
+            </p>
+            <p>
+              <strong>Suspected Breast Cancer:</strong>{" "}
+              {breastCancerAssessment?.suspected_breast_cancer || "Not Filled"}
+            </p>
+          </div>
 
-      <h2>Breast Cancer Assessment</h2>
-      <div>
-        <p>
-          <strong>Known Case:</strong>{" "}
-          {breastCancerAssessment?.known_case || "Not Filled"}
-        </p>
-        <p>
-          <strong>Lump in Breast:</strong>{" "}
-          {breastCancerAssessment?.lump_in_breast || "Not Filled"}
-        </p>
-        <p>
-          <strong>Blood-Stained Discharge:</strong>{" "}
-          {breastCancerAssessment?.blood_stained_discharge || "Not Filled"}
-        </p>
-        <p>
-          <strong>Change in Shape:</strong>{" "}
-          {breastCancerAssessment?.change_in_shape || "Not Filled"}
-        </p>
-        <p>
-          <strong>Constant Pain or Swelling:</strong>{" "}
-          {breastCancerAssessment?.constant_pain_or_swelling || "Not Filled"}
-        </p>
-        <p>
-          <strong>Redness or Ulcer:</strong>{" "}
-          {breastCancerAssessment?.redness_or_ulcer || "Not Filled"}
-        </p>
-        <p>
-          <strong>Suspected Breast Cancer:</strong>{" "}
-          {breastCancerAssessment?.suspected_breast_cancer || "Not Filled"}
-        </p>
-      </div>
-
-      <h2>Cervical Cancer Assessment</h2>
-      <div>
-        <p>
-          <strong>Known Case:</strong>{" "}
-          {cervicalCancerAssessment?.known_case || "Not Filled"}
-        </p>
-        <p>
-          <strong>Bleeding Between Periods:</strong>{" "}
-          {cervicalCancerAssessment?.bleeding_between_periods || "Not Filled"}
-        </p>
-        <p>
-          <strong>Bleeding After Menopause:</strong>{" "}
-          {cervicalCancerAssessment?.bleeding_after_menopause || "Not Filled"}
-        </p>
-        <p>
-          <strong>Bleeding After Intercourse:</strong>{" "}
-          {cervicalCancerAssessment?.bleeding_after_intercourse || "Not Filled"}
-        </p>
-        <p>
-          <strong>Foul-Smelling Discharge:</strong>{" "}
-          {cervicalCancerAssessment?.foul_smelling_discharge || "Not Filled"}
-        </p>
-        <p>
-          <strong>VIA Appointment Date:</strong>{" "}
-          {cervicalCancerAssessment?.via_appointment_date || "Not Filled"}
-        </p>
-        <p>
-          <strong>VIA Result:</strong>{" "}
-          {cervicalCancerAssessment?.via_result || "Not Filled"}
-        </p>
-      </div>
+          <h2>Cervical Cancer Assessment</h2>
+          <div>
+            <p>
+              <strong>Known Case:</strong>{" "}
+              {cervicalCancerAssessment?.known_case || "Not Filled"}
+            </p>
+            <p>
+              <strong>Bleeding Between Periods:</strong>{" "}
+              {cervicalCancerAssessment?.bleeding_between_periods ||
+                "Not Filled"}
+            </p>
+            <p>
+              <strong>Bleeding After Menopause:</strong>{" "}
+              {cervicalCancerAssessment?.bleeding_after_menopause ||
+                "Not Filled"}
+            </p>
+            <p>
+              <strong>Bleeding After Intercourse:</strong>{" "}
+              {cervicalCancerAssessment?.bleeding_after_intercourse ||
+                "Not Filled"}
+            </p>
+            <p>
+              <strong>Foul-Smelling Discharge:</strong>{" "}
+              {cervicalCancerAssessment?.foul_smelling_discharge ||
+                "Not Filled"}
+            </p>
+            <p>
+              <strong>VIA Appointment Date:</strong>{" "}
+              {cervicalCancerAssessment?.via_appointment_date || "Not Filled"}
+            </p>
+            <p>
+              <strong>VIA Result:</strong>{" "}
+              {cervicalCancerAssessment?.via_result || "Not Filled"}
+            </p>
+          </div>
+        </>
+      )}
 
       <h2>CVD Assessment</h2>
       <div>
