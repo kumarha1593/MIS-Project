@@ -16,6 +16,8 @@ const FamilyDetails = () => {
     aadharNumber: "",
   });
   const [addMemberError, setAddMemberError] = useState(null);
+  const [nameError, setNameError] = useState("");
+  const [aadharError, setAadharError] = useState("");
 
   useEffect(() => {
     const fetchFamilyData = async () => {
@@ -65,34 +67,26 @@ const FamilyDetails = () => {
     fetchFamilyData();
   }, [headId]);
 
-  // Handle marking status as "Completed"
   const handleStatusUpdate = async (memberId) => {
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/update-status`,
         {
           memberId,
-          status: 1, // Update to "Completed"
+          status: 1,
         }
       );
       if (response.data.success) {
-        // await fetchFamilyData(); // Refresh data after updating status
       }
     } catch (error) {
       console.error("Error updating status:", error);
     }
   };
 
-  // Handle marking status as "Completed" and navigating to FormPage
   const handleCompleteForm = (fm_id) => {
     localStorage.setItem("current_fm_id", fm_id);
     navigate("/FormPage");
   };
-
-  // Fetch family data when component mounts
-  // useEffect(() => {
-  //   fetchFamilyData();
-  // }, [headId]);
 
   const handleAddMember = () => {
     setShowModal(true);
@@ -100,13 +94,38 @@ const FamilyDetails = () => {
 
   const handleModalInputChange = (e) => {
     const { name, value } = e.target;
-    setNewMemberData((prevData) => ({ ...prevData, [name]: value }));
+
+    if (name === "name") {
+      setNewMemberData((prevData) => ({ ...prevData, [name]: value }));
+      if (!value.trim()) {
+        setNameError("Name is required.");
+      } else {
+        setNameError("");
+      }
+    } else if (name === "aadharNumber") {
+      // Only allow digits
+      const numericValue = value.replace(/\D/g, "");
+      setNewMemberData((prevData) => ({ ...prevData, [name]: numericValue }));
+      if (numericValue.length !== 12) {
+        setAadharError("Aadhar number must be 12 digits.");
+      } else {
+        setAadharError("");
+      }
+    }
   };
 
   const handleSubmitNewMember = async () => {
-    const user_id = localStorage.getItem("user_id"); // Get user_id from local storage
+    const user_id = localStorage.getItem("user_id");
     setAddMemberError(null);
-    console.log("Submitting new member with headId:", headId); // Log the headId for debugging
+
+    if (!newMemberData.name.trim()) {
+      setNameError("Name is required.");
+      return;
+    }
+    if (newMemberData.aadharNumber.length !== 12) {
+      setAadharError("Aadhar number must be 12 digits.");
+      return;
+    }
 
     try {
       const response = await axios.post(
@@ -115,7 +134,7 @@ const FamilyDetails = () => {
           fc_id: user_id,
           name: newMemberData.name,
           aadhar: newMemberData.aadharNumber,
-          head_id: headId, // Use headId from the URL
+          head_id: headId,
         }
       );
 
@@ -124,7 +143,8 @@ const FamilyDetails = () => {
       if (response.data.success) {
         setShowModal(false);
         setNewMemberData({ name: "", aadharNumber: "" });
-        // fetchFamilyMembers(); // Refresh the family members after adding
+        setNameError("");
+        setAadharError("");
       } else {
         setAddMemberError(
           "Failed to add new family member: " +
@@ -165,13 +185,11 @@ const FamilyDetails = () => {
           </tr>
         </thead>
         <tbody>
-          {/* Show the Head of Family first */}
           {familyData.head && (
             <tr key={familyData.head.id}>
               <td>{familyData.head.name}</td>
               <td>{familyData.head.Aadhar}</td>
-              <td>Head of Family</td>{" "}
-              {/* Display relation as 'Head of Family' */}
+              <td>Head of Family</td>
               <td>
                 {familyData.head.status === 0 ? (
                   <button
@@ -187,13 +205,11 @@ const FamilyDetails = () => {
             </tr>
           )}
 
-          {/* Show other Family Members */}
           {familyData.members.map((member) => (
             <tr key={member.id}>
               <td>{member.name}</td>
               <td>{member.Aadhar}</td>
-              <td>Family Member</td>{" "}
-              {/* All other members are shown as 'Member' */}
+              <td>Family Member</td>
               <td>
                 {member.status === 0 ? (
                   <button
@@ -209,7 +225,6 @@ const FamilyDetails = () => {
             </tr>
           ))}
 
-          {/* Handle case where no family members are found */}
           {familyData.members.length === 0 && !familyData.head && (
             <tr>
               <td colSpan="4" style={{ textAlign: "center" }}>
@@ -220,13 +235,11 @@ const FamilyDetails = () => {
         </tbody>
       </table>
 
-      {/* Add New Family Member Section */}
       <div className="add-member-container">
         <FaPlusCircle className="add-member-icon" onClick={handleAddMember} />
         <span>Add New Family Member</span>
       </div>
 
-      {/* Modal for Adding New Family Member */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
@@ -238,17 +251,28 @@ const FamilyDetails = () => {
               onChange={handleModalInputChange}
               placeholder="Family Member's Name"
             />
+            {nameError && <p className="error-message">{nameError}</p>}
             <input
               type="text"
               name="aadharNumber"
               value={newMemberData.aadharNumber}
               onChange={handleModalInputChange}
               placeholder="Aadhar Number"
+              maxLength="12"
             />
+            {aadharError && <p className="error-message">{aadharError}</p>}
             {addMemberError && (
               <div className="error-message">{addMemberError}</div>
             )}
-            <button onClick={handleSubmitNewMember}>Submit</button>
+            <button
+              onClick={handleSubmitNewMember}
+              disabled={
+                !newMemberData.name.trim() ||
+                newMemberData.aadharNumber.length !== 12
+              }
+            >
+              Submit
+            </button>
             <button onClick={() => setShowModal(false)}>Cancel</button>
           </div>
         </div>

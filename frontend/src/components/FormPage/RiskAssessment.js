@@ -16,10 +16,11 @@ const RiskAssessment = ({ currentFmId }) => {
   const mapValueToScore = (field, value) => {
     const mappings = {
       age: {
-        "30-39 years": 0,
-        "40-49 years": 1,
-        "50-59 years": 2,
-        "60 years or above": 3,
+        "18-29 years": 0,
+        "30-39 years": 1,
+        "40-49 years": 2,
+        "50-59 years": 3,
+        "60 years or above": 4,
       },
       tobacco_use: {
         Never: 0,
@@ -166,6 +167,7 @@ const RiskAssessment = ({ currentFmId }) => {
           style={styles.input}
         >
           <option value="">Select</option>
+          <option value="18-29 years">18-29 years</option>
           <option value="30-39 years">30-39 years</option>
           <option value="40-49 years">40-49 years</option>
           <option value="50-59 years">50-59 years</option>

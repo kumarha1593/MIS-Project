@@ -34,6 +34,10 @@ const CKDAssessment = ({ currentFmId }) => {
     return score;
   }, [formData]);
 
+  const calculateRiskAssessment = useCallback((score) => {
+    return score >= 5 ? "Risk" : "No Risk";
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({
@@ -70,6 +74,7 @@ const CKDAssessment = ({ currentFmId }) => {
 
   const handleSubmit = async () => {
     const ckdRiskScore = calculateCKDRiskScore();
+    const riskaAssessment = calculateRiskAssessment(ckdRiskScore);
 
     try {
       const response = await axios.post(
@@ -78,6 +83,7 @@ const CKDAssessment = ({ currentFmId }) => {
           fm_id: currentFmId,
           ...formData,
           ckdRiskScore,
+          riskaAssessment,
         }
       );
 
@@ -274,17 +280,13 @@ const CKDAssessment = ({ currentFmId }) => {
       </div>
       <div style={styles.formGroup}>
         <label style={styles.label}>Risk Assessment *</label>
-        <select
+        <input
+          type="text"
           name="riskaAssessment"
-          value={formData.riskaAssessment}
-          onChange={handleInputChange}
-          required
+          value={calculateRiskAssessment(calculateCKDRiskScore())}
+          readOnly
           style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Risk">Risk</option>
-          <option value="No Risk">No Risk</option>
-        </select>
+        />
       </div>
       <button type="button" onClick={handleSubmit} style={styles.button}>
         Save CKD Assessment

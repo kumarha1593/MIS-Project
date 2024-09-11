@@ -199,7 +199,7 @@ const OralCancerAssessment = ({ currentFmId }) => {
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>Swelling in Neck *</label>
+        <label style={styles.label}>Sudden change in voice *</label>
         <select
           id="swelling_in_neck"
           name="swelling_in_neck"
