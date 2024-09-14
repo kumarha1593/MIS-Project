@@ -8,6 +8,8 @@ const CVDAssessment = ({ currentFmId }) => {
     symptom: "",
     cvd_date: "",
     suspected_cvd: "",
+    teleconsultation_done: "",
+    referral_done: "",
   });
 
   const [showAbnormalHeartOptions, setShowAbnormalHeartOptions] =
@@ -28,6 +30,17 @@ const CVDAssessment = ({ currentFmId }) => {
             .split("T")[0];
         }
         setFormData(fetchedData);
+
+        // Set initial states based on fetched data
+        if (
+          fetchedData.heart_sound === "Abnormal" ||
+          fetchedData.symptom === "Yes"
+        ) {
+          setShowAbnormalHeartOptions(true);
+          if (fetchedData.teleconsultation_done === "Yes") {
+            setShowReferralField(true);
+          }
+        }
       }
     } catch (error) {
       console.error("Error fetching CVD assessment:", error);
@@ -47,6 +60,12 @@ const CVDAssessment = ({ currentFmId }) => {
     } else {
       setShowAbnormalHeartOptions(false);
       setShowReferralField(false);
+      // Reset teleconsultation and referral fields
+      setFormData((prev) => ({
+        ...prev,
+        teleconsultation_done: "",
+        referral_done: "",
+      }));
     }
   }, [formData.heart_sound, formData.symptom]);
 
@@ -74,6 +93,12 @@ const CVDAssessment = ({ currentFmId }) => {
       ...prevData,
       [name]: value,
     }));
+    if (name === "teleconsultation_done") {
+      setShowReferralField(value === "Yes");
+      if (value !== "Yes") {
+        setFormData((prev) => ({ ...prev, referral_done: "" }));
+      }
+    }
   };
 
   const handleOptionChange = (e) => {
@@ -207,7 +232,7 @@ const CVDAssessment = ({ currentFmId }) => {
             <select
               id="teleconsultationDone"
               name="teleconsultationDone"
-              value={formData.teleconsultationDone || ""}
+              value={formData.teleconsultationDone}
               onChange={handleOptionChange}
               style={styles.input}
             >

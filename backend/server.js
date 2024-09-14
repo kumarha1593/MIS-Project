@@ -15,7 +15,7 @@ const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "$Mumuksh14$",
-  database: "manipur",
+  database: "user_management",
 });
 
 db.connect((err) => {
@@ -2653,17 +2653,23 @@ app.post("/api/cvd-assessment", async (req, res) => {
 // CVD Assessment GET Endpoint
 app.get("/api/cvd-assessment/:fm_id", async (req, res) => {
   const { fm_id } = req.params;
-
   try {
     const [masterData] = await db
       .promise()
       .query(`SELECT CVD_id FROM master_data WHERE fm_id = ?`, [fm_id]);
-
     if (masterData.length > 0 && masterData[0].CVD_id) {
-      const [cvdData] = await db
-        .promise()
-        .query(`SELECT * FROM cvd WHERE id = ?`, [masterData[0].CVD_id]);
-
+      const [cvdData] = await db.promise().query(
+        `
+          SELECT c.*, 
+                 t.teleconsultation_done,
+                 r.referral_done
+          FROM cvd c
+          LEFT JOIN teleconsultation t ON c.id = t.cvd_id
+          LEFT JOIN referral r ON c.id = r.cvd_id
+          WHERE c.id = ?
+        `,
+        [masterData[0].CVD_id]
+      );
       if (cvdData.length > 0) {
         res.status(200).json({
           success: true,
