@@ -2579,6 +2579,7 @@ app.get("/api/cervical-cancer-assessment/:fm_id", async (req, res) => {
 });
 
 // CVD Assessment POST Endpoint
+// CVD Assessment POST Endpoint
 app.post("/api/cvd-assessment", async (req, res) => {
   const {
     fm_id,
@@ -2587,7 +2588,12 @@ app.post("/api/cvd-assessment", async (req, res) => {
     symptom = null,
     cvd_date = null,
     suspected_cvd = null,
+    teleconsultation = null,
+    referral = null,
+    referral_centre = null,
   } = req.body;
+
+  console.log("Received data:", req.body);
 
   try {
     await db.promise().beginTransaction();
@@ -2598,8 +2604,12 @@ app.post("/api/cvd-assessment", async (req, res) => {
       symptom === "" ? null : symptom,
       cvd_date === "" ? null : cvd_date,
       suspected_cvd === "" ? null : suspected_cvd,
+      teleconsultation === "" ? null : teleconsultation,
+      referral === "" ? null : referral,
+      referral_centre === "" ? null : referral_centre,
     ];
 
+    console.log("Sanitized values:", sanitizedValues); // Add this line
     let cvd_id;
 
     // Insert or update CVD assessment
@@ -2608,21 +2618,19 @@ app.post("/api/cvd-assessment", async (req, res) => {
       .query(`SELECT CVD_id FROM master_data WHERE fm_id = ?`, [fm_id]);
 
     if (masterData.length > 0 && masterData[0].CVD_id) {
-      // Update existing CVD assessment and set updated_at
+      // Update existing CVD assessment
       cvd_id = masterData[0].CVD_id;
-      await db.promise().query(
-        `UPDATE cvd SET
-        known_case = ?, heart_sound = ?, symptom = ?, cvd_date = ?, suspected_cvd = ?, 
-        updated_at = NOW()
-        WHERE id = ?`,
-        [...sanitizedValues, cvd_id]
-      );
+      const updateQuery = `UPDATE cvd SET known_case = ?, heart_sound = ?, symptom = ?, cvd_date = ?, 
+      suspected_cvd = ?, teleconsultation = ?, referral = ?, referral_centre = ?, 
+      updated_at = NOW() WHERE id = ?`;
+      console.log("Update query:", updateQuery); // Add this line
+      await db.promise().query(updateQuery, [...sanitizedValues, cvd_id]);
     } else {
-      // Insert new CVD assessment and set created_at and updated_at
+      // Insert new CVD assessment
       const [result] = await db.promise().query(
-        `INSERT INTO cvd 
-        (known_case, heart_sound, symptom, cvd_date, suspected_cvd, created_at, updated_at) 
-        VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+        `INSERT INTO cvd (known_case, heart_sound, symptom, cvd_date, suspected_cvd, 
+        teleconsultation, referral, referral_centre, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         sanitizedValues
       );
       cvd_id = result.insertId;
@@ -2637,7 +2645,6 @@ app.post("/api/cvd-assessment", async (req, res) => {
     }
 
     await db.promise().commit();
-
     res.status(200).json({
       success: true,
       message: "CVD assessment saved successfully",
@@ -2671,10 +2678,7 @@ app.get("/api/cvd-assessment/:fm_id", async (req, res) => {
         [masterData[0].CVD_id]
       );
       if (cvdData.length > 0) {
-        res.status(200).json({
-          success: true,
-          data: cvdData[0],
-        });
+        res.status(200).json({ success: true, data: cvdData[0] });
       } else {
         res.status(404).json({
           success: false,
@@ -2692,6 +2696,7 @@ app.get("/api/cvd-assessment/:fm_id", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 // API endpoint to get detected diseases based on fm_id
 app.get("/api/diseases/:fm_id", (req, res) => {
   const { fm_id } = req.params;

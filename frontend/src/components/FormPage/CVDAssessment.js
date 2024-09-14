@@ -8,13 +8,13 @@ const CVDAssessment = ({ currentFmId }) => {
     symptom: "",
     cvd_date: "",
     suspected_cvd: "",
-    teleconsultation_done: "",
-    referral_done: "",
+    teleconsultation: "",
+    referral: "",
+    referral_centre: "",
   });
 
-  const [showAbnormalHeartOptions, setShowAbnormalHeartOptions] =
-    useState(false);
-  const [showReferralField, setShowReferralField] = useState(false);
+  const [showAdditionalFields, setShowAdditionalFields] = useState(false);
+  const [showReferralCentre, setShowReferralCentre] = useState(false);
 
   const fetchCVDData = async () => {
     try {
@@ -23,7 +23,6 @@ const CVDAssessment = ({ currentFmId }) => {
       );
       if (response.data.success) {
         const fetchedData = response.data.data;
-        // Format the date to "yyyy-MM-dd"
         if (fetchedData.cvd_date) {
           fetchedData.cvd_date = new Date(fetchedData.cvd_date)
             .toISOString()
@@ -54,23 +53,18 @@ const CVDAssessment = ({ currentFmId }) => {
   }, [currentFmId]);
 
   useEffect(() => {
-    // Show the options if Heart Sound is abnormal or Heart Disease Symptoms are positive
-    if (formData.heart_sound === "Abnormal" || formData.symptom === "Yes") {
-      setShowAbnormalHeartOptions(true);
-    } else {
-      setShowAbnormalHeartOptions(false);
-      setShowReferralField(false);
-      // Reset teleconsultation and referral fields
-      setFormData((prev) => ({
-        ...prev,
-        teleconsultation_done: "",
-        referral_done: "",
-      }));
-    }
+    setShowAdditionalFields(
+      formData.heart_sound === "Abnormal" || formData.symptom === "Yes"
+    );
   }, [formData.heart_sound, formData.symptom]);
+
+  useEffect(() => {
+    setShowReferralCentre(formData.referral === "Yes");
+  }, [formData.referral]);
 
   const handleSave = async () => {
     try {
+      console.log("Sending data to backend:", formData); // Add this line
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/cvd-assessment`,
         {
@@ -79,6 +73,7 @@ const CVDAssessment = ({ currentFmId }) => {
         }
       );
       if (response.data.success) {
+        console.log("Response from backend:", response.data); // Add this line
         alert("CVD Assessment saved successfully!");
       }
     } catch (error) {
@@ -93,25 +88,7 @@ const CVDAssessment = ({ currentFmId }) => {
       ...prevData,
       [name]: value,
     }));
-    if (name === "teleconsultation_done") {
-      setShowReferralField(value === "Yes");
-      if (value !== "Yes") {
-        setFormData((prev) => ({ ...prev, referral_done: "" }));
-      }
-    }
   };
-
-  const handleOptionChange = (e) => {
-    handleInputChange(e);
-    if (e.target.name === "teleconsultationDone" && e.target.value === "Yes") {
-      setShowReferralField(true);
-    } else if (e.target.name === "referralDone" && e.target.value === "Yes") {
-      setShowReferralField(true);
-    } else {
-      setShowReferralField(false);
-    }
-  };
-
   const styles = {
     formSection: {
       marginBottom: "20px",
@@ -225,15 +202,16 @@ const CVDAssessment = ({ currentFmId }) => {
         </select>
       </div>
 
-      {showAbnormalHeartOptions && (
+      {showAdditionalFields && (
         <>
           <div style={styles.formGroup}>
-            <label style={styles.label}>Teleconsultation Done *</label>
+            <label style={styles.label}>Teleconsultation *</label>
             <select
-              id="teleconsultationDone"
-              name="teleconsultationDone"
-              value={formData.teleconsultationDone}
-              onChange={handleOptionChange}
+              id="teleconsultation"
+              name="teleconsultation"
+              value={formData.teleconsultation}
+              onChange={handleInputChange}
+              required
               style={styles.input}
             >
               <option value="">Select</option>
@@ -242,66 +220,43 @@ const CVDAssessment = ({ currentFmId }) => {
             </select>
           </div>
 
-          {showReferralField && (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Referral *</label>
+            <select
+              id="referral"
+              name="referral"
+              value={formData.referral}
+              onChange={handleInputChange}
+              required
+              style={styles.input}
+            >
+              <option value="">Select</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          {showReferralCentre && (
             <div style={styles.formGroup}>
-              <label style={styles.label}>Referral Done *</label>
-              <select
-                id="referralDone"
-                name="referralDone"
-                value={formData.referralDone || ""}
-                onChange={handleOptionChange}
+              <label style={styles.label}>Referral Centre *</label>
+              <input
+                type="text"
+                id="referral_centre"
+                name="referral_centre"
+                value={formData.referral_centre}
+                onChange={handleInputChange}
+                required
                 style={styles.input}
-              >
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
+              />
             </div>
           )}
         </>
       )}
-
       <button type="button" onClick={handleSave} style={styles.button}>
         Save CVD Assessment
       </button>
     </div>
   );
-};
-
-const styles = {
-  formSection: {
-    padding: "20px",
-    maxWidth: "500px",
-    margin: "0 auto",
-  },
-  formGroup: {
-    marginBottom: "20px",
-  },
-  label: {
-    display: "block",
-    marginBottom: "5px",
-    fontWeight: "bold",
-  },
-  input: {
-    width: "100%",
-    padding: "10px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
-    borderRadius: "4px",
-  },
-  button: {
-    backgroundColor: "#4CAF50",
-    border: "none",
-    color: "white",
-    padding: "15px 32px",
-    textAlign: "center",
-    textDecoration: "none",
-    display: "inline-block",
-    fontSize: "16px",
-    margin: "4px 2px",
-    cursor: "pointer",
-    borderRadius: "4px",
-  },
 };
 
 export default CVDAssessment;
