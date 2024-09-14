@@ -29,17 +29,6 @@ const CVDAssessment = ({ currentFmId }) => {
             .split("T")[0];
         }
         setFormData(fetchedData);
-
-        // Set initial states based on fetched data
-        if (
-          fetchedData.heart_sound === "Abnormal" ||
-          fetchedData.symptom === "Yes"
-        ) {
-          setShowAbnormalHeartOptions(true);
-          if (fetchedData.teleconsultation_done === "Yes") {
-            setShowReferralField(true);
-          }
-        }
       }
     } catch (error) {
       console.error("Error fetching CVD assessment:", error);

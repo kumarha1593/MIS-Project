@@ -2457,6 +2457,44 @@ app.post("/api/ckd-assessment", async (req, res) => {
   }
 });
 
+app.get("/api/ckd-assessment/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    const [masterData] = await db
+      .promise()
+      .query(`SELECT CKD_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
+    if (masterData.length > 0 && masterData[0].CKD_id) {
+      const [ckdData] = await db
+        .promise()
+        .query(`SELECT * FROM ckd_assessment WHERE id = ?`, [
+          masterData[0].CKD_id,
+        ]);
+
+      if (ckdData.length > 0) {
+        res.status(200).json({
+          success: true,
+          data: ckdData[0],
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "CKD assessment not found",
+        });
+      }
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No CKD assessment associated with this family member",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching CKD assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 app.post("/api/cervical-cancer-assessment", async (req, res) => {
   const {
     fm_id,
@@ -2579,7 +2617,6 @@ app.get("/api/cervical-cancer-assessment/:fm_id", async (req, res) => {
 });
 
 // CVD Assessment POST Endpoint
-// CVD Assessment POST Endpoint
 app.post("/api/cvd-assessment", async (req, res) => {
   const {
     fm_id,
@@ -2660,23 +2697,17 @@ app.post("/api/cvd-assessment", async (req, res) => {
 // CVD Assessment GET Endpoint
 app.get("/api/cvd-assessment/:fm_id", async (req, res) => {
   const { fm_id } = req.params;
+
   try {
     const [masterData] = await db
       .promise()
       .query(`SELECT CVD_id FROM master_data WHERE fm_id = ?`, [fm_id]);
+
     if (masterData.length > 0 && masterData[0].CVD_id) {
-      const [cvdData] = await db.promise().query(
-        `
-          SELECT c.*, 
-                 t.teleconsultation_done,
-                 r.referral_done
-          FROM cvd c
-          LEFT JOIN teleconsultation t ON c.id = t.cvd_id
-          LEFT JOIN referral r ON c.id = r.cvd_id
-          WHERE c.id = ?
-        `,
-        [masterData[0].CVD_id]
-      );
+      const [cvdData] = await db
+        .promise()
+        .query(`SELECT * FROM cvd WHERE id = ?`, [masterData[0].CVD_id]);
+
       if (cvdData.length > 0) {
         res.status(200).json({ success: true, data: cvdData[0] });
       } else {
@@ -2831,23 +2862,29 @@ app.get("/api/assessment-and-action-taken/:fm_id", async (req, res) => {
   const { fm_id } = req.params;
 
   try {
+    // Fetch assesmentandaction_id from master_data
     const [masterData] = await db
       .promise()
       .query("SELECT assesmentandaction_id FROM master_data WHERE fm_id = ?", [
         fm_id,
       ]);
 
+    // Check if the family member has an associated assessment and action
     if (masterData.length > 0 && masterData[0].assesmentandaction_id) {
-      const [assessmentData] = await db
-        .promise()
-        .query("SELECT * FROM assessment_and_action_taken WHERE id = ?", [
-          masterData[0].assesmentandaction_id,
-        ]);
+      // Fetch the data from assessment_and_action_taken table
+      const [assessmentData] = await db.promise().query(
+        `SELECT id, major_ncd_detected, any_other_disease_detected, known_case_dm_htn, 
+        teleconsultation, prescription_given, other_advices, remarks, created_at, updated_at 
+        FROM assessment_and_action_taken WHERE id = ?`,
+        [masterData[0].assesmentandaction_id]
+      );
 
+      // Check if data exists
       if (assessmentData.length > 0) {
+        // Send the fetched data back in the response
         res.status(200).json({
           success: true,
-          data: assessmentData[0],
+          data: assessmentData[0], // Return the first row of data
         });
       } else {
         res.status(404).json({
