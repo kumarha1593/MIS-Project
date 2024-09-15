@@ -9,23 +9,32 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+  });
   const navigate = useNavigate();
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      console.log("Sending admin login request with:", { email, password });
       const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}admin-login`,
-        {
-          email,
-          password,
-        }
+        `${process.env.REACT_APP_BASE_URL}api/admin/login`,
+        formData
       );
-      if (response.data.token) {
-        localStorage.setItem("admin_token", response.data.token);
-        localStorage.setItem("admin_id", response.data.admin_id);
-        navigate("/admin-home"); // Assuming you have an admin home page route
+      navigate("/admin-home");
+      if (response.data.success) {
+        alert("Login successful");
+        // Store token or proceed with navigation
+        localStorage.setItem("token", response.data.token);
       } else {
         setError("Invalid email or password");
       }
@@ -43,19 +52,20 @@ const AdminLogin = () => {
           {error && <p className="error-message">{error}</p>}
           <div className="form-group">
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter Your Email"
-              required
+              type="text"
+              name="username"
+              placeholder="Username"
+              value={formData.username}
+              onChange={handleInputChange}
             />
           </div>
           <div className="form-group">
             <div className="password-wrapper">
               <input
                 type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
                 placeholder="Password"
                 required
               />
@@ -67,12 +77,16 @@ const AdminLogin = () => {
               </span>
             </div>
           </div>
-          <div className="form-group">
+          {/* <div className="form-group">
             <a href="/admin-forgot-password" className="forgot-password-link">
               Forget Password?
             </a>
-          </div>
-          <button type="submit" className="admin-login-button">
+          </div> */}
+          <button
+            type="submit"
+            className="admin-login-button"
+            onClick={handleLogin}
+          >
             Sign In
           </button>
         </form>

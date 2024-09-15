@@ -4,7 +4,8 @@ const app = express();
 const mysql = require("mysql2");
 const moment = require("moment");
 const bodyParser = require("body-parser");
-
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 // Middleware
 app.use(cors()); // Use CORS middleware
 app.use(express.json()); // Added to parse JSON bodies
@@ -14,7 +15,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "$Anshika28$",
+  password: "$Mumuksh14$",
   database: "manipur",
 });
 
@@ -23,6 +24,17 @@ db.connect((err) => {
     console.error("Database connection failed:", err);
   } else {
     console.log("Connected to MySQL database");
+  }
+});
+
+const password = "Admin12345"; // Replace 'yourPassword' with the actual password you want to use
+const saltRounds = 10;
+
+bcrypt.hash(password, saltRounds, function (err, hash) {
+  if (err) {
+    console.error("Error hashing password:", err);
+  } else {
+    console.log("Hashed password:", hash);
   }
 });
 
@@ -56,6 +68,49 @@ app.post("/api/login", (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
   });
+});
+
+//Admin Login
+app.post("/api/admin/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    // Check if the username exists in the database
+    const [adminUser] = await db
+      .promise()
+      .query("SELECT * FROM admin_users WHERE username = ?", [username]);
+
+    if (adminUser.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid username or password",
+      });
+    }
+
+    // Compare the provided password with the hashed password in the database
+    const validPassword = await bcrypt.compare(password, adminUser[0].password);
+    console.log("Password comparison result:", validPassword);
+
+    if (!validPassword) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid username or password",
+      });
+    }
+
+    // Instead of generating JWT, simply return a success message
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      userId: adminUser[0].id, // You can return user data as needed
+    });
+  } catch (error) {
+    console.error("Error during admin login:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 });
 
 app.post("/api/district_info", (req, res) => {
