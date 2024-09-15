@@ -152,7 +152,7 @@ const CervicalCancerAssessment = ({ currentFmId }) => {
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>VIA Appointment Date *</label>
+        <label style={styles.label}>VIA Appointment Date </label>
         <input
           type="date"
           id="via_appointment_date"
@@ -164,7 +164,7 @@ const CervicalCancerAssessment = ({ currentFmId }) => {
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>VIA Result *</label>
+        <label style={styles.label}>VIA Result </label>
         <select
           id="via_result"
           name="via_result"

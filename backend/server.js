@@ -529,7 +529,7 @@ app.get("/api/personal-info/:fm_id", async (req, res) => {
   }
 });
 
-//HEALTH MEASUREMENTS
+//health-measurements
 app.post("/api/health-measurements", async (req, res) => {
   const {
     fm_id,
@@ -538,9 +538,10 @@ app.post("/api/health-measurements", async (req, res) => {
     bmi = null,
     temp = null,
     spO2 = null,
+    pulse = null, // Add new pulse field
   } = req.body;
 
-  console.log(`Received fm_id: ${fm_id}`); // Log the received fm_id
+  console.log(`Received fm_id: ${fm_id}`);
 
   try {
     await db.promise().beginTransaction();
@@ -551,6 +552,7 @@ app.post("/api/health-measurements", async (req, res) => {
     const sanitizedBmi = bmi === "" ? null : bmi;
     const sanitizedTemp = temp === "" ? null : temp;
     const sanitizedSpO2 = spO2 === "" ? null : spO2;
+    const sanitizedPulse = pulse === "" ? null : pulse; // Sanitize pulse
 
     const sanitizedValues = [
       sanitizedHeight,
@@ -558,42 +560,38 @@ app.post("/api/health-measurements", async (req, res) => {
       sanitizedBmi,
       sanitizedTemp,
       sanitizedSpO2,
+      sanitizedPulse, // Add pulse to sanitizedValues
     ];
 
     let health_id;
 
-    // Insert or update health measurements
     const [masterData] = await db
       .promise()
       .query(`SELECT health_id FROM master_data WHERE fm_id = ?`, [fm_id]);
 
     if (masterData.length > 0 && masterData[0].health_id) {
-      // Update existing health measurements and set updated_at
       health_id = masterData[0].health_id;
       await db.promise().query(
         `UPDATE health SET
-        height = ?, weight = ?, bmi = ?, temp = ?, spO2 = ?, updated_at = NOW()
+        height = ?, weight = ?, bmi = ?, temp = ?, spO2 = ?, pulse = ?, updated_at = NOW()
         WHERE id = ?`,
         [...sanitizedValues, health_id]
       );
       console.log(`Updated health measurements with ID: ${health_id}`);
     } else {
-      // Insert new health measurements and set created_at and updated_at
       const [result] = await db.promise().query(
         `INSERT INTO health 
-        (height, weight, bmi, temp, spO2, created_at, updated_at) 
-        VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+        (height, weight, bmi, temp, spO2, pulse, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         sanitizedValues
       );
       health_id = result.insertId;
       console.log(`Inserted new health measurements with ID: ${health_id}`);
 
-      // Log fm_id and health_id before the update query
       console.log(
         `Updating master_data for fm_id: ${fm_id} with health_id: ${health_id}`
       );
 
-      // Update master_data table with the new health_id
       const [updateResult] = await db
         .promise()
         .query(`UPDATE master_data SET health_id = ? WHERE fm_id = ?`, [
@@ -660,68 +658,54 @@ app.post("/api/htn-assessment", async (req, res) => {
   const {
     fm_id,
     case_of_htn = null,
-    blood_pressure = null,
+    upper_bp = null,
+    lower_bp = null,
     action_high_bp = null,
     referral_center = null,
-    htn_date = null,
   } = req.body;
 
-  console.log(`Received fm_id: ${fm_id}`); // Log the received fm_id
+  console.log(`Received fm_id: ${fm_id}`);
 
   try {
     await db.promise().beginTransaction();
 
-    // Convert empty strings to null for nullable fields
-    const sanitizedCaseOfHtn = case_of_htn === "" ? null : case_of_htn;
-    const sanitizedBloodPressure =
-      blood_pressure === "" ? null : blood_pressure;
-    const sanitizedActionHighBp = action_high_bp === "" ? null : action_high_bp;
-    const sanitizedReferralCenter =
-      referral_center === "" ? null : referral_center;
-    const sanitizedHtnDate = htn_date === "" ? null : htn_date;
-
     const sanitizedValues = [
-      sanitizedCaseOfHtn,
-      sanitizedBloodPressure,
-      sanitizedActionHighBp,
-      sanitizedReferralCenter,
-      sanitizedHtnDate,
+      case_of_htn === "" ? null : case_of_htn,
+      upper_bp === "" ? null : upper_bp,
+      lower_bp === "" ? null : lower_bp,
+      action_high_bp === "" ? null : action_high_bp,
+      referral_center === "" ? null : referral_center,
     ];
 
     let htn_id;
 
-    // Insert or update HTN assessment
     const [masterData] = await db
       .promise()
       .query(`SELECT htn_id FROM master_data WHERE fm_id = ?`, [fm_id]);
 
     if (masterData.length > 0 && masterData[0].htn_id) {
-      // Update existing HTN assessment and set updated_at
       htn_id = masterData[0].htn_id;
       await db.promise().query(
         `UPDATE htn SET
-        case_of_htn = ?, blood_pressure = ?, action_high_bp = ?, referral_center = ?, htn_date = ?, updated_at = NOW()
+        case_of_htn = ?, upper_bp = ?, lower_bp = ?, action_high_bp = ?, referral_center = ?, updated_at = NOW()
         WHERE id = ?`,
         [...sanitizedValues, htn_id]
       );
       console.log(`Updated HTN assessment with ID: ${htn_id}`);
     } else {
-      // Insert new HTN assessment and set created_at and updated_at
       const [result] = await db.promise().query(
         `INSERT INTO htn 
-        (case_of_htn, blood_pressure, action_high_bp, referral_center, htn_date, created_at, updated_at) 
+        (case_of_htn, upper_bp, lower_bp, action_high_bp, referral_center, created_at, updated_at) 
         VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
         sanitizedValues
       );
       htn_id = result.insertId;
       console.log(`Inserted new HTN assessment with ID: ${htn_id}`);
 
-      // Log fm_id and htn_id before the update query
       console.log(
         `Updating master_data for fm_id: ${fm_id} with htn_id: ${htn_id}`
       );
 
-      // Update master_data table with the new htn_id
       const [updateResult] = await db
         .promise()
         .query(`UPDATE master_data SET htn_id = ? WHERE fm_id = ?`, [

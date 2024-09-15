@@ -4,14 +4,13 @@ import axios from "axios";
 const HTNAssessment = ({ currentFmId }) => {
   const [formData, setFormData] = useState({
     case_of_htn: "",
-    blood_pressure: "",
+    upper_bp: "",
+    lower_bp: "",
     action_high_bp: "",
     referral_center: "",
-    htn_date: "",
   });
 
   const [showHighBPOptions, setShowHighBPOptions] = useState(false);
-  const [showReferralField, setShowReferralField] = useState(false);
 
   useEffect(() => {
     const fetchHtnData = async () => {
@@ -21,22 +20,10 @@ const HTNAssessment = ({ currentFmId }) => {
         );
         if (response.data.success) {
           const data = response.data.data;
-
-          // Format the date to "yyyy-MM-dd"
-          if (data.htn_date) {
-            data.htn_date = new Date(data.htn_date).toISOString().split("T")[0];
-          }
-
-          // Set the formData with the fetched data
           setFormData(data);
 
-          // Check if BP is high and set the state accordingly
-          const [upperBP, lowerBP] = data.blood_pressure.split("/").map(Number);
-          if (upperBP > 140 || lowerBP < 90) {
+          if (data.upper_bp > 139 || data.lower_bp > 89) {
             setShowHighBPOptions(true);
-            if (data.action_high_bp === "referral") {
-              setShowReferralField(true);
-            }
           }
         }
       } catch (error) {
@@ -45,7 +32,7 @@ const HTNAssessment = ({ currentFmId }) => {
     };
 
     if (currentFmId) {
-      fetchHtnData(); // Ensure the fetch is only attempted if currentFmId is available
+      fetchHtnData();
     }
   }, [currentFmId]);
 
@@ -56,22 +43,16 @@ const HTNAssessment = ({ currentFmId }) => {
       [name]: value,
     });
 
-    // Handle BP field change specifically
-    if (name === "blood_pressure") {
-      const [upperBP, lowerBP] = value.split("/").map(Number);
-      if (upperBP > 140 || lowerBP < 90) {
-        setShowHighBPOptions(true);
-      } else {
-        setShowHighBPOptions(false);
-        setShowReferralField(false);
-      }
+    if (name === "upper_bp" || name === "lower_bp") {
+      const upperBP =
+        name === "upper_bp" ? parseInt(value) : parseInt(formData.upper_bp);
+      const lowerBP =
+        name === "lower_bp" ? parseInt(value) : parseInt(formData.lower_bp);
+      setShowHighBPOptions(upperBP > 139 || lowerBP > 89);
     }
 
-    // Handle action_high_bp field change
-    if (name === "action_high_bp" && value === "referral") {
-      setShowReferralField(true);
-    } else if (name === "action_high_bp") {
-      setShowReferralField(false);
+    if (name === "action_high_bp" && value !== "referral") {
+      setFormData((prev) => ({ ...prev, referral_center: "" }));
     }
   };
 
@@ -145,12 +126,23 @@ const HTNAssessment = ({ currentFmId }) => {
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>Blood Pressure (mmHg) *</label>
+        <label style={styles.label}>Upper BP (mmHg) *</label>
         <input
           type="number"
-          id="blood_pressure"
-          name="blood_pressure"
-          value={formData.blood_pressure || ""}
+          id="upper_bp"
+          name="upper_bp"
+          value={formData.upper_bp || ""}
+          onChange={handleInputChange}
+        />
+      </div>
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Lower BP (mmHg) *</label>
+        <input
+          type="number"
+          id="lower_bp"
+          name="lower_bp"
+          value={formData.lower_bp || ""}
           onChange={handleInputChange}
         />
       </div>
@@ -171,7 +163,7 @@ const HTNAssessment = ({ currentFmId }) => {
         </div>
       )}
 
-      {showReferralField && (
+      {formData.action_high_bp === "referral" && (
         <div style={styles.formGroup}>
           <label style={styles.label}>Referred Centre for HTN *</label>
           <input
@@ -183,19 +175,6 @@ const HTNAssessment = ({ currentFmId }) => {
           />
         </div>
       )}
-
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          HTN Confirmed at PHC/CHC/DH and Date *
-        </label>
-        <input
-          type="date"
-          id="htn_date"
-          name="htn_date"
-          value={formData.htn_date || ""}
-          onChange={handleInputChange}
-        />
-      </div>
       <button type="button" onClick={handleSave} style={styles.button}>
         Save HTN Assessment
       </button>

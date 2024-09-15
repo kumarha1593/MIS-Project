@@ -8,6 +8,7 @@ const HealthMeasurements = ({ currentFmId }) => {
     bmi: "",
     temp: "",
     spO2: "",
+    pulse: "",
   });
 
   useEffect(() => {
@@ -17,7 +18,7 @@ const HealthMeasurements = ({ currentFmId }) => {
           `${process.env.REACT_APP_BASE_URL}api/health-measurements/${currentFmId}`
         );
         if (response.data.success) {
-          setFormData(response.data.data); // Populate formData with fetched data
+          setFormData(response.data.data);
         }
       } catch (error) {
         console.error("Error fetching health measurements:", error);
@@ -31,7 +32,6 @@ const HealthMeasurements = ({ currentFmId }) => {
     const { name, value } = e.target;
     const updatedFormData = { ...formData, [name]: value };
 
-    // Calculate BMI whenever weight or height changes
     if (name === "weight" || name === "height") {
       const heightInMeters = updatedFormData.height / 100;
       const bmi =
@@ -168,6 +168,20 @@ const HealthMeasurements = ({ currentFmId }) => {
           style={styles.input}
         />
       </div>
+      <div style={styles.formGroup}>
+        <label style={styles.label} htmlFor="pulse">
+          Pulse (bpm) *
+        </label>
+        <input
+          type="number"
+          id="pulse"
+          name="pulse"
+          value={formData.pulse || ""}
+          onChange={handleInputChange}
+          style={styles.input}
+        />
+      </div>
+
       <button type="button" onClick={handleSave} style={styles.button}>
         Save Draft
       </button>
