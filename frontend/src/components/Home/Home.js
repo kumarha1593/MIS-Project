@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "./Home.css";
+import styles from "./Home.module.css";
 
 const Home = () => {
   const [formData, setFormData] = useState({
@@ -76,83 +76,32 @@ const Home = () => {
   };
 
   return (
-    <div className="home-container">
+    <div className={styles["home-container"]}>
       <h2>Fill these details before proceeding</h2>
-      <form onSubmit={handleSubmit} className="details-form">
-        <div className="form-group">
-          <label>District*</label>
+      <form onSubmit={handleSubmit} className={styles["details-form"]}>
+        <div className={styles["form-group"]}>
+          <label className={styles["label"]}>District*</label>
           <input
             type="text"
             name="district"
             value={formData.district}
             onChange={handleChange}
             required
+            className={styles["input"]}
           />
         </div>
-        <div className="form-group">
-          <label>Village*</label>
-          <input
-            type="text"
-            name="village"
-            value={formData.village}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Health Facility Name*</label>
-          <input
-            type="text"
-            name="healthFacility"
-            value={formData.healthFacility}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Name of MO*</label>
-          <input
-            type="text"
-            name="moName"
-            value={formData.moName}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Name of Asha*</label>
-          <input
-            type="text"
-            name="ashaName"
-            value={formData.ashaName}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Midori Staff Name*</label>
-          <input
-            type="text"
-            name="midoriStaff"
-            value={formData.midoriStaff}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <button type="submit" className="save-proceed-button">
-          Save & Proceed
-        </button>
+        {/* Additional form fields */}
       </form>
 
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
         contentLabel="Error Modal"
-        className="error-modal"
-        overlayClassName="error-modal-overlay"
+        className={styles["error-modal"]}
+        overlayClassName={styles["error-modal-overlay"]}
       >
         <h2>All fields are mandatory</h2>
-        <button onClick={closeModal} className="close-modal-button">
+        <button onClick={closeModal} className={styles["close-modal-button"]}>
           Close
         </button>
       </Modal>

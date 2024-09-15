@@ -36,45 +36,47 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="admin-login-container">
-      <form className="admin-login-form" onSubmit={handleLogin}>
-        <h2>Admin Sign In</h2>
-        {error && <p className="error-message">{error}</p>}
-        <div className="form-group">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter Your Email"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <div className="password-wrapper">
+    <div className="admin-login-wrapper">
+      <div className="admin-login-container">
+        <form className="admin-login-form" onSubmit={handleLogin}>
+          <h2>Admin Sign In</h2>
+          {error && <p className="error-message">{error}</p>}
+          <div className="form-group">
             <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter Your Email"
               required
             />
-            <span
-              className="eye-icon"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <FaEye /> : <FaEyeSlash />}
-            </span>
           </div>
-        </div>
-        <div className="form-group">
-          <a href="/admin-forgot-password" className="forgot-password-link">
-            Forget Password?
-          </a>
-        </div>
-        <button type="submit" className="admin-login-button">
-          Sign In
-        </button>
-      </form>
+          <div className="form-group">
+            <div className="password-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                required
+              />
+              <span
+                className="eye-icon"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FaEye /> : <FaEyeSlash />}
+              </span>
+            </div>
+          </div>
+          <div className="form-group">
+            <a href="/admin-forgot-password" className="forgot-password-link">
+              Forget Password?
+            </a>
+          </div>
+          <button type="submit" className="admin-login-button">
+            Sign In
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
