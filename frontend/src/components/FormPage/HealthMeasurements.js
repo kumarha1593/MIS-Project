@@ -143,7 +143,7 @@ const HealthMeasurements = ({ currentFmId }) => {
 
       <div style={styles.formGroup}>
         <label style={styles.label} htmlFor="temp">
-          Temperature (°C) *
+          Temperature (°F) *
         </label>
         <input
           type="number"

@@ -185,7 +185,7 @@ const HealthProfileForm = ({ formData, handleInputChange, currentFmId }) => {
       </div>
       <div style={styles.formGroup}>
         <label style={styles.label} htmlFor="state_health_insurance">
-          State Health Insurance
+          Health Insurance (State/Government/Private)
         </label>
         <select
           id="state_health_insurance"

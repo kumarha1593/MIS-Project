@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "$Mumuksh14$",
+  password: "$Anshika28$",
   database: "manipur",
 });
 
@@ -2578,7 +2578,7 @@ app.get("/api/cervical-cancer-assessment/:fm_id", async (req, res) => {
   }
 });
 
-// CVD Assessment POST Endpoint
+
 // CVD Assessment POST Endpoint
 app.post("/api/cvd-assessment", async (req, res) => {
   const {
@@ -2889,7 +2889,7 @@ app.post("/api/final-submit", async (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

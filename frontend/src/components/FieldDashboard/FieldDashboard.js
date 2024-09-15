@@ -235,7 +235,7 @@ const FieldDashboard = () => {
             </div>
             <div className="info-line">
               <span className="info-item">
-                Name of MO: {districtInfo.mo_mpw_cho_anu_name}
+                Name of MO/CHO/ANM: {districtInfo.mo_mpw_cho_anu_name}
               </span>
               {isEditing && (
                 <input
