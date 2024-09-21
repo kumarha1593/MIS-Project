@@ -1,0 +1,119 @@
+/* Style for super visor data view */
+.role-container {
+    padding: 10px 30px;
+    border-radius: 5px;
+
+    .common-container {
+        padding: 5px 0px;
+        border-radius: 5px;
+    }
+
+    .common-left-alignment {
+        padding-left: 20px;
+        padding-top: 10px;
+    }
+
+    .role-items {
+        cursor: pointer;
+        background-color: rgba(76, 175, 80, 0.1);
+        border-radius: 8px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        span {
+            color: black;
+            font-weight: bold;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    // family member section
+    .fm-item-container {
+        overflow-x: auto;
+        white-space: nowrap;
+        width: 100%;
+
+        .fm-item-table {
+            width: 100%;
+            border-collapse: collapse;
+
+            th,
+            td {
+                padding: 10px;
+                border: 1px solid #ddd;
+                text-align: center;
+                white-space: nowrap;
+                min-width: 200px;
+            }
+
+            th {
+                background-color: #f4f4f4;
+                font-weight: bold;
+            }
+
+            tbody tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+        }
+    }
+
+    .common-button {
+        display: block;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .filters-container {
+        display: flex;
+        padding: 10px;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        width: 100%;
+        border-bottom: 2px solid #4caf50;
+        align-items: center;
+
+        span {
+            font-size: 16px;
+            font-weight: 600;
+            color: black;
+        }
+
+        .filters {
+            right: 40px;
+            width: 300px;
+
+            .close-btn {
+                position: absolute;
+                float: right;
+                right: 10px;
+                cursor: pointer;
+            }
+
+            label {
+                font-size: 15px;
+                font-weight: 500;
+                color: black;
+            }
+
+            .react-datepicker-wrapper {
+                width: 100% !important;
+            }
+
+            .react-datepicker__current-month {
+                border-bottom: none !important;
+            }
+        }
+    }
+}

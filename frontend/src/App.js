@@ -10,6 +10,7 @@ import FamilyDetails from "./components/FamilyDetails/FamilyDetails";
 import AdminLogin from "./components/AdminLogin/AdminLogin";
 import AdminHomePage from "./components/AdminHomePage/AdminHomePage";
 import AdminFormPage from "./components/AdminFormPage/AdminFormPage";
+import Users from "./components/userManagement";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin-home" element={<AdminHomePage />} />
+          <Route path="/users" element={<Users />} />
           <Route path="/admin-form" element={<AdminFormPage />} />
           <Route
             path="/home"
