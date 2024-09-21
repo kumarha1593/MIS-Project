@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import AssistantStateCoordinator from './AssistantStateCoordinator';
 import StateCoordinator from './StateCoordinator';
 import ZonalManager from './ZonalManager';
+import Filters from './Filters';
 
 export const ROLE_TYPE = {
     STATE_COORDINATOR: 'SC',
@@ -37,7 +38,7 @@ const Users = () => {
 
     return (
         <div className="role-container">
-            <h1 className="welcome-heading">Welcome, Users Management</h1>
+            <Filters />
             {renderMainView()}
         </div>
     )
