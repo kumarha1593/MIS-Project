@@ -182,7 +182,7 @@ const COPDTBAssessment = ({ currentFmId }) => {
         </div>
       )}
 
-      <div style={styles.formGroup}>
+<div style={styles.formGroup}>
         <label style={styles.label}>Occupational Exposure *</label>
         <select
           name="occupational_exposure"
@@ -192,6 +192,7 @@ const COPDTBAssessment = ({ currentFmId }) => {
           style={styles.input}
         >
           <option value="">Select</option>
+          <option value="No">No</option>
           <option value="Crop residue burning">Crop residue burning</option>
           <option value="Burning of garbage/leaves">
             Burning of garbage/leaves
@@ -269,7 +270,7 @@ const COPDTBAssessment = ({ currentFmId }) => {
 
       <div style={styles.formGroup}>
         <label style={styles.label}>
-          Respiratory/COPD disease confirmed at PHC/CHC/DH *
+          Respiratory/COPD disease confirmed at PHC/CHC/DH 
         </label>
         <select
           name="copd_confirmed"
