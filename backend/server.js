@@ -16,7 +16,7 @@ const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "$Mumuksh14$",
-  database: "manipur",
+  database: "user_management",
 });
 
 db.connect((err) => {
@@ -24,17 +24,6 @@ db.connect((err) => {
     console.error("Database connection failed:", err);
   } else {
     console.log("Connected to MySQL database");
-  }
-});
-
-const password = "Admin12345"; // Replace 'yourPassword' with the actual password you want to use
-const saltRounds = 10;
-
-bcrypt.hash(password, saltRounds, function (err, hash) {
-  if (err) {
-    console.error("Error hashing password:", err);
-  } else {
-    console.log("Hashed password:", hash);
   }
 });
 
@@ -995,7 +984,7 @@ app.post("/api/risk-assessment", async (req, res) => {
     },
     tobacco_use: {
       Never: 0,
-      "Used to consume in the past/ Sometimes now": 1,
+      "Used to consume in the past/Sometimes now": 1,
       Daily: 2,
     },
     alcohol_use: { No: 0, Yes: 1 },
@@ -2825,6 +2814,7 @@ app.get("/api/diseases/:fm_id", (req, res) => {
       res.status(500).json({ error: err.message });
     });
 });
+
 app.post("/api/assessment-and-action-taken", async (req, res) => {
   const {
     fm_id,
@@ -2931,8 +2921,17 @@ app.get("/api/assessment-and-action-taken/:fm_id", async (req, res) => {
     if (masterData.length > 0 && masterData[0].assesmentandaction_id) {
       // Fetch the data from assessment_and_action_taken table
       const [assessmentData] = await db.promise().query(
-        `SELECT id, major_ncd_detected, any_other_disease_detected, known_case_dm_htn, 
-        teleconsultation, prescription_given, other_advices, remarks, created_at, updated_at 
+        `SELECT 
+          id, 
+          major_ncd_detected AS majorNCDDetected, 
+          any_other_disease_detected AS anyOtherDiseaseDetected, 
+          known_case_dm_htn AS knownCaseDMWithHTN, 
+          teleconsultation, 
+          prescription_given AS prescriptionGiven, 
+          other_advices AS otherAdvices, 
+          remarks, 
+          created_at, 
+          updated_at 
         FROM assessment_and_action_taken WHERE id = ?`,
         [masterData[0].assesmentandaction_id]
       );
@@ -2990,7 +2989,7 @@ app.post("/api/final-submit", async (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
