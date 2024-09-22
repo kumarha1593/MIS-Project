@@ -19,9 +19,10 @@ const FieldDashboard = () => {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
-  const [statusFilter, setStatusFilter] = useState(null);
+  const [specificDate, setSpecificDate] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
+  const [statusFilter, setStatusFilter] = useState(null); // Add this line
 
   const navigate = useNavigate();
 
@@ -97,30 +98,27 @@ const FieldDashboard = () => {
     }
   };
 
-  const applyFilters = () => {
-    let filtered = [...tableData];
-
-    if (fromDate) {
-      filtered = filtered.filter((row) => new Date(row.date) >= fromDate);
-    }
-    if (toDate) {
-      filtered = filtered.filter((row) => new Date(row.date) <= toDate);
-    }
-    if (statusFilter) {
-      filtered = filtered.filter((row) =>
-        statusFilter === "pending" ? row.status === 0 : row.status === 1
+  const applyFilters = async () => {
+    const user_id = localStorage.getItem("user_id");
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}api/filtered-family-members/${user_id}`,
+        {
+          params: {
+            fromDate: fromDate ? fromDate.toISOString().split("T")[0] : null,
+            toDate: toDate ? toDate.toISOString().split("T")[0] : null,
+            specificDate: specificDate
+              ? specificDate.toISOString().split("T")[0]
+              : null,
+            searchTerm,
+            statusFilter,
+          },
+        }
       );
+      setFilteredData(response.data);
+    } catch (error) {
+      console.error("Error applying filters:", error);
     }
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (row) =>
-          row.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          row.Aadhar.includes(searchTerm)
-      );
-    }
-
-    setFilteredData(filtered);
-    setShowFilterDropdown(false);
   };
 
   const handleAddRow = () => {
@@ -178,10 +176,10 @@ const FieldDashboard = () => {
   const resetFilters = () => {
     setFromDate(null);
     setToDate(null);
+    setSpecificDate(null);
     setStatusFilter(null);
     setSearchTerm("");
-    setFilteredData(tableData);
-    setShowFilterDropdown(false);
+    fetchFamilyMembers(); // Reset to original data
   };
 
   return (
@@ -297,6 +295,14 @@ const FieldDashboard = () => {
                   placeholderText="Select To Date"
                 />
               </div>
+              {/* <div className="filter-option">
+                <label>Specific Date:</label>
+                <DatePicker
+                  selected={specificDate}
+                  onChange={(date) => setSpecificDate(date)}
+                  placeholderText="Select Specific Date"
+                />
+              </div> */}
               <div className="filter-option">
                 <label>Status:</label>
                 <select

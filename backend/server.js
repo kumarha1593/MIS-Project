@@ -278,6 +278,55 @@ app.get("/api/family-members/:user_id", async (req, res) => {
   }
 });
 
+// FIltered Data field dashboard
+
+app.get("/api/filtered-family-members/:user_id", async (req, res) => {
+  const user_id = req.params.user_id;
+  const { fromDate, toDate, specificDate, searchTerm, statusFilter } =
+    req.query;
+
+  try {
+    let query = `
+      SELECT fm.id, fm.name, fm.Aadhar, fm.status, fm.date,
+      (SELECT COUNT(*) FROM family_members WHERE head_id = fm.id) as familyMemberCount
+      FROM family_members fm
+      WHERE fm.fc_id = ? AND fm.head_id = 0
+    `;
+
+    const queryParams = [user_id];
+
+    if (specificDate) {
+      query += " AND DATE(fm.date) = ?";
+      queryParams.push(specificDate);
+    } else if (fromDate && toDate) {
+      query += " AND fm.date BETWEEN ? AND ?";
+      queryParams.push(fromDate, toDate);
+    } else if (fromDate) {
+      query += " AND fm.date >= ?";
+      queryParams.push(fromDate);
+    } else if (toDate) {
+      query += " AND fm.date <= ?";
+      queryParams.push(toDate);
+    }
+
+    if (searchTerm) {
+      query += " AND (fm.name LIKE ? OR fm.Aadhar LIKE ?)";
+      queryParams.push(`%${searchTerm}%`, `%${searchTerm}%`);
+    }
+
+    if (statusFilter) {
+      query += " AND fm.status = ?";
+      queryParams.push(statusFilter === "pending" ? 0 : 1);
+    }
+
+    const [rows] = await db.promise().query(query, queryParams);
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error("Error fetching filtered family members:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 //Adding family members under a family head
 app.post("/api/family-members", async (req, res) => {
   const { fc_id, name, aadhar, head_id } = req.body;
