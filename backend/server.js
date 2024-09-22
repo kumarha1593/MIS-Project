@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "Satyam@10332",
+  password: "$Mumuksh14$",
   database: "manipur",
 });
 
@@ -3022,9 +3022,7 @@ app.post("/api/final-submit", async (req, res) => {
 });
 
 app.get("/api/family-heads", async (req, res) => {
-  
   try {
-    
     const [familyMembers] = await db
       .promise()
       .query(`SELECT * FROM family_members WHERE head_id = 0`);
@@ -3041,19 +3039,21 @@ app.get("/api/family-heads", async (req, res) => {
   }
 });
 
-
-app.get('/api/family-details/', async (req, res) => {
+app.get("/api/family-details/", async (req, res) => {
   try {
     const { head_id } = req.query;
 
     const [familyMembers] = await db
       .promise()
-      .query('SELECT id AS family_member_id FROM family_members WHERE head_id = ?', [head_id]);
+      .query(
+        "SELECT id AS family_member_id FROM family_members WHERE head_id = ?",
+        [head_id]
+      );
 
     if (familyMembers.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'No family members found for this head_id.',
+        message: "No family members found for this head_id.",
       });
     }
 
@@ -3100,7 +3100,7 @@ app.get('/api/family-details/', async (req, res) => {
           LEFT JOIN elderly el ON md.elderly_id = el.id
           LEFT JOIN mentalhealth mh ON md.mental_health_id = mh.id
           LEFT JOIN assessment_and_action_taken aa ON md.assesmentandaction_id = aa.id
-          WHERE md.fm_id = ?`, 
+          WHERE md.fm_id = ?`,
           [member.family_member_id]
         );
         return masterData;
@@ -3108,19 +3108,16 @@ app.get('/api/family-details/', async (req, res) => {
     );
     res.status(200).json({
       success: true,
-      data: familyDetails.flat()
+      data: familyDetails.flat(),
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: 'Server error. Could not retrieve family details.',
+      message: "Server error. Could not retrieve family details.",
     });
   }
 });
-
-
 
 // Start server
 const PORT = process.env.PORT || 5000;
