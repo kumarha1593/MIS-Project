@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "$Mumuksh14$",
+  password: "Satyam@10332",
   database: "manipur",
 });
 
@@ -2971,6 +2971,107 @@ app.post("/api/final-submit", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
+app.get("/api/family-heads", async (req, res) => {
+  
+  try {
+    
+    const [familyMembers] = await db
+      .promise()
+      .query(`SELECT * FROM family_members WHERE head_id = 0`);
+    res.status(200).json({
+      success: true,
+      data: familyMembers,
+    });
+  } catch (error) {
+    console.error("Error fetching family members:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+
+app.get('/api/family-details/', async (req, res) => {
+  try {
+    const { head_id } = req.query;
+
+    const [familyMembers] = await db
+      .promise()
+      .query('SELECT id AS family_member_id FROM family_members WHERE head_id = ?', [head_id]);
+
+    if (familyMembers.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No family members found for this head_id.',
+      });
+    }
+
+    const familyDetails = await Promise.all(
+      familyMembers.map(async (member) => {
+        const [masterData] = await db.promise().query(
+          `SELECT 
+            md.*,
+            pi.*,
+            h.*,
+            htn.*,
+            dm.*,
+            ra.*,
+            oc.*,
+            bc.*,
+            cc.*,
+            cvd.*,
+            ps.*,
+            ckd.*,
+            copd.*,
+            cat.*,
+            hr.*,
+            lep.*,
+            el.*,
+            mh.*,
+            aa.*
+          FROM 
+            master_data md
+          LEFT JOIN personal_info pi ON md.personal_info_id = pi.id
+          LEFT JOIN health h ON md.health_id = h.id
+          LEFT JOIN htn ON md.htn_id = htn.id
+          LEFT JOIN dm ON md.dm_id = dm.id
+          LEFT JOIN risk_assessment ra ON md.risk_assessment_id = ra.id
+          LEFT JOIN oralcancer oc ON md.oral_cancer_id = oc.id
+          LEFT JOIN breastcancer bc ON md.breast_cancer_id = bc.id
+          LEFT JOIN cervicalcancer cc ON md.cervical_cancer_id = cc.id
+          LEFT JOIN CVD cvd ON md.CVD_id = cvd.id
+          LEFT JOIN poststroke ps ON md.post_stroke_id = ps.id
+          LEFT JOIN ckd_assessment ckd ON md.CKD_id = ckd.id
+          LEFT JOIN copdtb copd ON md.COPD_TB = copd.id
+          LEFT JOIN cataract cat ON md.cataract_id = cat.id
+          LEFT JOIN hearingissue hr ON md.hearing_id = hr.id
+          LEFT JOIN leprosy lep ON md.leprosy_id = lep.id
+          LEFT JOIN elderly el ON md.elderly_id = el.id
+          LEFT JOIN mentalhealth mh ON md.mental_health_id = mh.id
+          LEFT JOIN assessment_and_action_taken aa ON md.assesmentandaction_id = aa.id
+          WHERE md.fm_id = ?`, 
+          [member.family_member_id]
+        );
+        return masterData;
+      })
+    );
+    res.status(200).json({
+      success: true,
+      data: familyDetails.flat()
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error. Could not retrieve family details.',
+    });
+  }
+});
+
+
 
 // Start server
 const PORT = process.env.PORT || 5000;
