@@ -5,14 +5,7 @@ import AssistantStateCoordinator from './AssistantStateCoordinator';
 import StateCoordinator from './StateCoordinator';
 import ZonalManager from './ZonalManager';
 import Filters from './Filters';
-
-export const ROLE_TYPE = {
-    STATE_COORDINATOR: 'SC',
-    ASSISTANT_STATE_COORDINATOR: 'ASC',
-    ZONAL_MANAGER: 'ZM',
-    SUPER_VISOR: 'SV',
-    FIELD_COORDINATOR: 'FC'
-};
+import { ROLE_TYPE } from '../../utils/helper';
 
 const Users = () => {
 
