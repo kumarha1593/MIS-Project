@@ -2,21 +2,25 @@ import React, { useState } from 'react';
 import styles from './AdminFormPage.module.css';
 import TextInput from '../global/TextInput';
 import SelectInput from '../global/SelectInput';
-import { governmentIdOptions, roleOptions, validateAdminForm } from '../../utils/helper';
+import { governmentIdOptions, ROLE_TYPE, roleOptions, validateAdminForm } from '../../utils/helper';
+import ButtonLoader from '../global/ButtonLoader';
+import defaultInstance from '../../axiosHelper';
 
 const AdminFormPage = () => {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
-    government_id: '',
+    verification_id_type: '',
+    verification_id: '',
     email: '',
     phone_number: '',
     password: '',
-    user_role_type: '',
-    reporting_manager: '',
+    role: '',
+    user_id: '',
   });
 
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -27,26 +31,40 @@ const AdminFormPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     validateAdminForm.validate(formData, { abortEarly: false }).then((data) => {
-      console.log(data, "data")
-      // need to call api here
+      const apiPayload = { ...data };
+      apiPayload.name = `${data?.first_name} ${data?.last_name}`;
+      apiPayload.role = getRoleLabel(formData?.role || ROLE_TYPE.STATE_COORDINATOR);
+      apiPayload.user_id = 1;
+      delete apiPayload.first_name;
+      delete apiPayload.last_name;
+      setIsLoading(true)
+      defaultInstance.post('users/', apiPayload).then((response) => {
+        console.log(response, "response");
+        setIsLoading(false)
+        setErrors({});
+      }).catch((error) => { setIsLoading(false) })
     }).catch((err) => {
+      setIsLoading(false)
       const formattedErrors = {};
-      err?.inner?.forEach((item) => {
-        formattedErrors[item.path] = item.message;
-      });
+      err?.inner?.forEach((item) => formattedErrors[item.path] = item.message);
       setErrors(formattedErrors)
     });
   };
 
+  const getRoleLabel = (selectedRole) => {
+    const selectedRoleOption = roleOptions.find(role => role.value === selectedRole);
+    return selectedRoleOption?.label;
+  }
+
   const getReportingManagersForRole = (selectedRole) => {
     const selectedRoleOption = roleOptions.find(role => role.value === selectedRole);
-    if (selectedRoleOption && selectedRoleOption.reporting_manager.length > 0) {
-      return selectedRoleOption.reporting_manager;
+    if (selectedRoleOption && selectedRoleOption?.reporting_manager?.length > 0) {
+      return selectedRoleOption?.reporting_manager;
     }
     return [];
   };
 
-  const availableReportingManagers = getReportingManagersForRole(formData.user_role_type);
+  const availableReportingManagers = getReportingManagersForRole(formData.role);
 
   return (
     <div className={styles.adminFormContainer}>
@@ -69,14 +87,24 @@ const AdminFormPage = () => {
           required
         />
         <SelectInput
-          label="Government ID"
-          name="government_id"
-          value={formData?.government_id}
+          label="Verification ID Type"
+          name="verification_id_type"
+          value={formData?.verification_id_type}
           options={governmentIdOptions}
           onChange={handleInputChange}
-          error={errors?.government_id}
+          error={errors?.verification_id_type}
           required
         />
+        {formData?.verification_id_type && (
+          <TextInput
+            label="Verification ID"
+            name="verification_id"
+            value={formData?.verification_id}
+            onChange={handleInputChange}
+            error={errors?.verification_id}
+            required
+          />
+        )}
         <TextInput
           label="Email"
           type="email"
@@ -106,24 +134,37 @@ const AdminFormPage = () => {
         />
         <SelectInput
           label="User Role"
-          name="user_role_type"
-          value={formData?.user_role_type}
+          name="role"
+          value={formData?.role}
           options={roleOptions}
           onChange={handleInputChange}
-          error={errors?.user_role_type}
+          error={errors?.role}
           required
         />
-        {(formData?.user_role_type && availableReportingManagers?.length > 0) && (
+        {(formData?.role && availableReportingManagers?.length > 0) && (
           <SelectInput
             label="Reporting Manager"
-            name="reporting_manager"
-            value={formData?.reporting_manager}
+            name="user_id"
+            value={formData?.user_id}
             options={availableReportingManagers}
             onChange={handleInputChange}
-            error={errors?.reporting_manager}
+            error={errors?.user_id}
           />
         )}
-        <button type="submit" className={styles.submitButton}>Add User</button>
+        <div style={{ display: 'flex' }}>
+          <button
+            type="submit"
+            className={styles.submitButton}
+            style={{ width: 'auto', padding: '0px 15px', height: '40px', marginLeft: 'auto', marginRight: '0px' }}
+          >
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Submit'
+            }
+          </button>
+        </div>
       </form>
     </div>
   );

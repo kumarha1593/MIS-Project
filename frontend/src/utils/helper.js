@@ -9,9 +9,8 @@ export const ROLE_TYPE = {
 };
 
 export const governmentIdOptions = [
-    { value: 'aadhar', label: 'Aadhar Card' },
-    { value: 'pan', label: 'PAN Card' },
-    { value: 'driving', label: 'Driving License' },
+    { value: 'Aadhar', label: 'Aadhar Card' },
+    { value: 'PAN', label: 'PAN Card' },
 ];
 
 export const roleOptions = [
@@ -25,8 +24,9 @@ export const roleOptions = [
 export const validateAdminForm = Yup.object().shape({
     first_name: Yup.string().required('First name is required'),
     last_name: Yup.string().required('Last name is required'),
-    government_id: Yup.string().required('Government id is required'),
-    user_role_type: Yup.string().required('User role is required'),
+    verification_id_type: Yup.string().required('Verification type is required'),
+    verification_id: Yup.string().required('Verification id is required'),
+    role: Yup.string().required('User role is required'),
     email: Yup.string().email('Invalid email format').required('Email is required'),
     password: Yup.string().required('Password is required').min(8, 'Password must be at least 8 characters long'),
     phone_number: Yup.string().required('Phone number is required').min(10, 'Phone number must be exactly 10 digits'),
