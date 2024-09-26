@@ -31,3 +31,15 @@ export const validateAdminForm = Yup.object().shape({
     password: Yup.string().required('Password is required').min(8, 'Password must be at least 8 characters long'),
     phone_number: Yup.string().required('Phone number is required').min(10, 'Phone number must be exactly 10 digits'),
 });
+
+export const getRoleLabel = (role) => roleOptions.find(({ value }) => value === role)?.label || '';
+
+export const setParams = (role) => {
+    const roleMapping = {
+        [ROLE_TYPE.ASSISTANT_STATE_COORDINATOR]: 'State Coordinator',
+        [ROLE_TYPE.ZONAL_MANAGER]: 'Assistant State Coordinator',
+        [ROLE_TYPE.SUPER_VISOR]: 'Zonal Manager',
+        [ROLE_TYPE.FIELD_COORDINATOR]: 'Supervisor',
+    };
+    return roleMapping[role] || '';
+};

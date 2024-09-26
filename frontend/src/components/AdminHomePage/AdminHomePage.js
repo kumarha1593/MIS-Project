@@ -13,7 +13,7 @@ const AdminHomePage = () => {
       try {
         const response = await defaultInstance.get('user-list/', { params: { user_type: 'State Coordinator' } });
         if (response?.data?.success) {
-          setAllData(response.data.data || []);
+          setAllData(response?.data?.data || []);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -33,7 +33,7 @@ const AdminHomePage = () => {
       <div className="table-container">
         {isLoading ? (
           <div className="loading">Loading data...</div>
-        ) : allData.length > 0 ? (
+        ) : allData?.length > 0 ? (
           <table className="users-table">
             <thead>
               <tr>
@@ -45,7 +45,7 @@ const AdminHomePage = () => {
               </tr>
             </thead>
             <tbody>
-              {allData.map((user, idx) => (
+              {allData?.map((user, idx) => (
                 <tr key={idx}>
                   <td>{user?.name || 'N/A'}</td>
                   <td>{user?.email || 'N/A'}</td>

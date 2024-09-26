@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styles from './AdminFormPage.module.css';
 import TextInput from '../global/TextInput';
 import SelectInput from '../global/SelectInput';
-import { governmentIdOptions, ROLE_TYPE, roleOptions, validateAdminForm } from '../../utils/helper';
+import { getRoleLabel, governmentIdOptions, ROLE_TYPE, roleOptions, setParams, validateAdminForm } from '../../utils/helper';
 import ButtonLoader from '../global/ButtonLoader';
 import defaultInstance from '../../axiosHelper';
 import { useNavigate } from "react-router-dom";
@@ -67,18 +67,6 @@ const AdminFormPage = () => {
       return acc;
     }, {});
     setErrors(formattedErrors || {});
-  };
-
-  const getRoleLabel = (role) => roleOptions.find(({ value }) => value === role)?.label || '';
-
-  const setParams = (role) => {
-    const roleMapping = {
-      [ROLE_TYPE.ASSISTANT_STATE_COORDINATOR]: 'State Coordinator',
-      [ROLE_TYPE.ZONAL_MANAGER]: 'Assistant State Coordinator',
-      [ROLE_TYPE.SUPER_VISOR]: 'Zonal Manager',
-      [ROLE_TYPE.FIELD_COORDINATOR]: 'Supervisor',
-    };
-    return roleMapping[role] || '';
   };
 
   const fetchUsers = async (role) => {
