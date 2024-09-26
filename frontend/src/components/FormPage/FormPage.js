@@ -315,11 +315,7 @@ const FormPage = () => {
       case 6:
         return <OralCancerAssessment currentFmId={currentFmId} />;
       case 7:
-        return sex === "female" ? (
-          <BreastCancerAssessment currentFmId={currentFmId} />
-        ) : (
-          <div>Breast Cancer Assessment is not applicable.</div>
-        );
+        return <BreastCancerAssessment currentFmId={currentFmId} />;
       case 8:
         return sex === "female" ? (
           <CervicalCancerAssessment currentFmId={currentFmId} />

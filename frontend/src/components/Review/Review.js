@@ -355,41 +355,41 @@ const Review = () => {
           {oralCancerAssessment?.suspected_oral_cancer || "Not Filled"}
         </p>
       </div>
+
+      <h2>Breast Cancer Assessment</h2>
+      <div>
+        <p>
+          <strong>Known Case:</strong>{" "}
+          {breastCancerAssessment?.known_case || "Not Filled"}
+        </p>
+        <p>
+          <strong>Lump in Breast:</strong>{" "}
+          {breastCancerAssessment?.lump_in_breast || "Not Filled"}
+        </p>
+        <p>
+          <strong>Blood-Stained Discharge:</strong>{" "}
+          {breastCancerAssessment?.blood_stained_discharge || "Not Filled"}
+        </p>
+        <p>
+          <strong>Change in Shape:</strong>{" "}
+          {breastCancerAssessment?.change_in_shape || "Not Filled"}
+        </p>
+        <p>
+          <strong>Constant Pain or Swelling:</strong>{" "}
+          {breastCancerAssessment?.constant_pain_or_swelling || "Not Filled"}
+        </p>
+        <p>
+          <strong>Redness or Ulcer:</strong>{" "}
+          {breastCancerAssessment?.redness_or_ulcer || "Not Filled"}
+        </p>
+        <p>
+          <strong>Suspected Breast Cancer:</strong>{" "}
+          {breastCancerAssessment?.suspected_breast_cancer || "Not Filled"}
+        </p>
+      </div>
+
       {sex !== "male" && (
         <>
-          <h2>Breast Cancer Assessment</h2>
-          <div>
-            <p>
-              <strong>Known Case:</strong>{" "}
-              {breastCancerAssessment?.known_case || "Not Filled"}
-            </p>
-            <p>
-              <strong>Lump in Breast:</strong>{" "}
-              {breastCancerAssessment?.lump_in_breast || "Not Filled"}
-            </p>
-            <p>
-              <strong>Blood-Stained Discharge:</strong>{" "}
-              {breastCancerAssessment?.blood_stained_discharge || "Not Filled"}
-            </p>
-            <p>
-              <strong>Change in Shape:</strong>{" "}
-              {breastCancerAssessment?.change_in_shape || "Not Filled"}
-            </p>
-            <p>
-              <strong>Constant Pain or Swelling:</strong>{" "}
-              {breastCancerAssessment?.constant_pain_or_swelling ||
-                "Not Filled"}
-            </p>
-            <p>
-              <strong>Redness or Ulcer:</strong>{" "}
-              {breastCancerAssessment?.redness_or_ulcer || "Not Filled"}
-            </p>
-            <p>
-              <strong>Suspected Breast Cancer:</strong>{" "}
-              {breastCancerAssessment?.suspected_breast_cancer || "Not Filled"}
-            </p>
-          </div>
-
           <h2>Cervical Cancer Assessment</h2>
           <div>
             <p>
