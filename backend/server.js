@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "Satyam@10332",
+  password: "$Mumuksh14$",
   database: "manipur",
 });
 
@@ -3122,13 +3122,23 @@ app.get("/api/family-details/", async (req, res) => {
 app.get("/api/user-list/", async(req, res) => {
   try {
     const {user_type} = req.query;
+    if (user_type == "all"){
+      const [familyMembers] = await db
+      .promise()
+      .query(`SELECT * FROM Users`);
+    res.status(200).json({
+      success: true,
+      data: familyMembers,
+    });
+    }
+    else{
     const [familyMembers] = await db
       .promise()
       .query(`SELECT * FROM Users WHERE role = ?`, [user_type]);
     res.status(200).json({
       success: true,
       data: familyMembers,
-    });
+    });}
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({
@@ -3162,7 +3172,7 @@ app.post("/api/users", async (req, res) => {
 
 
 // Start server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
