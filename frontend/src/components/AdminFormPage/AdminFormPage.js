@@ -5,8 +5,12 @@ import SelectInput from '../global/SelectInput';
 import { governmentIdOptions, ROLE_TYPE, roleOptions, validateAdminForm } from '../../utils/helper';
 import ButtonLoader from '../global/ButtonLoader';
 import defaultInstance from '../../axiosHelper';
+import { useNavigate } from "react-router-dom";
 
 const AdminFormPage = () => {
+
+  const navigate = useNavigate()
+
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -39,10 +43,15 @@ const AdminFormPage = () => {
       delete apiPayload.last_name;
       setIsLoading(true)
       defaultInstance.post('users/', apiPayload).then((response) => {
-        console.log(response, "response");
         setIsLoading(false)
         setErrors({});
-      }).catch((error) => { setIsLoading(false) })
+        if (response?.data?.success) {
+          navigate('/admin-home');
+        }
+      }).catch((error) => {
+        alert('Something went wrong please try again after sometime')
+        setIsLoading(false)
+      })
     }).catch((err) => {
       setIsLoading(false)
       const formattedErrors = {};
@@ -156,6 +165,7 @@ const AdminFormPage = () => {
             type="submit"
             className={styles.submitButton}
             style={{ width: 'auto', padding: '0px 15px', height: '40px', marginLeft: 'auto', marginRight: '0px' }}
+            disabled={isLoading}
           >
             {isLoading
               ?
