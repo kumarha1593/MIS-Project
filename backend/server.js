@@ -3170,6 +3170,85 @@ app.post("/api/users", async (req, res) => {
   }
 });
 
+app.patch("/api/users/:user_id", async (req, res) => {
+  const { user_id } = req.params; // Get user_id from URL parameter
+  const { name, email, phone_number, verification_id, verification_id_type, role, password } = req.body;
+  
+  try {
+    // Create an array of fields to update and an array of corresponding values
+    let updates = [];
+    let values = [];
+
+    // Add only fields that are provided (non-null) in the request body
+    if (name) {
+      updates.push("name = ?");
+      values.push(name);
+    }
+    if (email) {
+      updates.push("email = ?");
+      values.push(email);
+    }
+    if (phone_number) {
+      updates.push("phone = ?");
+      values.push(phone_number);
+    }
+    if (verification_id) {
+      updates.push("verification_id = ?");
+      values.push(verification_id);
+    }
+    if (verification_id_type) {
+      updates.push("verification_id_type = ?");
+      values.push(verification_id_type);
+    }
+    if (role) {
+      updates.push("role = ?");
+      values.push(role);
+    }
+    if (password) {
+      updates.push("password = ?");
+      values.push(password);
+    }
+
+    // If no fields are provided to update, return an error
+    if (updates.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No fields to update",
+      });
+    }
+
+    // Add the user_id to the values array for the WHERE clause
+    values.push(user_id);
+
+    // Construct the SQL query dynamically based on which fields need to be updated
+    const sqlQuery = `UPDATE Users SET ${updates.join(", ")} WHERE user_id = ?`;
+
+    // Execute the query
+    const [result] = await db.promise().query(sqlQuery, values);
+
+    // Check if any rows were affected
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Return success response
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+
 
 // Start server
 const PORT = process.env.PORT || 5000;
