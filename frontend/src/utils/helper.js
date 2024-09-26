@@ -1,4 +1,6 @@
 import * as Yup from 'yup';
+import defaultInstance from '../axiosHelper';
+import { API_ENDPOINTS } from './apiEndPoints';
 
 export const ROLE_TYPE = {
     STATE_COORDINATOR: 'SC',
@@ -54,3 +56,20 @@ export const setLowerLevelParams = (role) => {
     };
     return roleMapping[role] || '';
 };
+
+export const getUserDataByRole = async (roleType, successCallBack) => {
+    try {
+        const response = await defaultInstance.get(API_ENDPOINTS.USER_LIST, { params: { user_type: setLowerLevelParams(roleType) } });
+        if (response?.data?.success) {
+            const list = response?.data?.data?.length > 0 ? response?.data?.data : []
+            list?.map((item) => {
+                item.is_open = false;
+                item.is_checked = false;
+                return item;
+            });
+            successCallBack(list);
+        }
+    } catch (error) {
+        console.error("Error fetching user data:", error);
+    }
+}

@@ -1,29 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import RoleItems from './RoleItems';
 import FamilyHead from './FamilyHead';
 
-const FieldCoordinator = ({ setAddRemarks = () => { } }) => {
-    const [data, setData] = useState(Array(10).fill({ name: 'Field Coordinator', is_open: false }));
-
-    const toggleFCVisibility = (fcIdx) => {
-        setData((prev) => {
-            const newVisibility = prev.map((item) => ({ ...item, is_open: false }));
-            newVisibility[fcIdx].is_open = !prev[fcIdx].is_open;
-            return newVisibility;
-        });
-    };
-
+const FieldCoordinator = ({ setAddRemarks = () => { }, data, toggleVisibility, nextRoleData }) => {
     return (
         <div className=''>
             {data.map((fc, fcIdx) => (
                 <div className="common-container" key={fcIdx}>
                     <RoleItems
-                        onClick={() => toggleFCVisibility(fcIdx)}
-                        roleItems={{ name: `${fc?.name} ${fcIdx + 1}` }}
+                        onClick={() => toggleVisibility(fcIdx, fc)}
+                        roleItems={fc}
                     />
                     {data[fcIdx]?.is_open && (
                         <>
-                            <FamilyHead setAddRemarks={setAddRemarks} />
+                            <FamilyHead
+                                data={nextRoleData}
+                                setAddRemarks={setAddRemarks}
+                            />
                         </>
                     )}
                 </div>

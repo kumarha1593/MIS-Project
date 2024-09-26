@@ -1,10 +1,46 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Modal from "react-modal";
 import FieldCoordinator from './FieldCoordinator';
+import defaultInstance from '../../axiosHelper';
+import { API_ENDPOINTS } from '../../utils/apiEndPoints';
 
-const SuperVisor = () => {
+const SuperVisor = ({ data }) => {
 
-    const [addRemarks, setAddRemarks] = useState(false)
+    const [addRemarks, setAddRemarks] = useState(false);
+    const [allData, setAllData] = useState([]);
+    const [nextRoleData, setNextRoleData] = useState([]);
+
+    useEffect(() => {
+        if (data?.length > 0) {
+            setAllData(data)
+        }
+    }, [JSON.stringify(data)])
+
+    const toggleVisibility = (idx, currentItem) => {
+        setAllData((prev) => {
+            const newVisibility = prev.map((item) => ({ ...item, is_open: false }));
+            newVisibility[idx].is_open = !prev[idx].is_open;
+            return newVisibility;
+        });
+        fetchData(currentItem)
+    };
+
+    const fetchData = async (currentItem) => {
+        try {
+            const response = await defaultInstance.get(API_ENDPOINTS.FAMILY_HEAD);
+            if (response?.data?.success) {
+                const list = response?.data?.data?.length > 0 ? response?.data?.data : []
+                list?.map((item) => {
+                    item.is_open = false;
+                    item.is_checked = false;
+                    return item;
+                });
+                setNextRoleData(list);
+            }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+        }
+    }
 
     const customStyles = {
         content: {
@@ -19,7 +55,12 @@ const SuperVisor = () => {
 
     return (
         <div className=''>
-            <FieldCoordinator setAddRemarks={setAddRemarks} />
+            <FieldCoordinator
+                setAddRemarks={setAddRemarks}
+                data={allData}
+                toggleVisibility={toggleVisibility}
+                nextRoleData={nextRoleData}
+            />
             <Modal
                 isOpen={addRemarks}
                 onRequestClose={() => setAddRemarks(false)}
