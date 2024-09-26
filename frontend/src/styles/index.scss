@@ -197,3 +197,18 @@
         transform: scale(1);
     }
 }
+
+.no-data {
+    width: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 50px;
+
+    span {
+        font-size: 18px;
+        color: #555;
+        font-family: "Arial", sans-serif;
+        font-weight: 500;
+    }
+}

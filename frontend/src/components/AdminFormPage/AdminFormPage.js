@@ -8,8 +8,7 @@ import defaultInstance from '../../axiosHelper';
 import { useNavigate } from "react-router-dom";
 
 const AdminFormPage = () => {
-
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -25,55 +24,80 @@ const AdminFormPage = () => {
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [reportingManager, setReportingManager] = useState([]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    setErrors({ ...errors, [name]: '' });
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: '' }));
+
+    if (name === 'role') {
+      setTimeout(() => fetchUsers(value), 500);
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    validateAdminForm.validate(formData, { abortEarly: false }).then((data) => {
-      const apiPayload = { ...data };
-      apiPayload.name = `${data?.first_name} ${data?.last_name}`;
-      apiPayload.role = getRoleLabel(formData?.role || ROLE_TYPE.STATE_COORDINATOR);
-      apiPayload.user_id = 1;
+    try {
+      const validatedData = await validateAdminForm.validate(formData, { abortEarly: false });
+      const apiPayload = {
+        ...validatedData,
+        name: `${validatedData.first_name} ${validatedData.last_name}`,
+        role: getRoleLabel(validatedData.role || ROLE_TYPE.STATE_COORDINATOR),
+      };
       delete apiPayload.first_name;
       delete apiPayload.last_name;
-      setIsLoading(true)
-      defaultInstance.post('users/', apiPayload).then((response) => {
-        setIsLoading(false)
-        setErrors({});
-        if (response?.data?.success) {
-          navigate('/admin-home');
-        }
-      }).catch((error) => {
-        alert('Something went wrong please try again after sometime')
-        setIsLoading(false)
-      })
-    }).catch((err) => {
-      setIsLoading(false)
-      const formattedErrors = {};
-      err?.inner?.forEach((item) => formattedErrors[item.path] = item.message);
-      setErrors(formattedErrors)
-    });
-  };
 
-  const getRoleLabel = (selectedRole) => {
-    const selectedRoleOption = roleOptions.find(role => role.value === selectedRole);
-    return selectedRoleOption?.label;
-  }
-
-  const getReportingManagersForRole = (selectedRole) => {
-    const selectedRoleOption = roleOptions.find(role => role.value === selectedRole);
-    if (selectedRoleOption && selectedRoleOption?.reporting_manager?.length > 0) {
-      return selectedRoleOption?.reporting_manager;
+      setIsLoading(true);
+      const response = await defaultInstance.post('users/', apiPayload);
+      setIsLoading(false);
+      if (response?.data?.success) {
+        alert('User create successfully!')
+        navigate('/admin-home');
+      }
+    } catch (err) {
+      setIsLoading(false);
+      formatValidationErrors(err);
     }
-    return [];
   };
 
-  const availableReportingManagers = getReportingManagersForRole(formData.role);
+  const formatValidationErrors = (err) => {
+    const formattedErrors = err?.inner?.reduce((acc, item) => {
+      acc[item.path] = item.message;
+      return acc;
+    }, {});
+    setErrors(formattedErrors || {});
+  };
+
+  const getRoleLabel = (role) => roleOptions.find(({ value }) => value === role)?.label || '';
+
+  const setParams = (role) => {
+    const roleMapping = {
+      [ROLE_TYPE.ASSISTANT_STATE_COORDINATOR]: 'State Coordinator',
+      [ROLE_TYPE.ZONAL_MANAGER]: 'Assistant State Coordinator',
+      [ROLE_TYPE.SUPER_VISOR]: 'Zonal Manager',
+      [ROLE_TYPE.FIELD_COORDINATOR]: 'Supervisor',
+    };
+    return roleMapping[role] || '';
+  };
+
+  const fetchUsers = async (role) => {
+    const label = setParams(role);
+    if (!label) return;
+
+    try {
+      const response = await defaultInstance.get('user-list/', { params: { user_type: label } });
+      if (response?.data?.success) {
+        const formattedUsers = response?.data?.data?.map(({ id, name }) => ({
+          value: id,
+          label: name || '',
+        }));
+        setReportingManager(formattedUsers);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
 
   return (
     <div className={styles.adminFormContainer}>
@@ -82,35 +106,35 @@ const AdminFormPage = () => {
         <TextInput
           label="First Name"
           name="first_name"
-          value={formData?.first_name}
+          value={formData.first_name}
           onChange={handleInputChange}
-          error={errors?.first_name}
+          error={errors.first_name}
           required
         />
         <TextInput
           label="Last Name"
           name="last_name"
-          value={formData?.last_name}
+          value={formData.last_name}
           onChange={handleInputChange}
-          error={errors?.last_name}
+          error={errors.last_name}
           required
         />
         <SelectInput
           label="Verification ID Type"
           name="verification_id_type"
-          value={formData?.verification_id_type}
+          value={formData.verification_id_type}
           options={governmentIdOptions}
           onChange={handleInputChange}
-          error={errors?.verification_id_type}
+          error={errors.verification_id_type}
           required
         />
-        {formData?.verification_id_type && (
+        {formData.verification_id_type && (
           <TextInput
             label="Verification ID"
             name="verification_id"
-            value={formData?.verification_id}
+            value={formData.verification_id}
             onChange={handleInputChange}
-            error={errors?.verification_id}
+            error={errors.verification_id}
             required
           />
         )}
@@ -118,61 +142,56 @@ const AdminFormPage = () => {
           label="Email"
           type="email"
           name="email"
-          value={formData?.email}
+          value={formData.email}
           onChange={handleInputChange}
-          error={errors?.email}
+          error={errors.email}
           required
         />
         <TextInput
           label="Phone Number"
           type="tel"
           name="phone_number"
-          value={formData?.phone_number}
+          value={formData.phone_number}
           onChange={handleInputChange}
-          error={errors?.phone_number}
+          error={errors.phone_number}
           required
         />
         <TextInput
           label="Password"
           type="password"
           name="password"
-          value={formData?.password}
+          value={formData.password}
           onChange={handleInputChange}
-          error={errors?.password}
+          error={errors.password}
           required
         />
         <SelectInput
           label="User Role"
           name="role"
-          value={formData?.role}
+          value={formData.role}
           options={roleOptions}
           onChange={handleInputChange}
-          error={errors?.role}
+          error={errors.role}
           required
         />
-        {(formData?.role && availableReportingManagers?.length > 0) && (
+        {formData.role && formData.role !== ROLE_TYPE.STATE_COORDINATOR && reportingManager.length > 0 && (
           <SelectInput
             label="Reporting Manager"
             name="user_id"
-            value={formData?.user_id}
-            options={availableReportingManagers}
+            value={formData.user_id}
+            options={reportingManager}
             onChange={handleInputChange}
-            error={errors?.user_id}
+            error={errors.user_id}
           />
         )}
-        <div style={{ display: 'flex' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button
             type="submit"
             className={styles.submitButton}
-            style={{ width: 'auto', padding: '0px 15px', height: '40px', marginLeft: 'auto', marginRight: '0px' }}
             disabled={isLoading}
+            style={{ width: 'auto', padding: '0 15px', height: '40px' }}
           >
-            {isLoading
-              ?
-              <ButtonLoader />
-              :
-              'Submit'
-            }
+            {isLoading ? <ButtonLoader /> : 'Submit'}
           </button>
         </div>
       </form>
