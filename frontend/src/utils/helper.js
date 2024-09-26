@@ -33,13 +33,24 @@ export const validateAdminForm = Yup.object().shape({
 });
 
 export const getRoleLabel = (role) => roleOptions.find(({ value }) => value === role)?.label || '';
+export const getRoleValue = (role) => roleOptions.find(({ label }) => label === role)?.value || '';
 
-export const setParams = (role) => {
+export const setUpperLevelParams = (role) => {
     const roleMapping = {
         [ROLE_TYPE.ASSISTANT_STATE_COORDINATOR]: 'State Coordinator',
         [ROLE_TYPE.ZONAL_MANAGER]: 'Assistant State Coordinator',
         [ROLE_TYPE.SUPER_VISOR]: 'Zonal Manager',
         [ROLE_TYPE.FIELD_COORDINATOR]: 'Supervisor',
+    };
+    return roleMapping[role] || '';
+};
+
+export const setLowerLevelParams = (role) => {
+    const roleMapping = {
+        [ROLE_TYPE.STATE_COORDINATOR]: 'Assistant State Coordinator',
+        [ROLE_TYPE.ASSISTANT_STATE_COORDINATOR]: 'Zonal Manager',
+        [ROLE_TYPE.ZONAL_MANAGER]: 'Supervisor',
+        [ROLE_TYPE.SUPER_VISOR]: 'Field Coordinator',
     };
     return roleMapping[role] || '';
 };

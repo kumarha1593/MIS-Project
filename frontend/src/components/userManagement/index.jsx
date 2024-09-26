@@ -5,8 +5,9 @@ import AssistantStateCoordinator from './AssistantStateCoordinator';
 import StateCoordinator from './StateCoordinator';
 import ZonalManager from './ZonalManager';
 import Filters from './Filters';
-import { getRoleLabel, ROLE_TYPE } from '../../utils/helper';
+import { setLowerLevelParams, ROLE_TYPE } from '../../utils/helper';
 import defaultInstance from '../../axiosHelper';
+import { API_ENDPOINTS } from '../../utils/apiEndPoints';
 
 const Users = () => {
 
@@ -20,7 +21,7 @@ const Users = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await defaultInstance.get('user-list/', { params: { user_type: getRoleLabel(roleType) } });
+                const response = await defaultInstance.get(API_ENDPOINTS.USER_LIST, { params: { user_type: setLowerLevelParams(roleType) } });
                 if (response?.data?.success) {
                     setAllData(response?.data?.data || []);
                 }
@@ -45,6 +46,8 @@ const Users = () => {
                 return <p>No users found for this role</p>;
         }
     };
+
+    console.log(allData, "allData");
 
     return (
         <div className="role-container">

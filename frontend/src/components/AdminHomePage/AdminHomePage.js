@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AdminHomePage.css";
 import defaultInstance from "../../axiosHelper";
+import { API_ENDPOINTS } from "../../utils/apiEndPoints";
 
 const AdminHomePage = () => {
   const navigate = useNavigate();
@@ -11,11 +12,13 @@ const AdminHomePage = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await defaultInstance.get('user-list/', { params: { user_type: 'State Coordinator' } });
+        const response = await defaultInstance.get(API_ENDPOINTS.USER_LIST, { params: { user_type: 'all' } });
+        setIsLoading(false)
         if (response?.data?.success) {
           setAllData(response?.data?.data || []);
         }
       } catch (error) {
+        setIsLoading(false);
         console.error("Error fetching user data:", error);
       } finally {
         setIsLoading(false);
@@ -41,7 +44,9 @@ const AdminHomePage = () => {
                 <th>Email ID</th>
                 <th>Phone Number</th>
                 <th>Role Type</th>
-                <th>Verification ID Type</th>
+                <th>Aadhar</th>
+                <th>Reporting Manager</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -51,7 +56,14 @@ const AdminHomePage = () => {
                   <td>{user?.email || 'N/A'}</td>
                   <td>{user?.phone || 'N/A'}</td>
                   <td>{user?.role || 'N/A'}</td>
-                  <td>{user?.verification_id_type || 'N/A'}</td>
+                  <td>{user?.verification_id || 'N/A'}</td>
+                  <td>N/A</td>
+                  <td>
+                    <div className="user-actions">
+                      <div onClick={() => navigate("/admin-form", { state: { form_data: user, type: 'EDIT' } })} className="common-actions-btn edit">Edit</div>
+                      <div onClick={() => alert('To be implemented!')} className="common-actions-btn delete">In Active</div>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

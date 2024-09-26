@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './AdminFormPage.module.css';
 import TextInput from '../global/TextInput';
 import SelectInput from '../global/SelectInput';
-import { getRoleLabel, governmentIdOptions, ROLE_TYPE, roleOptions, setParams, validateAdminForm } from '../../utils/helper';
+import { getRoleLabel, getRoleValue, governmentIdOptions, ROLE_TYPE, roleOptions, setUpperLevelParams, validateAdminForm } from '../../utils/helper';
 import ButtonLoader from '../global/ButtonLoader';
 import defaultInstance from '../../axiosHelper';
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { API_ENDPOINTS } from '../../utils/apiEndPoints';
+import { IoArrowBack } from "react-icons/io5";
 
 const AdminFormPage = () => {
   const navigate = useNavigate();
@@ -22,8 +24,14 @@ const AdminFormPage = () => {
     user_id: '',
   });
 
+  const location = useLocation();
+  const stateParams = location?.state;
+  const editData = stateParams?.form_data || null;
+  const isEdit = stateParams?.type == 'EDIT' ? true : false;
+
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [reportingManager, setReportingManager] = useState([]);
 
   const handleInputChange = (e) => {
@@ -48,13 +56,20 @@ const AdminFormPage = () => {
       delete apiPayload.first_name;
       delete apiPayload.last_name;
 
+      let apiUrl = API_ENDPOINTS.USERS;
+
+      if (isEdit) {
+        apiUrl = `${API_ENDPOINTS.USERS}${editData?.id}/`;
+      }
+
       setIsLoading(true);
-      const response = await defaultInstance.post('users/', apiPayload);
+      const response = await defaultInstance.post(apiUrl, apiPayload);
       setIsLoading(false);
       if (response?.data?.success) {
-        alert('User create successfully!')
+        alert(isEdit ? 'User updated successfully!' : 'User created successfully!')
         navigate('/admin-home');
       }
+
     } catch (err) {
       setIsLoading(false);
       formatValidationErrors(err);
@@ -70,11 +85,11 @@ const AdminFormPage = () => {
   };
 
   const fetchUsers = async (role) => {
-    const label = setParams(role);
+    const label = setUpperLevelParams(role);
     if (!label) return;
 
     try {
-      const response = await defaultInstance.get('user-list/', { params: { user_type: label } });
+      const response = await defaultInstance.get(API_ENDPOINTS.USER_LIST, { params: { user_type: label } });
       if (response?.data?.success) {
         const formattedUsers = response?.data?.data?.map(({ id, name }) => ({
           value: id,
@@ -87,9 +102,36 @@ const AdminFormPage = () => {
     }
   };
 
+  useEffect(() => {
+    if (editData) {
+      const roleValue = getRoleValue(editData?.role) || ''
+      setFormData({
+        first_name: editData?.name?.split(' ')?.[0] || '',
+        last_name: editData?.name?.split(' ')?.[1] || '',
+        verification_id_type: editData?.verification_id_type || '',
+        verification_id: editData?.verification_id || '',
+        email: editData?.email || '',
+        phone_number: editData?.phone || '',
+        role: roleValue || '',
+        user_id: editData?.id || '',
+        password: editData?.password || '',
+      });
+      setTimeout(() => {
+        if (roleValue) {
+          fetchUsers(roleValue);
+        }
+      }, 500);
+    }
+
+  }, [JSON.stringify(editData)])
+
   return (
     <div className={styles.adminFormContainer}>
-      <h2>Add New User</h2>
+      <div className='add-user-header'>
+        <IoArrowBack className='back-btn' onClick={() => navigate('/admin-home')} />
+        <p>{isEdit ? "Edit User" : "Add New User"}</p>
+        <div />
+      </div>
       <form noValidate onSubmit={handleSubmit}>
         <TextInput
           label="First Name"
@@ -146,12 +188,14 @@ const AdminFormPage = () => {
         />
         <TextInput
           label="Password"
-          type="password"
+          type={showPassword ? 'text' : "password"}
           name="password"
           value={formData.password}
           onChange={handleInputChange}
           error={errors.password}
           required
+          isPassword
+          toggleEyeIcon={() => setShowPassword((prevState) => !prevState)}
         />
         <SelectInput
           label="User Role"
@@ -177,9 +221,9 @@ const AdminFormPage = () => {
             type="submit"
             className={styles.submitButton}
             disabled={isLoading}
-            style={{ width: 'auto', padding: '0 15px', height: '40px' }}
+            style={{ width: 'auto', padding: '0 15px', height: '40px', marginRight: '0px' }}
           >
-            {isLoading ? <ButtonLoader /> : 'Submit'}
+            {isLoading ? <ButtonLoader /> : isEdit ? 'Update' : 'Submit'}
           </button>
         </div>
       </form>

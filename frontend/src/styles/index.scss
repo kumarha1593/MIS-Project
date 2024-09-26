@@ -121,7 +121,7 @@
 // style for global inputs
 .form-group {
     margin-bottom: 20px;
-
+    position: relative;
 
     label {
         display: block;
@@ -158,6 +158,13 @@
         color: red;
         font-size: 0.8em;
         margin-top: 5px;
+    }
+
+    .password-eye {
+        cursor: pointer;
+        position: absolute;
+        top: 37px;
+        right: 10px;
     }
 }
 
@@ -210,5 +217,47 @@
         color: #555;
         font-family: "Arial", sans-serif;
         font-weight: 500;
+    }
+}
+
+.user-actions {
+    display: flex;
+
+    .common-actions-btn {
+        padding: 5px 15px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .edit {
+        background-color: #4caf50;
+    }
+
+    .delete {
+        background-color: red;
+        margin-left: 10px;
+    }
+}
+
+.add-user-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+
+    .back-btn {
+        width: 30px !important;
+        height: 30px !important;
+        cursor: pointer;
+    }
+
+    p {
+        font-size: 20px;
+        font-weight: 600;
+        color: black;
+        margin: 0px;
     }
 }
