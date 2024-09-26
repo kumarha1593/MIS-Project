@@ -3147,7 +3147,7 @@ app.post("/api/users", async (req, res) => {
     // Update the family_members table's status field to 1 for the given fm_id
     const [result] = await db
       .promise()
-      .query(`INSERT INTO users (name, email, phone, verification_id, verification_id_type, role, password, district_info_id)
+      .query(`INSERT INTO Users (name, email, phone, verification_id, verification_id_type, role, password, district_info_id)
          VALUES (?,?,?,?,?,?,?,NULL)`, [name, email, phone_number, verification_id, verification_id_type, role, password]);
 
       res.status(200).json({
