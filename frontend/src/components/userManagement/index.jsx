@@ -1,25 +1,35 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import SuperVisor from './SuperVisor'
 import { useLocation } from 'react-router-dom';
 import AssistantStateCoordinator from './AssistantStateCoordinator';
 import StateCoordinator from './StateCoordinator';
 import ZonalManager from './ZonalManager';
 import Filters from './Filters';
-
-export const ROLE_TYPE = {
-    STATE_COORDINATOR: 'SC',
-    ASSISTANT_STATE_COORDINATOR: 'ASC',
-    ZONAL_MANAGER: 'ZM',
-    SUPER_VISOR: 'SV',
-    FIELD_COORDINATOR: 'FC'
-};
+import { getRoleLabel, ROLE_TYPE } from '../../utils/helper';
+import defaultInstance from '../../axiosHelper';
 
 const Users = () => {
 
     const location = useLocation();
 
     const queryParams = new URLSearchParams(location.search);
-    const roleType = queryParams.get('role_type');
+    const roleType = queryParams.get('role_type') || '';
+
+    const [allData, setAllData] = useState([]);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await defaultInstance.get('user-list/', { params: { user_type: getRoleLabel(roleType) } });
+                if (response?.data?.success) {
+                    setAllData(response?.data?.data || []);
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
+        };
+        fetchUsers();
+    }, []);
 
     const renderMainView = () => {
         switch (roleType) {

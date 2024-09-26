@@ -1,209 +1,188 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import styles from './AdminFormPage.module.css';
+import TextInput from '../global/TextInput';
+import SelectInput from '../global/SelectInput';
+import { getRoleLabel, governmentIdOptions, ROLE_TYPE, roleOptions, setParams, validateAdminForm } from '../../utils/helper';
+import ButtonLoader from '../global/ButtonLoader';
+import defaultInstance from '../../axiosHelper';
 import { useNavigate } from "react-router-dom";
-import styles from "./AdminFormPage.module.css";
 
 const AdminFormPage = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    governmentId: "",
-    photo: null,
-    email: "",
-    phoneNumber: "",
-    password: "",
-    role: "",
+    first_name: '',
+    last_name: '',
+    verification_id_type: '',
+    verification_id: '',
+    email: '',
+    phone_number: '',
+    password: '',
+    role: '',
+    user_id: '',
   });
 
   const [errors, setErrors] = useState({});
-
-  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [reportingManager, setReportingManager] = useState([]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    // Clear the error for this field when the user starts typing
-    setErrors({ ...errors, [name]: "" });
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: '' }));
+
+    if (name === 'role') {
+      setTimeout(() => fetchUsers(value), 500);
+    }
   };
 
-  const validateForm = () => {
-    let newErrors = {};
-
-    // Validate First Name
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First Name is required";
-    }
-
-    // Validate Last Name
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last Name is required";
-    }
-
-    // Validate Government ID
-    if (!formData.governmentId) {
-      newErrors.governmentId = "Government ID is required";
-    }
-
-    // Validate Email
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid";
-    }
-
-    // Validate Phone Number
-    if (!formData.phoneNumber.trim()) {
-      newErrors.phoneNumber = "Phone Number is required";
-    } else if (!/^\d{10}$/.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = "Phone Number must be 10 digits";
-    }
-
-    // Validate Password
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters long";
-    }
-
-    // Validate Role
-    if (!formData.role) {
-      newErrors.role = "Role is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      // Handle form submission (e.g., send data to backend)
-      console.log(formData);
-      // After submission, you might want to navigate back to the admin home page
-      navigate("/admin-home");
+    try {
+      const validatedData = await validateAdminForm.validate(formData, { abortEarly: false });
+      const apiPayload = {
+        ...validatedData,
+        name: `${validatedData.first_name} ${validatedData.last_name}`,
+        role: getRoleLabel(validatedData.role || ROLE_TYPE.STATE_COORDINATOR),
+      };
+      delete apiPayload.first_name;
+      delete apiPayload.last_name;
+
+      setIsLoading(true);
+      const response = await defaultInstance.post('users/', apiPayload);
+      setIsLoading(false);
+      if (response?.data?.success) {
+        alert('User create successfully!')
+        navigate('/admin-home');
+      }
+    } catch (err) {
+      setIsLoading(false);
+      formatValidationErrors(err);
     }
   };
 
-  const handleBack = () => {
-    navigate("/admin-home");
+  const formatValidationErrors = (err) => {
+    const formattedErrors = err?.inner?.reduce((acc, item) => {
+      acc[item.path] = item.message;
+      return acc;
+    }, {});
+    setErrors(formattedErrors || {});
+  };
+
+  const fetchUsers = async (role) => {
+    const label = setParams(role);
+    if (!label) return;
+
+    try {
+      const response = await defaultInstance.get('user-list/', { params: { user_type: label } });
+      if (response?.data?.success) {
+        const formattedUsers = response?.data?.data?.map(({ id, name }) => ({
+          value: id,
+          label: name || '',
+        }));
+        setReportingManager(formattedUsers);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
   };
 
   return (
     <div className={styles.adminFormContainer}>
       <h2>Add New User</h2>
-      <form onSubmit={handleSubmit}>
-        <div className={styles.formGroup}>
-          <label htmlFor="firstName">First Name</label>
-          <input
-            type="text"
-            id="firstName"
-            name="firstName"
-            value={formData.firstName}
+      <form noValidate onSubmit={handleSubmit}>
+        <TextInput
+          label="First Name"
+          name="first_name"
+          value={formData.first_name}
+          onChange={handleInputChange}
+          error={errors.first_name}
+          required
+        />
+        <TextInput
+          label="Last Name"
+          name="last_name"
+          value={formData.last_name}
+          onChange={handleInputChange}
+          error={errors.last_name}
+          required
+        />
+        <SelectInput
+          label="Verification ID Type"
+          name="verification_id_type"
+          value={formData.verification_id_type}
+          options={governmentIdOptions}
+          onChange={handleInputChange}
+          error={errors.verification_id_type}
+          required
+        />
+        {formData.verification_id_type && (
+          <TextInput
+            label="Verification ID"
+            name="verification_id"
+            value={formData.verification_id}
             onChange={handleInputChange}
+            error={errors.verification_id}
             required
           />
-          {errors.firstName && (
-            <span className={styles.error}>{errors.firstName}</span>
-          )}
-        </div>
-        <div className={styles.formGroup}>
-          <label htmlFor="lastName">Last Name</label>
-          <input
-            type="text"
-            id="lastName"
-            name="lastName"
-            value={formData.lastName}
+        )}
+        <TextInput
+          label="Email"
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleInputChange}
+          error={errors.email}
+          required
+        />
+        <TextInput
+          label="Phone Number"
+          type="tel"
+          name="phone_number"
+          value={formData.phone_number}
+          onChange={handleInputChange}
+          error={errors.phone_number}
+          required
+        />
+        <TextInput
+          label="Password"
+          type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleInputChange}
+          error={errors.password}
+          required
+        />
+        <SelectInput
+          label="User Role"
+          name="role"
+          value={formData.role}
+          options={roleOptions}
+          onChange={handleInputChange}
+          error={errors.role}
+          required
+        />
+        {formData.role && formData.role !== ROLE_TYPE.STATE_COORDINATOR && reportingManager.length > 0 && (
+          <SelectInput
+            label="Reporting Manager"
+            name="user_id"
+            value={formData.user_id}
+            options={reportingManager}
             onChange={handleInputChange}
-            required
+            error={errors.user_id}
           />
-          {errors.lastName && (
-            <span className={styles.error}>{errors.lastName}</span>
-          )}
-        </div>
-        <div className={styles.formGroup}>
-          <label htmlFor="governmentId">Government ID</label>
-          <select
-            id="governmentId"
-            name="governmentId"
-            value={formData.governmentId}
-            onChange={handleInputChange}
-            required
+        )}
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            type="submit"
+            className={styles.submitButton}
+            disabled={isLoading}
+            style={{ width: 'auto', padding: '0 15px', height: '40px' }}
           >
-            <option value="">Select ID Type</option>
-            <option value="aadhar">Aadhar Card</option>
-            <option value="pan">PAN Card</option>
-            <option value="driving">Driving License</option>
-          </select>
-          {errors.governmentId && (
-            <span className={styles.error}>{errors.governmentId}</span>
-          )}
+            {isLoading ? <ButtonLoader /> : 'Submit'}
+          </button>
         </div>
-        <div className={styles.formGroup}>
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            required
-          />
-          {errors.email && <span className={styles.error}>{errors.email}</span>}
-        </div>
-        <div className={styles.formGroup}>
-          <label htmlFor="phoneNumber">Phone Number</label>
-          <input
-            type="tel"
-            id="phoneNumber"
-            name="phoneNumber"
-            value={formData.phoneNumber}
-            onChange={handleInputChange}
-            required
-          />
-          {errors.phoneNumber && (
-            <span className={styles.error}>{errors.phoneNumber}</span>
-          )}
-        </div>
-        <div className={styles.formGroup}>
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleInputChange}
-            required
-          />
-          {errors.password && (
-            <span className={styles.error}>{errors.password}</span>
-          )}
-        </div>
-        <div className={styles.formGroup}>
-          <label htmlFor="role">Role</label>
-          <select
-            id="role"
-            name="role"
-            value={formData.role}
-            onChange={handleInputChange}
-            required
-          >
-            <option value="">Select Role</option>
-            <option value="field_coordinator">Field Coordinator</option>
-            <option value="state_coordinator">State Coordinator</option>
-            <option value="assistant_state_coordinator">
-              Assistant State Coordinator
-            </option>
-            <option value="zonal_manager">Zonal Manager</option>
-            <option value="supervisor">Supervisor</option>
-          </select>
-          {errors.role && <span className={styles.error}>{errors.role}</span>}
-        </div>
-        <button type="submit" className={styles.submitButton}>
-          Add User
-        </button>
       </form>
-      <button onClick={handleBack} className={styles.backButton}>
-        Back
-      </button>
     </div>
   );
 };
