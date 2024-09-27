@@ -1,6 +1,7 @@
 import React from 'react'
 
-const FamilyMembers = () => {
+const FamilyMembers = ({ data }) => {
+    console.log(data, "Final data")
     return (
         <div className="fm-item-container">
             <table className="fm-item-table">
