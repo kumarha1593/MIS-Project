@@ -35,6 +35,7 @@ const Review = () => {
   const [abhaIdStatus, setAbhaIdStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const gender = localStorage.getItem("sex");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -186,17 +187,17 @@ const Review = () => {
         <p>Telephone Number: {personalInfo.tel_no || "Not filled"}</p>
         <p>Address: {personalInfo.address || "Not filled"}</p>
         <p>
-          State Health Insurance:{" "}
+          Health Insurance (State/Government/Private):{" "}
           {personalInfo.state_health_insurance || "Not filled"}
         </p>
-        <p>
+        {/* <p>
           State Health Insurance Remark:{" "}
           {personalInfo.state_health_insurance_remark || "Not filled"}
-        </p>
+        </p> */}
         <p>Disability: {personalInfo.disability || "Not filled"}</p>
-        <p>
+        {/* <p>
           Disability Remark: {personalInfo.disability_remark || "Not filled"}
-        </p>
+        </p> */}
       </div>
 
       <h2>Health Measurements</h2>
@@ -216,6 +217,9 @@ const Review = () => {
         <p>
           <strong>SpO2:</strong> {healthProfile.spO2 || "Not Filled"}
         </p>
+        <p>
+          <strong>Pulse:</strong> {healthProfile.pulse || "Not Filled"}
+        </p>
       </div>
 
       <h2>HTN Assessment</h2>
@@ -225,8 +229,12 @@ const Review = () => {
           {htnAssessment?.case_of_htn || "Not Filled"}
         </p>
         <p>
-          <strong>Blood Pressure:</strong>{" "}
-          {htnAssessment?.blood_pressure || "Not Filled"}
+          <strong>Upper BP (mmHg):</strong>{" "}
+          {htnAssessment?.upper_bp || "Not Filled"}
+        </p>
+        <p>
+          <strong>Lower BP (mmHg):</strong>{" "}
+          {htnAssessment?.lower_bp || "Not Filled"}
         </p>
         <p>
           <strong>Action High BP:</strong>{" "}
@@ -236,9 +244,9 @@ const Review = () => {
           <strong>Referral Center:</strong>{" "}
           {htnAssessment?.referral_center || "Not Filled"}
         </p>
-        <p>
+        {/* <p>
           <strong>HTN Date:</strong> {htnAssessment?.htn_date || "Not Filled"}
-        </p>
+        </p> */}
       </div>
 
       <h2>DM Assessment</h2>
@@ -248,11 +256,16 @@ const Review = () => {
           {dmAssessment?.case_of_dm || "Not Filled"}
         </p>
         <p>
-          <strong>RBS:</strong> {dmAssessment?.RBS || "Not Filled"}
+          <strong>Fasting Blood Sugar (mg/dL):</strong>{" "}
+          {dmAssessment?.fasting_blood_sugar || "Not Filled"}
         </p>
         <p>
-          <strong>Blood Sugar:</strong>{" "}
-          {dmAssessment?.blood_sugar || "Not Filled"}
+          <strong>Post Prandial Blood Sugar (mg/dL):</strong>{" "}
+          {dmAssessment?.post_prandial_blood_sugar || "Not Filled"}
+        </p>
+        <p>
+          <strong>Random Blood Sugar (mg/dL):</strong>{" "}
+          {dmAssessment?.random_blood_sugar || "Not Filled"}
         </p>
         <p>
           <strong>Action High BS:</strong>{" "}
@@ -262,9 +275,9 @@ const Review = () => {
           <strong>Referral Center:</strong>{" "}
           {dmAssessment?.referral_center || "Not Filled"}
         </p>
-        <p>
+        {/* <p>
           <strong>DM Date:</strong> {dmAssessment?.DM_date || "Not Filled"}
-        </p>
+        </p> */}
       </div>
 
       <h2>Risk Assessment</h2>
@@ -280,14 +293,19 @@ const Review = () => {
           <strong>Alcohol Use:</strong>{" "}
           {riskAssessment?.alcohol_use || "Not Filled"}
         </p>
-        <p>
-          <strong>Waist Circumference (Female):</strong>{" "}
-          {riskAssessment?.waist_female || "Not Filled"}
-        </p>
-        <p>
-          <strong>Waist Circumference (Male):</strong>{" "}
-          {riskAssessment?.waist_male || "Not Filled"}
-        </p>
+        {sex === "female" && (
+          <p>
+            <strong>Waist Circumference (Female):</strong>{" "}
+            {riskAssessment?.waist_female || "Not Filled"}
+          </p>
+        )}
+
+        {sex === "male" && (
+          <p>
+            <strong>Waist Circumference (Male):</strong>{" "}
+            {riskAssessment?.waist_male || "Not Filled"}
+          </p>
+        )}
         <p>
           <strong>Physical Activity:</strong>{" "}
           {riskAssessment?.physical_activity || "Not Filled"}
@@ -329,7 +347,7 @@ const Review = () => {
           {oralCancerAssessment?.growth_in_mouth || "Not Filled"}
         </p>
         <p>
-          <strong>Swelling in Neck:</strong>{" "}
+          <strong>Sudden change in voice:</strong>{" "}
           {oralCancerAssessment?.swelling_in_neck || "Not Filled"}
         </p>
         <p>
@@ -429,6 +447,17 @@ const Review = () => {
         <p>
           <strong>Suspected CVD:</strong>{" "}
           {cvdAssessment?.suspected_cvd || "Not Filled"}
+        </p>
+        <p>
+          <strong>Teleconsultation:</strong>{" "}
+          {cvdAssessment?.teleconsultation || "Not Filled"}
+        </p>
+        <p>
+          <strong>Referral:</strong> {cvdAssessment?.referral || "Not Filled"}
+        </p>
+        <p>
+          <strong>Referral Centre:</strong>{" "}
+          {cvdAssessment?.referral_centre || "Not Filled"}
         </p>
       </div>
 
@@ -683,15 +712,15 @@ const Review = () => {
       <div>
         <p>
           <strong>Major NCD Detected:</strong>{" "}
-          {assessmentAndActionTaken?.major_ncd_detected || "Not Filled"}
+          {assessmentAndActionTaken?.majorNCDDetected || "Not Filled"}
         </p>
         <p>
           <strong>Any Other Disease Detected:</strong>{" "}
-          {assessmentAndActionTaken?.any_other_disease_detected || "Not Filled"}
+          {assessmentAndActionTaken?.anyOtherDiseaseDetected || "Not Filled"}
         </p>
         <p>
           <strong>Known Case DM/HTN:</strong>{" "}
-          {assessmentAndActionTaken?.known_case_dm_htn || "Not Filled"}
+          {assessmentAndActionTaken?.knownCaseDMWithHTN || "Not Filled"}
         </p>
         <p>
           <strong>Teleconsultation:</strong>{" "}
@@ -699,11 +728,11 @@ const Review = () => {
         </p>
         <p>
           <strong>Prescription Given:</strong>{" "}
-          {assessmentAndActionTaken?.prescription_given || "Not Filled"}
+          {assessmentAndActionTaken?.prescriptionGiven || "Not Filled"}
         </p>
         <p>
           <strong>Other Advices:</strong>{" "}
-          {assessmentAndActionTaken?.other_advices || "Not Filled"}
+          {assessmentAndActionTaken?.otherAdvices || "Not Filled"}
         </p>
         <p>
           <strong>Remarks:</strong>{" "}

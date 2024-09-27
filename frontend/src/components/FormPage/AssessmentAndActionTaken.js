@@ -3,12 +3,12 @@ import axios from "axios";
 
 const AssessmentAndActionTaken = ({ currentFmId }) => {
   const [formData, setFormData] = useState({
-    major_ncd_detected: "",
-    any_other_disease_detected: "",
-    known_case_dm_htn: "",
+    majorNCDDetected: "",
+    anyOtherDiseaseDetected: "",
+    knownCaseDMWithHTN: "",
     teleconsultation: "",
-    prescription_given: "",
-    other_advices: "",
+    prescriptionGiven: "",
+    otherAdvices: "",
     remarks: "",
   });
 
@@ -99,8 +99,8 @@ const AssessmentAndActionTaken = ({ currentFmId }) => {
         <label style={styles.label}>Major NCD Detected</label>
         <input
           type="text"
-          name="major_ncd_detected"
-          value={formData.major_ncd_detected || ""}
+          name="majorNCDDetected"
+          value={formData.majorNCDDetected || ""}
           onChange={handleInputChange}
           style={styles.input}
         />
@@ -109,8 +109,8 @@ const AssessmentAndActionTaken = ({ currentFmId }) => {
       <div style={styles.formGroup}>
         <label style={styles.label}>Any Other Disease Detected</label>
         <textarea
-          name="any_other_disease_detected"
-          value={formData.any_other_disease_detected || ""}
+          name="anyOtherDiseaseDetected"
+          value={formData.anyOtherDiseaseDetected || ""}
           onChange={handleInputChange}
           rows="2"
           style={styles.textarea}
@@ -121,8 +121,8 @@ const AssessmentAndActionTaken = ({ currentFmId }) => {
         <label style={styles.label}>Known Case of DM with HTN</label>
         <input
           type="text"
-          name="known_case_dm_htn"
-          value={formData.known_case_dm_htn || ""}
+          name="knownCaseDMWithHTN"
+          value={formData.knownCaseDMWithHTN || ""}
           onChange={handleInputChange}
           style={styles.input}
         />
@@ -145,8 +145,8 @@ const AssessmentAndActionTaken = ({ currentFmId }) => {
       <div style={styles.formGroup}>
         <label style={styles.label}>Prescription Given</label>
         <select
-          name="prescription_given"
-          value={formData.prescription_given || ""}
+          name="prescriptionGiven"
+          value={formData.prescriptionGiven || ""}
           onChange={handleInputChange}
           style={styles.input}
         >
@@ -159,8 +159,8 @@ const AssessmentAndActionTaken = ({ currentFmId }) => {
       <div style={styles.formGroup}>
         <label style={styles.label}>Other Advices</label>
         <textarea
-          name="other_advices"
-          value={formData.other_advices || ""}
+          name="otherAdvices"
+          value={formData.otherAdvices || ""}
           onChange={handleInputChange}
           rows="3"
           style={styles.textarea}

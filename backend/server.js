@@ -4,7 +4,8 @@ const app = express();
 const mysql = require("mysql2");
 const moment = require("moment");
 const bodyParser = require("body-parser");
-
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 // Middleware
 app.use(cors()); // Use CORS middleware
 app.use(express.json()); // Added to parse JSON bodies
@@ -56,6 +57,49 @@ app.post("/api/login", (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
   });
+});
+
+//Admin Login
+app.post("/api/admin/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    // Check if the username exists in the database
+    const [adminUser] = await db
+      .promise()
+      .query("SELECT * FROM admin_users WHERE username = ?", [username]);
+
+    if (adminUser.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid username or password",
+      });
+    }
+
+    // Compare the provided password with the hashed password in the database
+    const validPassword = await bcrypt.compare(password, adminUser[0].password);
+    console.log("Password comparison result:", validPassword);
+
+    if (!validPassword) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid username or password",
+      });
+    }
+
+    // Instead of generating JWT, simply return a success message
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      userId: adminUser[0].id, // You can return user data as needed
+    });
+  } catch (error) {
+    console.error("Error during admin login:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 });
 
 app.post("/api/district_info", (req, res) => {
@@ -230,6 +274,55 @@ app.get("/api/family-members/:user_id", async (req, res) => {
     res.status(200).json(rows);
   } catch (error) {
     console.error("Error fetching family members:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// FIltered Data field dashboard
+
+app.get("/api/filtered-family-members/:user_id", async (req, res) => {
+  const user_id = req.params.user_id;
+  const { fromDate, toDate, specificDate, searchTerm, statusFilter } =
+    req.query;
+
+  try {
+    let query = `
+      SELECT fm.id, fm.name, fm.Aadhar, fm.status, fm.date,
+      (SELECT COUNT(*) FROM family_members WHERE head_id = fm.id) as familyMemberCount
+      FROM family_members fm
+      WHERE fm.fc_id = ? AND fm.head_id = 0
+    `;
+
+    const queryParams = [user_id];
+
+    if (specificDate) {
+      query += " AND DATE(fm.date) = ?";
+      queryParams.push(specificDate);
+    } else if (fromDate && toDate) {
+      query += " AND fm.date BETWEEN ? AND ?";
+      queryParams.push(fromDate, toDate);
+    } else if (fromDate) {
+      query += " AND fm.date >= ?";
+      queryParams.push(fromDate);
+    } else if (toDate) {
+      query += " AND fm.date <= ?";
+      queryParams.push(toDate);
+    }
+
+    if (searchTerm) {
+      query += " AND (fm.name LIKE ? OR fm.Aadhar LIKE ?)";
+      queryParams.push(`%${searchTerm}%`, `%${searchTerm}%`);
+    }
+
+    if (statusFilter) {
+      query += " AND fm.status = ?";
+      queryParams.push(statusFilter === "pending" ? 0 : 1);
+    }
+
+    const [rows] = await db.promise().query(query, queryParams);
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error("Error fetching filtered family members:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -529,7 +622,7 @@ app.get("/api/personal-info/:fm_id", async (req, res) => {
   }
 });
 
-//HEALTH MEASUREMENTS
+//health-measurements
 app.post("/api/health-measurements", async (req, res) => {
   const {
     fm_id,
@@ -538,9 +631,10 @@ app.post("/api/health-measurements", async (req, res) => {
     bmi = null,
     temp = null,
     spO2 = null,
+    pulse = null, // Add new pulse field
   } = req.body;
 
-  console.log(`Received fm_id: ${fm_id}`); // Log the received fm_id
+  console.log(`Received fm_id: ${fm_id}`);
 
   try {
     await db.promise().beginTransaction();
@@ -551,6 +645,7 @@ app.post("/api/health-measurements", async (req, res) => {
     const sanitizedBmi = bmi === "" ? null : bmi;
     const sanitizedTemp = temp === "" ? null : temp;
     const sanitizedSpO2 = spO2 === "" ? null : spO2;
+    const sanitizedPulse = pulse === "" ? null : pulse; // Sanitize pulse
 
     const sanitizedValues = [
       sanitizedHeight,
@@ -558,42 +653,38 @@ app.post("/api/health-measurements", async (req, res) => {
       sanitizedBmi,
       sanitizedTemp,
       sanitizedSpO2,
+      sanitizedPulse, // Add pulse to sanitizedValues
     ];
 
     let health_id;
 
-    // Insert or update health measurements
     const [masterData] = await db
       .promise()
       .query(`SELECT health_id FROM master_data WHERE fm_id = ?`, [fm_id]);
 
     if (masterData.length > 0 && masterData[0].health_id) {
-      // Update existing health measurements and set updated_at
       health_id = masterData[0].health_id;
       await db.promise().query(
         `UPDATE health SET
-        height = ?, weight = ?, bmi = ?, temp = ?, spO2 = ?, updated_at = NOW()
+        height = ?, weight = ?, bmi = ?, temp = ?, spO2 = ?, pulse = ?, updated_at = NOW()
         WHERE id = ?`,
         [...sanitizedValues, health_id]
       );
       console.log(`Updated health measurements with ID: ${health_id}`);
     } else {
-      // Insert new health measurements and set created_at and updated_at
       const [result] = await db.promise().query(
         `INSERT INTO health 
-        (height, weight, bmi, temp, spO2, created_at, updated_at) 
-        VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+        (height, weight, bmi, temp, spO2, pulse, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         sanitizedValues
       );
       health_id = result.insertId;
       console.log(`Inserted new health measurements with ID: ${health_id}`);
 
-      // Log fm_id and health_id before the update query
       console.log(
         `Updating master_data for fm_id: ${fm_id} with health_id: ${health_id}`
       );
 
-      // Update master_data table with the new health_id
       const [updateResult] = await db
         .promise()
         .query(`UPDATE master_data SET health_id = ? WHERE fm_id = ?`, [
@@ -660,68 +751,54 @@ app.post("/api/htn-assessment", async (req, res) => {
   const {
     fm_id,
     case_of_htn = null,
-    blood_pressure = null,
+    upper_bp = null,
+    lower_bp = null,
     action_high_bp = null,
     referral_center = null,
-    htn_date = null,
   } = req.body;
 
-  console.log(`Received fm_id: ${fm_id}`); // Log the received fm_id
+  console.log(`Received fm_id: ${fm_id}`);
 
   try {
     await db.promise().beginTransaction();
 
-    // Convert empty strings to null for nullable fields
-    const sanitizedCaseOfHtn = case_of_htn === "" ? null : case_of_htn;
-    const sanitizedBloodPressure =
-      blood_pressure === "" ? null : blood_pressure;
-    const sanitizedActionHighBp = action_high_bp === "" ? null : action_high_bp;
-    const sanitizedReferralCenter =
-      referral_center === "" ? null : referral_center;
-    const sanitizedHtnDate = htn_date === "" ? null : htn_date;
-
     const sanitizedValues = [
-      sanitizedCaseOfHtn,
-      sanitizedBloodPressure,
-      sanitizedActionHighBp,
-      sanitizedReferralCenter,
-      sanitizedHtnDate,
+      case_of_htn === "" ? null : case_of_htn,
+      upper_bp === "" ? null : upper_bp,
+      lower_bp === "" ? null : lower_bp,
+      action_high_bp === "" ? null : action_high_bp,
+      referral_center === "" ? null : referral_center,
     ];
 
     let htn_id;
 
-    // Insert or update HTN assessment
     const [masterData] = await db
       .promise()
       .query(`SELECT htn_id FROM master_data WHERE fm_id = ?`, [fm_id]);
 
     if (masterData.length > 0 && masterData[0].htn_id) {
-      // Update existing HTN assessment and set updated_at
       htn_id = masterData[0].htn_id;
       await db.promise().query(
         `UPDATE htn SET
-        case_of_htn = ?, blood_pressure = ?, action_high_bp = ?, referral_center = ?, htn_date = ?, updated_at = NOW()
+        case_of_htn = ?, upper_bp = ?, lower_bp = ?, action_high_bp = ?, referral_center = ?, updated_at = NOW()
         WHERE id = ?`,
         [...sanitizedValues, htn_id]
       );
       console.log(`Updated HTN assessment with ID: ${htn_id}`);
     } else {
-      // Insert new HTN assessment and set created_at and updated_at
       const [result] = await db.promise().query(
         `INSERT INTO htn 
-        (case_of_htn, blood_pressure, action_high_bp, referral_center, htn_date, created_at, updated_at) 
+        (case_of_htn, upper_bp, lower_bp, action_high_bp, referral_center, created_at, updated_at) 
         VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
         sanitizedValues
       );
       htn_id = result.insertId;
       console.log(`Inserted new HTN assessment with ID: ${htn_id}`);
 
-      // Log fm_id and htn_id before the update query
       console.log(
         `Updating master_data for fm_id: ${fm_id} with htn_id: ${htn_id}`
       );
 
-      // Update master_data table with the new htn_id
       const [updateResult] = await db
         .promise()
         .query(`UPDATE master_data SET htn_id = ? WHERE fm_id = ?`, [
@@ -788,70 +865,73 @@ app.post("/api/dm-assessment", async (req, res) => {
   const {
     fm_id,
     case_of_dm = null,
-    RBS = null,
-    blood_sugar = null,
+    fasting_blood_sugar = null,
+    post_prandial_blood_sugar = null,
+    random_blood_sugar = null,
     action_high_bs = null,
     referral_center = null,
-    DM_date = null,
   } = req.body;
 
-  console.log(`Received fm_id: ${fm_id}`); // Log the received fm_id
+  console.log(`Received fm_id: ${fm_id}`);
 
   try {
     await db.promise().beginTransaction();
 
-    // Convert empty strings to null for nullable fields
-    const sanitizedCaseOfDm = case_of_dm === "" ? null : case_of_dm;
-    const sanitizedRBS = RBS === "" ? null : RBS;
-    const sanitizedBloodSugar = blood_sugar === "" ? null : blood_sugar;
-    const sanitizedActionHighBs = action_high_bs === "" ? null : action_high_bs;
-    const sanitizedReferralCenter =
-      referral_center === "" ? null : referral_center;
-    const sanitizedDmDate = DM_date === "" ? null : DM_date;
-
     const sanitizedValues = [
-      sanitizedCaseOfDm,
-      sanitizedRBS,
-      sanitizedBloodSugar,
-      sanitizedActionHighBs,
-      sanitizedReferralCenter,
-      sanitizedDmDate,
+      case_of_dm === "" ? null : case_of_dm,
+      fasting_blood_sugar === "" ? null : fasting_blood_sugar,
+      post_prandial_blood_sugar === "" ? null : post_prandial_blood_sugar,
+      random_blood_sugar === "" ? null : random_blood_sugar,
+      action_high_bs === "" ? null : action_high_bs,
+      referral_center === "" ? null : referral_center,
     ];
+
+    const isHighBS =
+      (fasting_blood_sugar && parseFloat(fasting_blood_sugar) >= 126) ||
+      (post_prandial_blood_sugar &&
+        parseFloat(post_prandial_blood_sugar) >= 200) ||
+      (random_blood_sugar && parseFloat(random_blood_sugar) > 140);
+
+    if (!isHighBS && (action_high_bs || referral_center)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Action for high blood sugar should not be provided for normal blood sugar levels",
+      });
+    }
 
     let dm_id;
 
-    // Insert or update DM assessment
     const [masterData] = await db
       .promise()
       .query(`SELECT dm_id FROM master_data WHERE fm_id = ?`, [fm_id]);
 
     if (masterData.length > 0 && masterData[0].dm_id) {
-      // Update existing DM assessment and set updated_at
       dm_id = masterData[0].dm_id;
       await db.promise().query(
         `UPDATE DM SET
-        case_of_dm = ?, RBS = ?, blood_sugar = ?, action_high_bs = ?, referral_center = ?, DM_date = ?, updated_at = NOW()
+        case_of_dm = ?, fasting_blood_sugar = ?, post_prandial_blood_sugar = ?, 
+        random_blood_sugar = ?, action_high_bs = ?, referral_center = ?, 
+        updated_at = NOW()
         WHERE id = ?`,
         [...sanitizedValues, dm_id]
       );
       console.log(`Updated DM assessment with ID: ${dm_id}`);
     } else {
-      // Insert new DM assessment and set created_at and updated_at
       const [result] = await db.promise().query(
         `INSERT INTO DM 
-        (case_of_dm, RBS, blood_sugar, action_high_bs, referral_center, DM_date, created_at, updated_at) 
+        (case_of_dm, fasting_blood_sugar, post_prandial_blood_sugar, random_blood_sugar, 
+        action_high_bs, referral_center, created_at, updated_at) 
         VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         sanitizedValues
       );
       dm_id = result.insertId;
       console.log(`Inserted new DM assessment with ID: ${dm_id}`);
 
-      // Log fm_id and dm_id before the update query
       console.log(
         `Updating master_data for fm_id: ${fm_id} with dm_id: ${dm_id}`
       );
 
-      // Update master_data table with the new dm_id
       const [updateResult] = await db
         .promise()
         .query(`UPDATE master_data SET dm_id = ? WHERE fm_id = ?`, [
@@ -937,7 +1017,7 @@ app.post("/api/risk-assessment", async (req, res) => {
     },
     tobacco_use: {
       Never: 0,
-      "Used to consume in the past/ Sometimes now": 1,
+      "Used to consume in the past/Sometimes now": 1,
       Daily: 2,
     },
     alcohol_use: { No: 0, Yes: 1 },
@@ -2616,7 +2696,6 @@ app.get("/api/cervical-cancer-assessment/:fm_id", async (req, res) => {
   }
 });
 
-
 // CVD Assessment POST Endpoint
 app.post("/api/cvd-assessment", async (req, res) => {
   const {
@@ -2768,6 +2847,7 @@ app.get("/api/diseases/:fm_id", (req, res) => {
       res.status(500).json({ error: err.message });
     });
 });
+
 app.post("/api/assessment-and-action-taken", async (req, res) => {
   const {
     fm_id,
@@ -2874,8 +2954,17 @@ app.get("/api/assessment-and-action-taken/:fm_id", async (req, res) => {
     if (masterData.length > 0 && masterData[0].assesmentandaction_id) {
       // Fetch the data from assessment_and_action_taken table
       const [assessmentData] = await db.promise().query(
-        `SELECT id, major_ncd_detected, any_other_disease_detected, known_case_dm_htn, 
-        teleconsultation, prescription_given, other_advices, remarks, created_at, updated_at 
+        `SELECT 
+          id, 
+          major_ncd_detected AS majorNCDDetected, 
+          any_other_disease_detected AS anyOtherDiseaseDetected, 
+          known_case_dm_htn AS knownCaseDMWithHTN, 
+          teleconsultation, 
+          prescription_given AS prescriptionGiven, 
+          other_advices AS otherAdvices, 
+          remarks, 
+          created_at, 
+          updated_at 
         FROM assessment_and_action_taken WHERE id = ?`,
         [masterData[0].assesmentandaction_id]
       );
@@ -2931,6 +3020,235 @@ app.post("/api/final-submit", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
+app.get("/api/family-heads", async (req, res) => {
+  try {
+    const [familyMembers] = await db
+      .promise()
+      .query(`SELECT * FROM family_members WHERE head_id = 0`);
+    res.status(200).json({
+      success: true,
+      data: familyMembers,
+    });
+  } catch (error) {
+    console.error("Error fetching family members:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+app.get("/api/family-details/", async (req, res) => {
+  try {
+    const { head_id } = req.query;
+
+    const [familyMembers] = await db
+      .promise()
+      .query(
+        "SELECT id AS family_member_id FROM family_members WHERE head_id = ?",
+        [head_id]
+      );
+
+    if (familyMembers.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No family members found for this head_id.",
+      });
+    }
+
+    const familyDetails = await Promise.all(
+      familyMembers.map(async (member) => {
+        const [masterData] = await db.promise().query(
+          `SELECT 
+            md.*,
+            pi.*,
+            h.*,
+            htn.*,
+            dm.*,
+            ra.*,
+            oc.*,
+            bc.*,
+            cc.*,
+            cvd.*,
+            ps.*,
+            ckd.*,
+            copd.*,
+            cat.*,
+            hr.*,
+            lep.*,
+            el.*,
+            mh.*,
+            aa.*
+          FROM 
+            master_data md
+          LEFT JOIN personal_info pi ON md.personal_info_id = pi.id
+          LEFT JOIN health h ON md.health_id = h.id
+          LEFT JOIN htn ON md.htn_id = htn.id
+          LEFT JOIN dm ON md.dm_id = dm.id
+          LEFT JOIN risk_assessment ra ON md.risk_assessment_id = ra.id
+          LEFT JOIN oralcancer oc ON md.oral_cancer_id = oc.id
+          LEFT JOIN breastcancer bc ON md.breast_cancer_id = bc.id
+          LEFT JOIN cervicalcancer cc ON md.cervical_cancer_id = cc.id
+          LEFT JOIN CVD cvd ON md.CVD_id = cvd.id
+          LEFT JOIN poststroke ps ON md.post_stroke_id = ps.id
+          LEFT JOIN ckd_assessment ckd ON md.CKD_id = ckd.id
+          LEFT JOIN copdtb copd ON md.COPD_TB = copd.id
+          LEFT JOIN cataract cat ON md.cataract_id = cat.id
+          LEFT JOIN hearingissue hr ON md.hearing_id = hr.id
+          LEFT JOIN leprosy lep ON md.leprosy_id = lep.id
+          LEFT JOIN elderly el ON md.elderly_id = el.id
+          LEFT JOIN mentalhealth mh ON md.mental_health_id = mh.id
+          LEFT JOIN assessment_and_action_taken aa ON md.assesmentandaction_id = aa.id
+          WHERE md.fm_id = ?`,
+          [member.family_member_id]
+        );
+        return masterData;
+      })
+    );
+    res.status(200).json({
+      success: true,
+      data: familyDetails.flat(),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server error. Could not retrieve family details.",
+    });
+  }
+});
+
+app.get("/api/user-list/", async(req, res) => {
+  try {
+    const {user_type} = req.query;
+    if (user_type == "all"){
+      const [familyMembers] = await db
+      .promise()
+      .query(`SELECT * FROM Users`);
+    res.status(200).json({
+      success: true,
+      data: familyMembers,
+    });
+    }
+    else{
+    const [familyMembers] = await db
+      .promise()
+      .query(`SELECT * FROM Users WHERE role = ?`, [user_type]);
+    res.status(200).json({
+      success: true,
+      data: familyMembers,
+    });}
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+
+
+});
+
+
+app.post("/api/users", async (req, res) => {
+  const { name, email, phone_number, verification_id, verification_id_type, role, password, user_id } = req.body;
+  try {
+    // Update the family_members table's status field to 1 for the given fm_id
+    const [result] = await db
+      .promise()
+      .query(`INSERT INTO Users (name, email, phone, verification_id, verification_id_type, role, password, district_info_id)
+         VALUES (?,?,?,?,?,?,?,NULL)`, [name, email, phone_number, verification_id, verification_id_type, role, password]);
+
+      res.status(200).json({
+        success: true,
+        message: "Data submitted successfully",
+      });
+  } catch (error) {
+    console.error("Error updating family member status:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.patch("/api/users/:user_id", async (req, res) => {
+  const { user_id } = req.params; // Get user_id from URL parameter
+  const { name, email, phone_number, verification_id, verification_id_type, role, password } = req.body;
+  
+  try {
+    // Create an array of fields to update and an array of corresponding values
+    let updates = [];
+    let values = [];
+
+    // Add only fields that are provided (non-null) in the request body
+    if (name) {
+      updates.push("name = ?");
+      values.push(name);
+    }
+    if (email) {
+      updates.push("email = ?");
+      values.push(email);
+    }
+    if (phone_number) {
+      updates.push("phone = ?");
+      values.push(phone_number);
+    }
+    if (verification_id) {
+      updates.push("verification_id = ?");
+      values.push(verification_id);
+    }
+    if (verification_id_type) {
+      updates.push("verification_id_type = ?");
+      values.push(verification_id_type);
+    }
+    if (role) {
+      updates.push("role = ?");
+      values.push(role);
+    }
+    if (password) {
+      updates.push("password = ?");
+      values.push(password);
+    }
+
+    // If no fields are provided to update, return an error
+    if (updates.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No fields to update",
+      });
+    }
+
+    // Add the user_id to the values array for the WHERE clause
+    values.push(user_id);
+
+    // Construct the SQL query dynamically based on which fields need to be updated
+    const sqlQuery = `UPDATE Users SET ${updates.join(", ")} WHERE user_id = ?`;
+
+    // Execute the query
+    const [result] = await db.promise().query(sqlQuery, values);
+
+    // Check if any rows were affected
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Return success response
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+
 
 // Start server
 const PORT = process.env.PORT || 5000;

@@ -4,11 +4,11 @@ import axios from "axios";
 const DMAssessment = ({ currentFmId }) => {
   const [formData, setFormData] = useState({
     case_of_dm: "",
-    RBS: "",
-    blood_sugar: "",
+    fasting_blood_sugar: "",
+    post_prandial_blood_sugar: "",
+    random_blood_sugar: "",
     action_high_bs: "",
     referral_center: "",
-    DM_date: "",
   });
 
   const [showHighBSOptions, setShowHighBSOptions] = useState(false);
@@ -22,24 +22,8 @@ const DMAssessment = ({ currentFmId }) => {
         );
         if (response.data.success) {
           const data = response.data.data;
-
-          // Format the date to "yyyy-MM-dd"
-          if (data.DM_date) {
-            data.DM_date = new Date(data.DM_date).toISOString().split("T")[0];
-          }
-
-          // Set the formData with the fetched data
           setFormData(data);
-
-          // Check if blood sugar level is high and set the state accordingly
-          const bloodSugar = parseFloat(data.blood_sugar);
-          if (bloodSugar > 150) {
-            // Assuming 150 as the threshold
-            setShowHighBSOptions(true);
-            if (data.action_high_bs === "referral") {
-              setShowReferralField(true);
-            }
-          }
+          checkHighBloodSugar(data);
         }
       } catch (error) {
         console.error("Error fetching DM assessment:", error);
@@ -47,33 +31,42 @@ const DMAssessment = ({ currentFmId }) => {
     };
 
     if (currentFmId) {
-      fetchDmData(); // Ensure the fetch is only attempted if currentFmId is available
+      fetchDmData();
     }
   }, [currentFmId]);
 
+  const checkHighBloodSugar = (data) => {
+    const fasting = parseFloat(data.fasting_blood_sugar);
+    const postPrandial = parseFloat(data.post_prandial_blood_sugar);
+    const random = parseFloat(data.random_blood_sugar);
+
+    const isHighBS =
+      (!isNaN(fasting) && fasting >= 126) ||
+      (!isNaN(postPrandial) && postPrandial >= 200) ||
+      (!isNaN(random) && random > 140);
+
+    setShowHighBSOptions(isHighBS);
+    setShowReferralField(data.action_high_bs === "referral");
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
+    const updatedFormData = {
       ...formData,
       [name]: value,
-    });
+    };
+    setFormData(updatedFormData);
 
-    // Handle blood sugar field change specifically
-    if (name === "blood_sugar") {
-      const bloodSugar = parseFloat(value);
-      if (bloodSugar > 150) {
-        setShowHighBSOptions(true);
-      } else {
-        setShowHighBSOptions(false);
-        setShowReferralField(false);
-      }
+    if (
+      name === "fasting_blood_sugar" ||
+      name === "post_prandial_blood_sugar" ||
+      name === "random_blood_sugar"
+    ) {
+      checkHighBloodSugar(updatedFormData);
     }
 
-    // Handle action_high_bs field change
-    if (name === "action_high_bs" && value === "referral") {
-      setShowReferralField(true);
-    } else if (name === "action_high_bs") {
-      setShowReferralField(false);
+    if (name === "action_high_bs") {
+      setShowReferralField(value === "referral");
     }
   };
 
@@ -148,35 +141,36 @@ const DMAssessment = ({ currentFmId }) => {
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>Select Blood Sugar Type *</label>
-        <select
-          id="RBS"
-          name="RBS"
-          value={formData.RBS || ""}
+        <label style={styles.label}>Fasting Blood Sugar (mg/dL)</label>
+        <input
+          type="number"
+          id="fasting_blood_sugar"
+          name="fasting_blood_sugar"
+          value={formData.fasting_blood_sugar || ""}
           onChange={handleInputChange}
           style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="fasting">Fasting</option>
-          <option value="post prandial">Post Prandial</option>
-          <option value="random">Random</option>
-        </select>
+        />
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>
-          {formData.RBS
-            ? `${
-                formData.RBS.charAt(0).toUpperCase() + formData.RBS.slice(1)
-              } Blood Sugar (mg/dL)`
-            : "Blood Sugar (mg/dL)"}
-          *
-        </label>
+        <label style={styles.label}>Post Prandial Blood Sugar (mg/dL)</label>
         <input
-          type="text"
-          id="blood_sugar"
-          name="blood_sugar"
-          value={formData.blood_sugar || ""}
+          type="number"
+          id="post_prandial_blood_sugar"
+          name="post_prandial_blood_sugar"
+          value={formData.post_prandial_blood_sugar || ""}
+          onChange={handleInputChange}
+          style={styles.input}
+        />
+      </div>
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Random Blood Sugar (mg/dL)</label>
+        <input
+          type="number"
+          id="random_blood_sugar"
+          name="random_blood_sugar"
+          value={formData.random_blood_sugar || ""}
           onChange={handleInputChange}
           style={styles.input}
         />
@@ -213,19 +207,6 @@ const DMAssessment = ({ currentFmId }) => {
         </div>
       )}
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          DM Confirmed at PHC/CHC/DH and Date *
-        </label>
-        <input
-          type="date"
-          id="DM_date"
-          name="DM_date"
-          value={formData.DM_date || ""}
-          onChange={handleInputChange}
-          style={styles.input}
-        />
-      </div>
       <button type="button" onClick={handleSave} style={styles.button}>
         Save Draft
       </button>
