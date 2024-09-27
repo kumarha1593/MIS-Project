@@ -5,14 +5,14 @@ import logo from "../../assests/logo.png";
 import { IoArrowBack } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 
-const AppLayout = ({ children, hideFamily = false }) => {
+const AppLayout = ({ children, hideFamily = false, showBackBtn = false }) => {
 
   const navigate = useNavigate();
 
   return (
     <div className="app-layout">
       <header className="top-header">
-        <IoArrowBack className='back-btn' onClick={() => navigate(-1)} />
+        <IoArrowBack className={`back-btn ${showBackBtn ? '' : 'hide'}`} onClick={() => navigate(-1)} />
         <img src={logo} alt="logo" className="logo" />
         <UserMenu hideFamily={hideFamily} />
       </header>
