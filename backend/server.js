@@ -263,14 +263,23 @@ app.post("/api/family-members-head", async (req, res) => {
 app.get("/api/family-members/:user_id", async (req, res) => {
   const user_id = req.params.user_id;
 
+  // Get the current date in YYYY-MM-DD format
+  const currentDate = new Date().toISOString().split("T")[0];
+
+  // console.log("Current Date:", currentDate); // Log the current date
+  // console.log("User ID:", user_id); // Log the user ID
+
   try {
     const [rows] = await db.promise().query(
       `SELECT fm.id, fm.name, fm.Aadhar, fm.status,
        (SELECT COUNT(*) FROM family_members WHERE head_id = fm.id) as familyMemberCount
        FROM family_members fm
-       WHERE fm.fc_id = ? AND fm.head_id = 0`,
-      [user_id]
+       WHERE fm.fc_id = ? AND fm.head_id = 0 AND fm.date = ?`,
+      [user_id, currentDate]
     );
+
+    // console.log("Query Result:", rows); // Log the results of the query
+
     res.status(200).json(rows);
   } catch (error) {
     console.error("Error fetching family members:", error);
@@ -3119,26 +3128,24 @@ app.get("/api/family-details/", async (req, res) => {
   }
 });
 
-app.get("/api/user-list/", async(req, res) => {
+app.get("/api/user-list/", async (req, res) => {
   try {
-    const {user_type} = req.query;
-    if (user_type == "all"){
+    const { user_type } = req.query;
+    if (user_type == "all") {
+      const [familyMembers] = await db.promise().query(`SELECT * FROM Users`);
+      res.status(200).json({
+        success: true,
+        data: familyMembers,
+      });
+    } else {
       const [familyMembers] = await db
-      .promise()
-      .query(`SELECT * FROM Users`);
-    res.status(200).json({
-      success: true,
-      data: familyMembers,
-    });
+        .promise()
+        .query(`SELECT * FROM Users WHERE role = ?`, [user_type]);
+      res.status(200).json({
+        success: true,
+        data: familyMembers,
+      });
     }
-    else{
-    const [familyMembers] = await db
-      .promise()
-      .query(`SELECT * FROM Users WHERE role = ?`, [user_type]);
-    res.status(200).json({
-      success: true,
-      data: familyMembers,
-    });}
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({
@@ -3146,30 +3153,44 @@ app.get("/api/user-list/", async(req, res) => {
       message: "Server error",
     });
   }
-
-
 });
 
-
 app.post("/api/users", async (req, res) => {
-  const { name, email, phone_number, verification_id, verification_id_type, role, password, user_id } = req.body;
+  const {
+    name,
+    email,
+    phone_number,
+    verification_id,
+    verification_id_type,
+    role,
+    password,
+    user_id,
+  } = req.body;
   try {
     // Update the family_members table's status field to 1 for the given fm_id
-    const [result] = await db
-      .promise()
-      .query(`INSERT INTO Users (name, email, phone, verification_id, verification_id_type, role, password, district_info_id)
-         VALUES (?,?,?,?,?,?,?,NULL)`, [name, email, phone_number, verification_id, verification_id_type, role, password]);
+    const [result] = await db.promise().query(
+      `INSERT INTO Users (name, email, phone, verification_id, verification_id_type, role, password, district_info_id)
+         VALUES (?,?,?,?,?,?,?,NULL)`,
+      [
+        name,
+        email,
+        phone_number,
+        verification_id,
+        verification_id_type,
+        role,
+        password,
+      ]
+    );
 
-      res.status(200).json({
-        success: true,
-        message: "Data submitted successfully",
-      });
+    res.status(200).json({
+      success: true,
+      message: "Data submitted successfully",
+    });
   } catch (error) {
     console.error("Error updating family member status:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
 
 // Start server
 const PORT = process.env.PORT || 5000;
