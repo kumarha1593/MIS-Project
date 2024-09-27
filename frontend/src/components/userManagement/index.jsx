@@ -5,8 +5,7 @@ import AssistantStateCoordinator from './AssistantStateCoordinator';
 import StateCoordinator from './StateCoordinator';
 import ZonalManager from './ZonalManager';
 import Filters from './Filters';
-import { getRoleLabel, ROLE_TYPE } from '../../utils/helper';
-import defaultInstance from '../../axiosHelper';
+import { getUserDataByRole, ROLE_TYPE } from '../../utils/helper';
 
 const Users = () => {
 
@@ -19,14 +18,9 @@ const Users = () => {
 
     useEffect(() => {
         const fetchUsers = async () => {
-            try {
-                const response = await defaultInstance.get('user-list/', { params: { user_type: getRoleLabel(roleType) } });
-                if (response?.data?.success) {
-                    setAllData(response?.data?.data || []);
-                }
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-            }
+            getUserDataByRole(roleType, (data) => {
+                setAllData(data);
+            })
         };
         fetchUsers();
     }, []);
@@ -34,13 +28,13 @@ const Users = () => {
     const renderMainView = () => {
         switch (roleType) {
             case ROLE_TYPE.SUPER_VISOR:
-                return <SuperVisor />;
+                return <SuperVisor data={allData} />;
             case ROLE_TYPE.ASSISTANT_STATE_COORDINATOR:
-                return <AssistantStateCoordinator />;
+                return <AssistantStateCoordinator data={allData} />;
             case ROLE_TYPE.STATE_COORDINATOR:
-                return <StateCoordinator />;
+                return <StateCoordinator data={allData} />;
             case ROLE_TYPE.ZONAL_MANAGER:
-                return <ZonalManager />;
+                return <ZonalManager data={allData} />;
             default:
                 return <p>No users found for this role</p>;
         }

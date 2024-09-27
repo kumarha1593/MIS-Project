@@ -1,4 +1,6 @@
 import * as Yup from 'yup';
+import defaultInstance from '../axiosHelper';
+import { API_ENDPOINTS } from './apiEndPoints';
 
 export const ROLE_TYPE = {
     STATE_COORDINATOR: 'SC',
@@ -33,8 +35,9 @@ export const validateAdminForm = Yup.object().shape({
 });
 
 export const getRoleLabel = (role) => roleOptions.find(({ value }) => value === role)?.label || '';
+export const getRoleValue = (role) => roleOptions.find(({ label }) => label === role)?.value || '';
 
-export const setParams = (role) => {
+export const setUpperLevelParams = (role) => {
     const roleMapping = {
         [ROLE_TYPE.ASSISTANT_STATE_COORDINATOR]: 'State Coordinator',
         [ROLE_TYPE.ZONAL_MANAGER]: 'Assistant State Coordinator',
@@ -43,3 +46,30 @@ export const setParams = (role) => {
     };
     return roleMapping[role] || '';
 };
+
+export const setLowerLevelParams = (role) => {
+    const roleMapping = {
+        [ROLE_TYPE.STATE_COORDINATOR]: 'Assistant State Coordinator',
+        [ROLE_TYPE.ASSISTANT_STATE_COORDINATOR]: 'Zonal Manager',
+        [ROLE_TYPE.ZONAL_MANAGER]: 'Supervisor',
+        [ROLE_TYPE.SUPER_VISOR]: 'Field Coordinator',
+    };
+    return roleMapping[role] || '';
+};
+
+export const getUserDataByRole = async (roleType, successCallBack) => {
+    try {
+        const response = await defaultInstance.get(API_ENDPOINTS.USER_LIST, { params: { user_type: setLowerLevelParams(roleType) } });
+        if (response?.data?.success) {
+            const list = response?.data?.data?.length > 0 ? response?.data?.data : []
+            list?.map((item) => {
+                item.is_open = false;
+                item.is_checked = false;
+                return item;
+            });
+            successCallBack(list);
+        }
+    } catch (error) {
+        console.error("Error fetching user data:", error);
+    }
+}

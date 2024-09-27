@@ -1,26 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
 import RoleItems from './RoleItems';
 import FamilyMembers from './FamilyMembers'
+import useManageData from './useManageData';
 
-const FamilyHead = ({ setAddRemarks = () => { } }) => {
-    const [data, setData] = useState(Array(10).fill({ name: 'Family Head', is_open: false }));
+const FamilyHead = ({ setAddRemarks = () => { }, data }) => {
 
-    const toggleFHVisibility = (fhIdx) => {
-        setData((prev) => {
-            const newVisibility = prev.map((item) => ({ ...item, is_open: false }));
-            newVisibility[fhIdx].is_open = !prev[fhIdx].is_open;
-            return newVisibility;
-        });
-    };
+    const { allData, nextRoleData, toggleVisibility } = useManageData(data, null, false, true);
 
     return (
         <div className='common-left-alignment'>
-            {data.map((fh, fhIdx) => (
+            {allData?.map((fh, fhIdx) => (
                 <div className="common-container" key={fhIdx}>
                     <RoleItems
-                        onClick={() => toggleFHVisibility(fhIdx)}
-                        roleItems={{ name: `${fh?.name} ${fhIdx + 1}` }}
-                        showAction
+                        onClick={() => toggleVisibility(fhIdx, fh)}
+                        roleItems={fh}
+                        // showAction
                         onAction={(type) => {
                             if (type === 'REMARKS') {
                                 setAddRemarks(true)
@@ -31,9 +25,11 @@ const FamilyHead = ({ setAddRemarks = () => { } }) => {
                             }
                         }}
                     />
-                    {data[fhIdx]?.is_open && (
+                    {allData[fhIdx]?.is_open && (
                         <div style={{ paddingLeft: '30px', paddingTop: '10px' }}>
-                            <FamilyMembers />
+                            <FamilyMembers
+                                data={nextRoleData}
+                            />
                         </div>
                     )}
                 </div>

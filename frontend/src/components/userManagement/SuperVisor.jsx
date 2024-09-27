@@ -1,10 +1,13 @@
 import React, { useState } from 'react'
 import Modal from "react-modal";
 import FieldCoordinator from './FieldCoordinator';
+import useManageData from './useManageData';
 
-const SuperVisor = () => {
+const SuperVisor = ({ data }) => {
 
-    const [addRemarks, setAddRemarks] = useState(false)
+    const [addRemarks, setAddRemarks] = useState(false);
+
+    const { allData, nextRoleData, toggleVisibility } = useManageData(data, null, true);
 
     const customStyles = {
         content: {
@@ -19,7 +22,12 @@ const SuperVisor = () => {
 
     return (
         <div className=''>
-            <FieldCoordinator setAddRemarks={setAddRemarks} />
+            <FieldCoordinator
+                setAddRemarks={setAddRemarks}
+                data={allData}
+                toggleVisibility={toggleVisibility}
+                nextRoleData={nextRoleData}
+            />
             <Modal
                 isOpen={addRemarks}
                 onRequestClose={() => setAddRemarks(false)}
