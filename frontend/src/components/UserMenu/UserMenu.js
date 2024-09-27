@@ -3,7 +3,7 @@ import { FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import "./UserMenu.css";
 
-const UserMenu = () => {
+const UserMenu = ({ hideFamily = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -36,8 +36,8 @@ const UserMenu = () => {
       <FaUser onClick={toggleMenu} className="user-icon" />
       {isOpen && (
         <div className="user-menu-dropdown">
-          <button onClick={handleBack}>Family Members</button>
-          <button onClick={handleHome}>Home</button>
+          {!hideFamily && <button onClick={handleBack}>Family Members</button>}
+          {!hideFamily && <button onClick={handleHome}>Home</button>}
           <button onClick={handleLogout}>Logout</button>
         </div>
       )}

@@ -7,7 +7,6 @@ import ButtonLoader from '../global/ButtonLoader';
 import defaultInstance from '../../axiosHelper';
 import { useLocation, useNavigate } from "react-router-dom";
 import { API_ENDPOINTS } from '../../utils/apiEndPoints';
-import { IoArrowBack } from "react-icons/io5";
 
 const AdminFormPage = () => {
   const navigate = useNavigate();
@@ -57,13 +56,14 @@ const AdminFormPage = () => {
       delete apiPayload.last_name;
 
       let apiUrl = API_ENDPOINTS.USERS;
+      let response = null;
 
       if (isEdit) {
         apiUrl = `${API_ENDPOINTS.USERS}${editData?.id}/`;
       }
 
       setIsLoading(true);
-      const response = await defaultInstance.post(apiUrl, apiPayload);
+      response = isEdit ? await defaultInstance.patch(apiUrl, apiPayload) : await defaultInstance.post(apiUrl, apiPayload);
       setIsLoading(false);
       if (response?.data?.success) {
         alert(isEdit ? 'User updated successfully!' : 'User created successfully!')
@@ -128,7 +128,6 @@ const AdminFormPage = () => {
   return (
     <div className={styles.adminFormContainer}>
       <div className='add-user-header'>
-        <IoArrowBack className='back-btn' onClick={() => navigate('/admin-home')} />
         <p>{isEdit ? "Edit User" : "Add New User"}</p>
         <div />
       </div>

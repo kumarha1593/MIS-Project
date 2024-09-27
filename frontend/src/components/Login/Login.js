@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./Login.css";
+import defaultInstance from "../../axiosHelper";
+import { API_ENDPOINTS } from "../../utils/apiEndPoints";
+import { ROLE_TYPE } from "../../utils/helper";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -11,37 +13,40 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (evt) => {
+    evt.preventDefault();
+    const apiPayload = { email, password }
     try {
-      console.log("Sending login request with:", { email, password });
-      const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}api/login`,
-        {
-          email,
-          password,
-        }
-      );
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("user_id", response.data.user_id);
-        if (response.data.hasDistrictInfo) {
-          navigate("/FieldDashboard");
-        } else {
-          navigate("/home");
-        }
+      const response = await defaultInstance.post(API_ENDPOINTS.LOGIN, apiPayload);
+      if (response?.data?.token) {
+        const userData = response?.data?.user_info;
+        localStorage.setItem("token", response?.data?.token);
+        localStorage.setItem("user_id", response?.data?.user_id);
+        const roleNavigationMap = {
+          'Field Coordinator': response?.data?.hasDistrictInfo ? "/FieldDashboard" : "/home",
+          'State Coordinator': `users?role_type=${ROLE_TYPE.STATE_COORDINATOR}`,
+          'Assistant State Coordinator': `users?role_type=${ROLE_TYPE.ASSISTANT_STATE_COORDINATOR}`,
+          'Zonal Manager': `users?role_type=${ROLE_TYPE.ZONAL_MANAGER}`,
+          'Supervisor': `users?role_type=${ROLE_TYPE.SUPER_VISOR}`,
+          'Admin': `admin-home`,
+        };
+
+        const defaultPath = "/home";
+        const rolePath = roleNavigationMap[userData?.role] || defaultPath;
+
+        navigate(rolePath);
+
       } else {
         setError("Invalid email or password");
       }
-    } catch (err) {
-      console.error("Login error:", err.response || err);
+    } catch (error) {
       setError("Invalid email or password");
     }
-  };
+  }
 
   return (
     <div className="login-container">
-      <form className="login-form" onSubmit={handleLogin}>
+      <form className="login-form" onSubmit={onSubmit}>
         <h2>Sign In</h2>
         {error && <p className="error-message">{error}</p>}
         <div className="form-group">

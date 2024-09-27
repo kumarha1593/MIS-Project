@@ -1,16 +1,15 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./AdminLogin.css"; // We'll create this file next
+import defaultInstance from "../../axiosHelper";
+import { API_ENDPOINTS } from "../../utils/apiEndPoints";
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    username: "",
+    email: "",
     password: "",
   });
   const navigate = useNavigate();
@@ -23,40 +22,40 @@ const AdminLogin = () => {
     }));
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (evt) => {
+    evt.preventDefault();
+    if (formData?.email !== 'admin@gmail.com') {
+      setError("Invalid email or password");
+    }
+    const apiPayload = { email: formData?.email, password: formData?.password }
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}api/admin/login`,
-        formData
-      );
-      navigate("/admin-home");
-      if (response.data.success) {
-        alert("Login successful");
-        // Store token or proceed with navigation
-        localStorage.setItem("token", response.data.token);
+      const response = await defaultInstance.post(API_ENDPOINTS.LOGIN, apiPayload);
+      if (response?.data?.token) {
+        localStorage.setItem("token", response?.data?.token);
+        localStorage.setItem("user_id", response?.data?.user_id);
+        navigate('/admin-home');
       } else {
         setError("Invalid email or password");
       }
-    } catch (err) {
-      console.error("Admin login error:", err.response || err);
+    } catch (error) {
       setError("Invalid email or password");
     }
-  };
+  }
 
   return (
     <div className="admin-login-wrapper">
       <div className="admin-login-container">
-        <form className="admin-login-form" onSubmit={handleLogin}>
+        <form className="admin-login-form" onSubmit={onSubmit}>
           <h2>Admin Sign In</h2>
           {error && <p className="error-message">{error}</p>}
           <div className="form-group">
             <input
-              type="text"
-              name="username"
-              placeholder="Username"
-              value={formData.username}
+              type="email"
+              name="email"
+              value={formData?.email}
               onChange={handleInputChange}
+              placeholder="Enter Your Email"
+              required
             />
           </div>
           <div className="form-group">
@@ -77,15 +76,10 @@ const AdminLogin = () => {
               </span>
             </div>
           </div>
-          {/* <div className="form-group">
-            <a href="/admin-forgot-password" className="forgot-password-link">
-              Forget Password?
-            </a>
-          </div> */}
           <button
             type="submit"
             className="admin-login-button"
-            onClick={handleLogin}
+            onClick={onSubmit}
           >
             Sign In
           </button>
