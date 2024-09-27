@@ -1,45 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import RoleItems from './RoleItems';
 import FamilyMembers from './FamilyMembers'
-import defaultInstance from '../../axiosHelper';
-import { API_ENDPOINTS } from '../../utils/apiEndPoints';
+import useManageData from './useManageData';
 
 const FamilyHead = ({ setAddRemarks = () => { }, data }) => {
 
-    const [allData, setAllData] = useState([]);
-    const [nextRoleData, setNextRoleData] = useState([]);
-
-    useEffect(() => {
-        if (data?.length > 0) {
-            setAllData(data)
-        }
-    }, [JSON.stringify(data)])
-
-    const toggleVisibility = (idx, currentItem) => {
-        setAllData((prev) => {
-            const newVisibility = prev.map((item) => ({ ...item, is_open: false }));
-            newVisibility[idx].is_open = !prev[idx].is_open;
-            return newVisibility;
-        });
-        fetchData(currentItem)
-    };
-
-    const fetchData = async (currentItem) => {
-        try {
-            const response = await defaultInstance.get(API_ENDPOINTS.FAMILY_DETAILS, { params: { head_id: currentItem?.id } });
-            if (response?.data?.success) {
-                const list = response?.data?.data?.length > 0 ? response?.data?.data : []
-                list?.map((item) => {
-                    item.is_open = false;
-                    item.is_checked = false;
-                    return item;
-                });
-                setNextRoleData(list);
-            }
-        } catch (error) {
-            console.error("Error fetching user data:", error);
-        }
-    }
+    const { allData, nextRoleData, toggleVisibility } = useManageData(data, null, false, true);
 
     return (
         <div className='common-left-alignment'>
