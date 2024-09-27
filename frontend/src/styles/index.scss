@@ -269,4 +269,9 @@
         cursor: pointer;
         margin-left: 10px;
     }
+
+    .hide {
+        opacity: 0;
+        pointer-events: none;
+    }
 }

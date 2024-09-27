@@ -26,27 +26,36 @@ const RouteStack = () => {
 
             {/* Private Routes */}
             <Route element={<PrivateRoutes />}>
+                {/* Super Admin Routes */}
                 <Route
                     path="/admin-home"
-                    element={<AppLayout hideFamily>
-                        <AdminHomePage />
-                    </AppLayout>
+                    element={
+                        <AppLayout hideFamily>
+                            <AdminHomePage />
+                        </AppLayout>
                     }
                 />
-                <Route
-                    path="/users"
-                    element={<AppLayout hideFamily>
-                        <Users />
-                    </AppLayout>
-                    }
-                />
+
                 <Route
                     path="/admin-form"
-                    element={<AppLayout hideFamily>
-                        <AdminFormPage />
-                    </AppLayout>
+                    element={
+                        <AppLayout showBackBtn hideFamily>
+                            <AdminFormPage />
+                        </AppLayout>
                     }
                 />
+
+                {/* Admin Routes */}
+                <Route
+                    path="/users"
+                    element={
+                        <AppLayout hideFamily>
+                            <Users />
+                        </AppLayout>
+                    }
+                />
+
+                {/* User Routes */}
                 <Route
                     path="/home"
                     element={
@@ -55,6 +64,7 @@ const RouteStack = () => {
                         </AppLayout>
                     }
                 />
+
                 <Route
                     path="/FieldDashboard"
                     element={
@@ -63,6 +73,7 @@ const RouteStack = () => {
                         </AppLayout>
                     }
                 />
+
                 <Route
                     path="/family-details/:headId"
                     element={
@@ -71,6 +82,7 @@ const RouteStack = () => {
                         </AppLayout>
                     }
                 />
+
                 <Route
                     path="/FormPage"
                     element={
@@ -79,6 +91,7 @@ const RouteStack = () => {
                         </AppLayout>
                     }
                 />
+
                 <Route
                     path="/Review"
                     element={
@@ -88,9 +101,10 @@ const RouteStack = () => {
                     }
                 />
             </Route>
+
+            {/* 404 Route */}
             <Route path="*" element={<PageNotFound />} />
         </Routes>
-    )
-}
-
+    );
+};
 export default RouteStack

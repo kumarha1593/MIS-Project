@@ -10,6 +10,12 @@ export const ROLE_TYPE = {
     FIELD_COORDINATOR: 'FC'
 };
 
+export const LOGIN_USER_TYPE = {
+    NORMAL_USER: 'user',
+    ADMIN: 'admin',
+    SUPER_ADMIN: 'super-admin',
+}
+
 export const governmentIdOptions = [
     { value: 'Aadhar', label: 'Aadhar Card' },
     { value: 'PAN', label: 'PAN Card' },
