@@ -45,12 +45,14 @@ app.post("/api/login", (req, res) => {
 
     if (results.length > 0) {
       const user = results[0];
-      console.log("Login successful");
+      delete user.password;
+      console.log("Login successful", user);
       return res.status(200).json({
         message: "Login successful",
         token: "fake-jwt-token",
         user_id: user.id,
         hasDistrictInfo: user.district_info_id !== null,
+        user_info: user,
       });
     } else {
       console.log("Invalid email or password");
@@ -87,11 +89,14 @@ app.post("/api/admin/login", async (req, res) => {
       });
     }
 
+    const adminUserData = adminUser[0]
+    delete adminUserData.password;
     // Instead of generating JWT, simply return a success message
     res.status(200).json({
       success: true,
       message: "Login successful",
-      userId: adminUser[0].id, // You can return user data as needed
+      userId: adminUserData?.id, // You can return user data as needed
+      user_info: adminUserData,
     });
   } catch (error) {
     console.error("Error during admin login:", error);
@@ -3119,26 +3124,27 @@ app.get("/api/family-details/", async (req, res) => {
   }
 });
 
-app.get("/api/user-list/", async(req, res) => {
+app.get("/api/user-list/", async (req, res) => {
   try {
-    const {user_type} = req.query;
-    if (user_type == "all"){
+    const { user_type } = req.query;
+    if (user_type == "all") {
       const [familyMembers] = await db
-      .promise()
-      .query(`SELECT * FROM Users`);
-    res.status(200).json({
-      success: true,
-      data: familyMembers,
-    });
+        .promise()
+        .query(`SELECT * FROM Users`);
+      res.status(200).json({
+        success: true,
+        data: familyMembers,
+      });
     }
-    else{
-    const [familyMembers] = await db
-      .promise()
-      .query(`SELECT * FROM Users WHERE role = ?`, [user_type]);
-    res.status(200).json({
-      success: true,
-      data: familyMembers,
-    });}
+    else {
+      const [familyMembers] = await db
+        .promise()
+        .query(`SELECT * FROM Users WHERE role = ?`, [user_type]);
+      res.status(200).json({
+        success: true,
+        data: familyMembers,
+      });
+    }
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({
@@ -3160,10 +3166,10 @@ app.post("/api/users", async (req, res) => {
       .query(`INSERT INTO Users (name, email, phone, verification_id, verification_id_type, role, password, district_info_id)
          VALUES (?,?,?,?,?,?,?,NULL)`, [name, email, phone_number, verification_id, verification_id_type, role, password]);
 
-      res.status(200).json({
-        success: true,
-        message: "Data submitted successfully",
-      });
+    res.status(200).json({
+      success: true,
+      message: "Data submitted successfully",
+    });
   } catch (error) {
     console.error("Error updating family member status:", error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -3173,7 +3179,7 @@ app.post("/api/users", async (req, res) => {
 app.patch("/api/users/:user_id", async (req, res) => {
   const { user_id } = req.params; // Get user_id from URL parameter
   const { name, email, phone_number, verification_id, verification_id_type, role, password } = req.body;
-  
+
   try {
     // Create an array of fields to update and an array of corresponding values
     let updates = [];
