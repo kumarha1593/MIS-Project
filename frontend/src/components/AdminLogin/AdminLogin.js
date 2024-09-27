@@ -24,23 +24,26 @@ const AdminLogin = () => {
 
   const onSubmit = async (evt) => {
     evt.preventDefault();
-    if (formData?.email !== 'admin@gmail.com') {
+    if (formData?.email !== "admin@gmail.com") {
       setError("Invalid email or password");
     }
-    const apiPayload = { email: formData?.email, password: formData?.password }
+    const apiPayload = { email: formData?.email, password: formData?.password };
     try {
-      const response = await defaultInstance.post(API_ENDPOINTS.LOGIN, apiPayload);
+      const response = await defaultInstance.post(
+        API_ENDPOINTS.LOGIN,
+        apiPayload
+      );
       if (response?.data?.token) {
         localStorage.setItem("token", response?.data?.token);
         localStorage.setItem("user_id", response?.data?.user_id);
-        navigate('/admin-home');
+        navigate("/admin-home");
       } else {
         setError("Invalid email or password");
       }
     } catch (error) {
       setError("Invalid email or password");
     }
-  }
+  };
 
   return (
     <div className="admin-login-wrapper">
