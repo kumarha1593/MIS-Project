@@ -3099,7 +3099,7 @@ app.get("/api/family-details/", async (req, res) => {
           LEFT JOIN personal_info pi ON md.personal_info_id = pi.id
           LEFT JOIN health h ON md.health_id = h.id
           LEFT JOIN htn ON md.htn_id = htn.id
-          LEFT JOIN dm ON md.dm_id = dm.id
+          LEFT JOIN DM dm ON md.dm_id = dm.id
           LEFT JOIN risk_assessment ra ON md.risk_assessment_id = ra.id
           LEFT JOIN oralcancer oc ON md.oral_cancer_id = oc.id
           LEFT JOIN breastcancer bc ON md.breast_cancer_id = bc.id
@@ -3256,7 +3256,7 @@ app.patch("/api/users/:user_id", async (req, res) => {
     values.push(user_id);
 
     // Construct the SQL query dynamically based on which fields need to be updated
-    const sqlQuery = `UPDATE Users SET ${updates.join(", ")} WHERE user_id = ?`;
+    const sqlQuery = `UPDATE Users SET ${updates.join(", ")} WHERE id = ?`;
 
     // Execute the query
     const [result] = await db.promise().query(sqlQuery, values);
