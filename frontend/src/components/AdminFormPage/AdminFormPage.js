@@ -57,13 +57,14 @@ const AdminFormPage = () => {
       delete apiPayload.last_name;
 
       let apiUrl = API_ENDPOINTS.USERS;
+      let response = null;
 
       if (isEdit) {
         apiUrl = `${API_ENDPOINTS.USERS}${editData?.id}/`;
       }
 
       setIsLoading(true);
-      const response = await defaultInstance.post(apiUrl, apiPayload);
+      response = isEdit ? await defaultInstance.patch(apiUrl, apiPayload) : await defaultInstance.post(apiUrl, apiPayload);
       setIsLoading(false);
       if (response?.data?.success) {
         alert(isEdit ? 'User updated successfully!' : 'User created successfully!')
