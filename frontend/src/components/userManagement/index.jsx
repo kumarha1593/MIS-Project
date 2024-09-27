@@ -42,7 +42,7 @@ const Users = () => {
 
     return (
         <div className="role-container">
-            <Filters />
+            <Filters roleType={roleType} />
             {renderMainView()}
         </div>
     )

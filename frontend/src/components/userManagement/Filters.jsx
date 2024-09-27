@@ -2,8 +2,9 @@ import React, { useState } from 'react'
 import DatePicker from 'react-datepicker';
 import { MdOutlineClose } from "react-icons/md";
 import { FaFilter } from 'react-icons/fa';
+import { getRoleLabel, ROLE_TYPE } from '../../utils/helper';
 
-const Filters = () => {
+const Filters = ({ roleType }) => {
 
     const filterDefaults = {
         from_date: null,
@@ -19,13 +20,12 @@ const Filters = () => {
     const updateValue = (key, value) => setFilterData((prevState) => ({ ...prevState, [key]: value }));
 
     const applyFilters = () => {
-        console.log('applyFilters', filterData)
         setShowFilterDropdown((prevState) => !prevState)
     }
 
     return (
         <div className="filters-container">
-            <span>Welcome, Users Management</span>
+            <span>Welcome Back, {getRoleLabel(roleType || ROLE_TYPE.STATE_COORDINATOR)}</span>
             <div className="filter-container">
                 <button onClick={() => setShowFilterDropdown((prevState) => !prevState)} className="filter-button"><FaFilter /> Filter</button>
                 {showFilterDropdown && (
