@@ -3207,6 +3207,7 @@ app.patch("/api/users/:user_id", async (req, res) => {
     verification_id_type,
     role,
     password,
+    is_active,
   } = req.body;
 
   try {
@@ -3218,6 +3219,10 @@ app.patch("/api/users/:user_id", async (req, res) => {
     if (name) {
       updates.push("name = ?");
       values.push(name);
+    }
+    if (is_active) {
+      updates.push("is_active = ?");
+      values.push(is_active);
     }
     if (email) {
       updates.push("email = ?");
