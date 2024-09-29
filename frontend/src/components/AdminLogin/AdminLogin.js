@@ -24,23 +24,31 @@ const AdminLogin = () => {
 
   const onSubmit = async (evt) => {
     evt.preventDefault();
-    if (formData?.email !== 'admin@gmail.com') {
-      setError("Invalid email or password");
-    }
-    const apiPayload = { email: formData?.email, password: formData?.password }
+
+    const { email, password } = formData;
+    const apiPayload = { email, password };
+
     try {
-      const response = await defaultInstance.post(API_ENDPOINTS.LOGIN, apiPayload);
-      if (response?.data?.token) {
-        localStorage.setItem("token", response?.data?.token);
-        localStorage.setItem("user_id", response?.data?.user_id);
-        navigate('/admin-home');
+      const { data } = await defaultInstance.post(API_ENDPOINTS.LOGIN, apiPayload);
+
+      if (data?.token) {
+        const { role, user_id } = data.user_info || {};
+
+        if (role === 'admin') {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("user_id", user_id);
+          navigate('/admin-home');
+        } else {
+          setError("You are not allowed to access this page");
+        }
       } else {
         setError("Invalid email or password");
       }
+
     } catch (error) {
-      setError("Invalid email or password");
+      setError(error?.response?.data?.message || "An error occurred. Please try again.");
     }
-  }
+  };
 
   return (
     <div className="admin-login-wrapper">
