@@ -1,26 +1,32 @@
 import React from 'react'
+import { allParameters } from '../../utils/helper'
 
 const FamilyMembers = ({ data }) => {
-    console.log(data, "Final data")
     return (
         <div className="fm-item-container">
             <table className="fm-item-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Role</th>
-                        <th>Email</th>
-                        {Array(50).fill(null).map((parameter, paramIdx) => (
-                            <th key={paramIdx}>Parameter {paramIdx + 1}</th>
+                        {allParameters?.map((parameter, paramIdx) => (
+                            <th key={paramIdx}>{parameter?.label}</th>
                         ))}
                     </tr>
                 </thead>
                 <tbody>
-                    {Array(5).fill(null).map((mem, memIdx) => (
+                    {data?.map((mem, memIdx) => (
                         <tr key={memIdx}>
-                            {Array(53).fill(null).map((data, dataIdx) => (
-                                <td key={dataIdx}>Lorem Ipsum</td>
-                            ))}
+                            {allParameters?.map((item, dataIdx) => {
+                                let details = mem;
+                                if (item?.key === 'dob' && mem?.dob) {
+                                    const date = new Date(mem?.dob);
+                                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                                    const readableDate = date.toLocaleDateString('en-US', options);
+                                    details.dob = readableDate
+                                }
+                                return (
+                                    <td key={dataIdx}>{mem?.[item?.key] || 'Not filled'}</td>
+                                )
+                            })}
                         </tr>
                     ))}
                 </tbody>

@@ -16,12 +16,13 @@ const Users = () => {
 
     const [allData, setAllData] = useState([]);
 
+    const fetchUsers = async () => {
+        getUserDataByRole(roleType, (data) => {
+            setAllData(data);
+        })
+    };
+
     useEffect(() => {
-        const fetchUsers = async () => {
-            getUserDataByRole(roleType, (data) => {
-                setAllData(data);
-            })
-        };
         fetchUsers();
     }, []);
 

@@ -240,6 +240,11 @@
         background-color: red;
         margin-left: 10px;
     }
+
+    .warn {
+        background-color: rgba(128, 128, 128, 0.5) !important;
+        color: black !important;
+    }
 }
 
 .add-user-header {

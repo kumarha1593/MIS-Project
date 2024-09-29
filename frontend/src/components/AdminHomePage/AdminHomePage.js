@@ -9,23 +9,37 @@ const AdminHomePage = () => {
   const [allData, setAllData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await defaultInstance.get(API_ENDPOINTS.USER_LIST, { params: { user_type: 'all' } });
-        setIsLoading(false)
-        if (response?.data?.success) {
-          setAllData(response?.data?.data || []);
-        }
-      } catch (error) {
-        setIsLoading(false);
-        console.error("Error fetching user data:", error);
-      } finally {
-        setIsLoading(false);
+  const fetchUsers = async () => {
+    try {
+      const response = await defaultInstance.get(API_ENDPOINTS.USER_LIST, { params: { user_type: 'all' } });
+      setIsLoading(false)
+      if (response?.data?.success) {
+        setAllData(response?.data?.data || []);
       }
-    };
+    } catch (error) {
+      setIsLoading(false);
+      console.error("Error fetching user data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUsers();
   }, []);
+
+  const markActiveAndInactive = async (user) => {
+    try {
+      const response = await defaultInstance.patch(`${API_ENDPOINTS.USERS}${user?.id}/`, {
+        is_active: user?.is_active === 0 ? 1 : 0
+      })
+      if (response?.data?.success) {
+        fetchUsers();
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  }
 
   return (
     <div className="admin-home-container">
@@ -61,7 +75,7 @@ const AdminHomePage = () => {
                   <td>
                     <div className="user-actions">
                       <div onClick={() => navigate("/admin-form", { state: { form_data: user, type: 'EDIT' } })} className="common-actions-btn edit">Edit</div>
-                      <div onClick={() => alert('To be implemented!')} className="common-actions-btn delete">In Active</div>
+                      <div onClick={() => markActiveAndInactive(user)} className={`common-actions-btn delete ${user?.is_active == 1 ? 'warn' : ''}`}>{user?.is_active == 0 ? 'InActive' : 'Active'}</div>
                     </div>
                   </td>
                 </tr>
