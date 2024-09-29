@@ -89,7 +89,7 @@ app.post("/api/admin/login", async (req, res) => {
       });
     }
 
-    const adminUserData = adminUser[0]
+    const adminUserData = adminUser[0];
     delete adminUserData.password;
     // Instead of generating JWT, simply return a success message
     res.status(200).json({
@@ -268,14 +268,23 @@ app.post("/api/family-members-head", async (req, res) => {
 app.get("/api/family-members/:user_id", async (req, res) => {
   const user_id = req.params.user_id;
 
+  // Get the current date in YYYY-MM-DD format
+  const currentDate = new Date().toISOString().split("T")[0];
+
+  // console.log("Current Date:", currentDate); // Log the current date
+  // console.log("User ID:", user_id); // Log the user ID
+
   try {
     const [rows] = await db.promise().query(
       `SELECT fm.id, fm.name, fm.Aadhar, fm.status,
        (SELECT COUNT(*) FROM family_members WHERE head_id = fm.id) as familyMemberCount
        FROM family_members fm
-       WHERE fm.fc_id = ? AND fm.head_id = 0`,
-      [user_id]
+       WHERE fm.fc_id = ? AND fm.head_id = 0 AND fm.date = ?`,
+      [user_id, currentDate]
     );
+
+    // console.log("Query Result:", rows); // Log the results of the query
+
     res.status(200).json(rows);
   } catch (error) {
     console.error("Error fetching family members:", error);
@@ -3090,12 +3099,12 @@ app.get("/api/family-details/", async (req, res) => {
           LEFT JOIN personal_info pi ON md.personal_info_id = pi.id
           LEFT JOIN health h ON md.health_id = h.id
           LEFT JOIN htn ON md.htn_id = htn.id
-          LEFT JOIN dm ON md.dm_id = dm.id
+          LEFT JOIN DM dm ON md.dm_id = dm.id
           LEFT JOIN risk_assessment ra ON md.risk_assessment_id = ra.id
           LEFT JOIN oralcancer oc ON md.oral_cancer_id = oc.id
           LEFT JOIN breastcancer bc ON md.breast_cancer_id = bc.id
           LEFT JOIN cervicalcancer cc ON md.cervical_cancer_id = cc.id
-          LEFT JOIN CVD cvd ON md.CVD_id = cvd.id
+          LEFT JOIN cvd ON md.cvd_id = cvd.id
           LEFT JOIN poststroke ps ON md.post_stroke_id = ps.id
           LEFT JOIN ckd_assessment ckd ON md.CKD_id = ckd.id
           LEFT JOIN copdtb copd ON md.COPD_TB = copd.id
@@ -3128,15 +3137,12 @@ app.get("/api/user-list/", async (req, res) => {
   try {
     const { user_type } = req.query;
     if (user_type == "all") {
-      const [familyMembers] = await db
-        .promise()
-        .query(`SELECT * FROM Users`);
+      const [familyMembers] = await db.promise().query(`SELECT * FROM Users`);
       res.status(200).json({
         success: true,
         data: familyMembers,
       });
-    }
-    else {
+    } else {
       const [familyMembers] = await db
         .promise()
         .query(`SELECT * FROM Users WHERE role = ?`, [user_type]);
@@ -3152,19 +3158,34 @@ app.get("/api/user-list/", async (req, res) => {
       message: "Server error",
     });
   }
-
-
 });
 
-
 app.post("/api/users", async (req, res) => {
-  const { name, email, phone_number, verification_id, verification_id_type, role, password, user_id } = req.body;
+  const {
+    name,
+    email,
+    phone_number,
+    verification_id,
+    verification_id_type,
+    role,
+    password,
+    user_id,
+  } = req.body;
   try {
     // Update the family_members table's status field to 1 for the given fm_id
-    const [result] = await db
-      .promise()
-      .query(`INSERT INTO Users (name, email, phone, verification_id, verification_id_type, role, password, district_info_id)
-         VALUES (?,?,?,?,?,?,?,NULL)`, [name, email, phone_number, verification_id, verification_id_type, role, password]);
+    const [result] = await db.promise().query(
+      `INSERT INTO Users (name, email, phone, verification_id, verification_id_type, role, password, district_info_id)
+         VALUES (?,?,?,?,?,?,?,NULL)`,
+      [
+        name,
+        email,
+        phone_number,
+        verification_id,
+        verification_id_type,
+        role,
+        password,
+      ]
+    );
 
     res.status(200).json({
       success: true,
@@ -3178,7 +3199,16 @@ app.post("/api/users", async (req, res) => {
 
 app.patch("/api/users/:user_id", async (req, res) => {
   const { user_id } = req.params; // Get user_id from URL parameter
-  const { name, email, phone_number, verification_id, verification_id_type, role, password } = req.body;
+  const {
+    name,
+    email,
+    phone_number,
+    verification_id,
+    verification_id_type,
+    role,
+    password,
+    is_active,
+  } = req.body;
 
   try {
     // Create an array of fields to update and an array of corresponding values
@@ -3189,6 +3219,10 @@ app.patch("/api/users/:user_id", async (req, res) => {
     if (name) {
       updates.push("name = ?");
       values.push(name);
+    }
+    if (is_active) {
+      updates.push("is_active = ?");
+      values.push(is_active);
     }
     if (email) {
       updates.push("email = ?");
@@ -3227,7 +3261,7 @@ app.patch("/api/users/:user_id", async (req, res) => {
     values.push(user_id);
 
     // Construct the SQL query dynamically based on which fields need to be updated
-    const sqlQuery = `UPDATE Users SET ${updates.join(", ")} WHERE user_id = ?`;
+    const sqlQuery = `UPDATE Users SET ${updates.join(", ")} WHERE id = ?`;
 
     // Execute the query
     const [result] = await db.promise().query(sqlQuery, values);
@@ -3253,8 +3287,6 @@ app.patch("/api/users/:user_id", async (req, res) => {
     });
   }
 });
-
-
 
 // Start server
 const PORT = process.env.PORT || 5000;
