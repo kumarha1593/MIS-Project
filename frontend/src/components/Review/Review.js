@@ -75,14 +75,29 @@ const Review = () => {
         );
         setBreastCancerAssessment(breastCancerAssessmentResponse.data.data);
 
-        const cervicalCancerAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/cervical-cancer-assessment/${currentFmId}`
-        );
-        setCervicalCancerAssessment(cervicalCancerAssessmentResponse.data.data);
+        try {
+          const [cervicalCancerAssessmentResponse, anotherApiResponse] =
+            await Promise.all([
+              axios.get(
+                `${process.env.REACT_APP_BASE_URL}api/cervical-cancer-assessment/${currentFmId}`
+              ),
+              axios.get(
+                `${process.env.REACT_APP_BASE_URL}api/another-endpoint/${currentFmId}`
+              ),
+            ]);
+
+          setCervicalCancerAssessment(
+            cervicalCancerAssessmentResponse.data.data
+          );
+          // handle another API response here
+        } catch (error) {
+          console.error("Error with API calls:", error);
+        }
 
         const cvdAssessmentResponse = await axios.get(
           `${process.env.REACT_APP_BASE_URL}api/cvd-assessment/${currentFmId}`
         );
+        console.log(cvdAssessmentResponse.data.data);
         setCvdAssessment(cvdAssessmentResponse.data.data);
 
         const postStrokeAssessmentResponse = await axios.get(
