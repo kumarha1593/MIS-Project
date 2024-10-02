@@ -14,6 +14,7 @@ const TextInput = ({ label, type = 'text', name, value, onChange, error, require
                 onChange={onChange}
                 required={required}
                 className={error ? 'input-error' : ''}
+                autoComplete='off'
             />
             {isPassword &&
                 <div className='password-eye' onClick={toggleEyeIcon}>
