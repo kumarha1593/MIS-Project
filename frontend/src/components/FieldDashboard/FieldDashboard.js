@@ -5,6 +5,8 @@ import { FaPencilAlt, FaFilter } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import SearchableDropdown from '../global/SearchableDropdown';
+import { villageOptions } from '../../utils/helper'
 
 const FieldDashboard = () => {
   const [districtInfo, setDistrictInfo] = useState(null);
@@ -208,12 +210,19 @@ const FieldDashboard = () => {
             <div className="info-line">
               <span className="info-item">Village: {districtInfo.village}</span>
               {isEditing && (
-                <input
-                  type="text"
-                  name="village"
-                  value={editableData.village}
-                  onChange={handleInputChange}
-                  className="input-field"
+                <SearchableDropdown
+                  options={villageOptions}
+                  onSelect={(data) => {
+                    setTimeout(() => {
+                      setEditableData({
+                        ...editableData,
+                        ['village']: `${data?.label} / ${data?.value}`,
+                      });
+                    }, 500);
+                  }}
+                  placeholder=""
+                  style={{ maxWidth: '300px' }}
+                  value={editableData?.village || ''}
                 />
               )}
             </div>
