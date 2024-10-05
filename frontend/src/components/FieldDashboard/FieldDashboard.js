@@ -5,17 +5,15 @@ import { FaPencilAlt, FaFilter } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import SearchableDropdown from '../global/SearchableDropdown';
+import { villageOptions } from '../../utils/helper'
+import AddFamilyHead from "../global/AddFamilyHead";
 
 const FieldDashboard = () => {
   const [districtInfo, setDistrictInfo] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editableData, setEditableData] = useState(null);
-  const [tableData, setTableData] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [newHeadData, setNewHeadData] = useState({
-    headOfFamily: "",
-    aadharNumber: "",
-  });
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
@@ -57,29 +55,47 @@ const FieldDashboard = () => {
   };
 
   const handleUpdate = async () => {
-    const user_id = localStorage.getItem("user_id");
-    const currentDate = new Date().toISOString();
+    const {
+      district,
+      village,
+      health_facility,
+      mo_mpw_cho_anu_name,
+      asha_name,
+      midori_staff_name
+    } = editableData;
 
-    const updatedData = {
-      user_id,
-      district: editableData.district,
-      village: editableData.village,
-      health_facility: editableData.health_facility,
-      mo_mpw_cho_anu_name: editableData.mo_mpw_cho_anu_name,
-      asha_name: editableData.asha_name,
-      midori_staff_name: editableData.midori_staff_name,
-      date: currentDate,
-    };
+    const areFieldsValid = [district, village, health_facility, mo_mpw_cho_anu_name, asha_name, midori_staff_name].every(Boolean);
+
+    if (!areFieldsValid) {
+      alert('Please fill out all fields.');
+      return;
+    }
 
     try {
+      const user_id = localStorage.getItem("user_id");
+      const currentDate = new Date().toISOString();
+
+      const updatedData = {
+        user_id,
+        district,
+        village,
+        health_facility,
+        mo_mpw_cho_anu_name,
+        asha_name,
+        midori_staff_name,
+        date: currentDate,
+      };
+
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/district_info`,
         updatedData
       );
+
       if (response.data.success) {
         setIsEditing(false);
         fetchDistrictInfo();
       }
+
     } catch (error) {
       console.error("Error updating data:", error);
     }
@@ -91,7 +107,6 @@ const FieldDashboard = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_BASE_URL}api/family-members/${user_id}`
       );
-      setTableData(response.data);
       setFilteredData(response.data);
     } catch (error) {
       console.error("Error fetching family members:", error);
@@ -123,40 +138,6 @@ const FieldDashboard = () => {
 
   const handleAddRow = () => {
     setShowModal(true);
-  };
-
-  const handleModalInputChange = (e) => {
-    const { name, value } = e.target;
-
-    if (name === "aadharNumber") {
-      // Allow only numbers
-      if (!/^\d*$/.test(value)) return;
-    }
-
-    setNewHeadData({ ...newHeadData, [name]: value });
-  };
-
-  const handleSaveAndContinue = async () => {
-    const user_id = localStorage.getItem("user_id");
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}api/family-members-head`,
-        {
-          fc_id: user_id,
-          name: newHeadData.headOfFamily,
-          aadhar: newHeadData.aadharNumber,
-        }
-      );
-      if (response.data.success) {
-        setShowModal(false);
-        fetchFamilyMembers();
-        navigate("/FieldDashboard", {
-          state: { familyId: response.data.fm_id },
-        });
-      }
-    } catch (error) {
-      console.error("Error saving new head:", error);
-    }
   };
 
   const handleRowClick = (id) => {
@@ -208,12 +189,19 @@ const FieldDashboard = () => {
             <div className="info-line">
               <span className="info-item">Village: {districtInfo.village}</span>
               {isEditing && (
-                <input
-                  type="text"
-                  name="village"
-                  value={editableData.village}
-                  onChange={handleInputChange}
-                  className="input-field"
+                <SearchableDropdown
+                  options={villageOptions}
+                  onSelect={(data) => {
+                    setTimeout(() => {
+                      setEditableData({
+                        ...editableData,
+                        ['village']: `${data?.label} / ${data?.value}`,
+                      });
+                    }, 500);
+                  }}
+                  placeholder=""
+                  style={{ maxWidth: '300px' }}
+                  value={editableData?.village || ''}
                 />
               )}
             </div>
@@ -367,52 +355,17 @@ const FieldDashboard = () => {
           ))}
         </tbody>
       </table>
-
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Add New Head of Family</h2>
-            <input
-              type="text"
-              name="headOfFamily"
-              value={newHeadData.headOfFamily}
-              onChange={handleModalInputChange}
-              placeholder="Head of Family Name"
-              required
-            />
-            {!newHeadData.headOfFamily && (
-              <p style={{ color: "red" }}>Name is required.</p>
-            )}
-
-            <input
-              type="text"
-              name="aadharNumber"
-              value={newHeadData.aadharNumber}
-              onChange={handleModalInputChange}
-              placeholder="Aadhaar number"
-              maxLength="12"
-              pattern="\d{12}"
-              required
-            />
-            {newHeadData.aadharNumber.length > 0 &&
-              !/^\d{12}$/.test(newHeadData.aadharNumber) && (
-                <p style={{ color: "red" }}>
-                  Aadhaar number must be 12 digits.
-                </p>
-              )}
-
-            <button
-              onClick={handleSaveAndContinue}
-              disabled={
-                !newHeadData.headOfFamily ||
-                !/^\d{12}$/.test(newHeadData.aadharNumber)
-              }
-            >
-              Save & Continue
-            </button>
-            <button onClick={() => setShowModal(false)}>Cancel</button>
-          </div>
-        </div>
+        <AddFamilyHead
+          onDismiss={() => setShowModal(false)}
+          onDone={(response) => {
+            setShowModal(false)
+            fetchFamilyMembers();
+            navigate("/FieldDashboard", {
+              state: { familyId: response?.data?.fm_id },
+            });
+          }}
+        />
       )}
     </div>
   );

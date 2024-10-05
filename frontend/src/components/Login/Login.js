@@ -24,11 +24,11 @@ const Login = () => {
         localStorage.setItem("user_id", response?.data?.user_id);
         const roleNavigationMap = {
           'Field Coordinator': response?.data?.hasDistrictInfo ? "/FieldDashboard" : "/home",
-          'State Coordinator': `users?role_type=${ROLE_TYPE.STATE_COORDINATOR}`,
-          'Assistant State Coordinator': `users?role_type=${ROLE_TYPE.ASSISTANT_STATE_COORDINATOR}`,
-          'Zonal Manager': `users?role_type=${ROLE_TYPE.ZONAL_MANAGER}`,
-          'Supervisor': `users?role_type=${ROLE_TYPE.SUPER_VISOR}`,
-          'Admin': `admin-home`,
+          'State Coordinator': `/users?role_type=${ROLE_TYPE.STATE_COORDINATOR}`,
+          'Assistant State Coordinator': `/users?role_type=${ROLE_TYPE.ASSISTANT_STATE_COORDINATOR}`,
+          'Zonal Manager': `/users?role_type=${ROLE_TYPE.ZONAL_MANAGER}`,
+          'Supervisor': `/users?role_type=${ROLE_TYPE.SUPER_VISOR}`,
+          'admin': `admin-home`,
         };
 
         const defaultPath = "/home";

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
-const TextInput = ({ label, type = 'text', name, value, onChange, error, required = false, isPassword = false, toggleEyeIcon }) => {
+const TextInput = ({ label, type = 'text', name, value, onChange, error, required = false, isPassword = false, toggleEyeIcon, ...restProps }) => {
     return (
         <div className='form-group'>
             <label htmlFor={name}>{label}</label>
@@ -14,6 +14,8 @@ const TextInput = ({ label, type = 'text', name, value, onChange, error, require
                 onChange={onChange}
                 required={required}
                 className={error ? 'input-error' : ''}
+                autoComplete='off'
+                {...restProps}
             />
             {isPassword &&
                 <div className='password-eye' onClick={toggleEyeIcon}>
