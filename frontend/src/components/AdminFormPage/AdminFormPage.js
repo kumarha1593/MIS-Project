@@ -123,7 +123,7 @@ const AdminFormPage = () => {
       }, 500);
     }
 
-  }, [JSON.stringify(editData)])
+  }, [JSON.stringify(editData)]);
 
   return (
     <div className={styles.adminFormContainer}>
@@ -131,13 +131,14 @@ const AdminFormPage = () => {
         <p>{isEdit ? "Edit User" : "Add New User"}</p>
         <div />
       </div>
-      <form noValidate onSubmit={handleSubmit}>
+      <form autoComplete="off" noValidate onSubmit={handleSubmit}>
         <TextInput
           label="First Name"
           name="first_name"
           value={formData.first_name}
           onChange={handleInputChange}
           error={errors.first_name}
+          type='text'
           required
         />
         <TextInput
@@ -146,6 +147,7 @@ const AdminFormPage = () => {
           value={formData.last_name}
           onChange={handleInputChange}
           error={errors.last_name}
+          type='text'
           required
         />
         <SelectInput
@@ -164,6 +166,7 @@ const AdminFormPage = () => {
             value={formData.verification_id}
             onChange={handleInputChange}
             error={errors.verification_id}
+            type='text'
             required
           />
         )}
@@ -178,7 +181,7 @@ const AdminFormPage = () => {
         />
         <TextInput
           label="Phone Number"
-          type="tel"
+          type="text"
           name="phone_number"
           value={formData.phone_number}
           onChange={handleInputChange}

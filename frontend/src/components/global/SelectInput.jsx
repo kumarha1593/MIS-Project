@@ -9,6 +9,7 @@ const SelectInput = ({
     onChange,
     required = false,
     error,
+    placeholder
 }) => {
 
     return (
@@ -22,7 +23,7 @@ const SelectInput = ({
                 required={required}
                 className={error ? 'input-error' : ''}
             >
-                <option value="">Select {label}</option>
+                <option value="">Select {label || placeholder}</option>
                 {options.map((option) => (
                     <option key={option.value} value={option.value}>
                         {option.label}

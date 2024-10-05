@@ -20,6 +20,7 @@ const UserMenu = ({ hideFamily = false }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("user_id");
     localStorage.removeItem("current_fm_id");
+    localStorage.removeItem("first_visit");
 
     // Redirect to login page
     navigate("/");
