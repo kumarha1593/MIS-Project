@@ -75,6 +75,21 @@ const Home = () => {
     setModalIsOpen(false);
   };
 
+  // useEffect(() => {
+  //   // Check if the user has already visited
+  //   const isFirstVisit = localStorage.getItem('first_visit') === null;
+
+  //   if (isFirstVisit) {
+  //     // Set 'firstVisit' flag in localStorage so that it won't reload on subsequent visits
+  //     localStorage.setItem('first_visit', 'true');
+
+  //     // Reload the page after a short delay
+  //     setTimeout(() => {
+  //       window?.location?.reload();
+  //     }, 500);
+  //   }
+  // }, []);
+
   return (
     <div className={styles["home-container"]}>
       <h2>Fill these details before proceeding</h2>
