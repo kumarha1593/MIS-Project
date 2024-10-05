@@ -21,6 +21,12 @@ export const governmentIdOptions = [
     { value: 'PAN', label: 'PAN Card' },
 ];
 
+export const extraGovernmentIdOptions = [
+    { value: 'License', label: 'License Number' },
+    { value: 'Ration', label: 'Ration Card Number' },
+    { value: 'Voter', label: 'Voter ID Number' },
+];
+
 export const roleOptions = [
     { value: ROLE_TYPE.STATE_COORDINATOR, label: 'State Coordinator', reporting_manager: [] },
     { value: ROLE_TYPE.ASSISTANT_STATE_COORDINATOR, label: 'Assistant State Coordinator', reporting_manager: [{ value: ROLE_TYPE.STATE_COORDINATOR, label: 'State Coordinator', }] },
@@ -38,6 +44,12 @@ export const validateAdminForm = Yup.object().shape({
     email: Yup.string().email('Invalid email format').required('Email is required'),
     password: Yup.string().required('Password is required').min(8, 'Password must be at least 8 characters long'),
     phone_number: Yup.string().required('Phone number is required').min(10, 'Phone number must be exactly 10 digits'),
+});
+
+export const validateFamilyHeadForm = Yup.object().shape({
+    name: Yup.string().required('Head of family is required'),
+    aadhar: Yup.string().required('Aadhar Number is required'),
+    govtId: Yup.string().required('Government id type is required'),
 });
 
 export const getRoleLabel = (role) => roleOptions.find(({ value }) => value === role)?.label || '';
