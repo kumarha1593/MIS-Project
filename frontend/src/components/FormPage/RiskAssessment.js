@@ -13,6 +13,30 @@ const RiskAssessment = ({ currentFmId }) => {
     risk_score: 0,
   });
   const [sex, setSex] = useState("");
+
+  const calculateAge = (birthDate) => {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birth.getDate())
+    ) {
+      age--;
+    }
+    return age;
+  };
+
+  const getAgeRange = (age) => {
+    if (age >= 18 && age <= 29) return "18-29 years";
+    if (age >= 30 && age <= 39) return "30-39 years";
+    if (age >= 40 && age <= 49) return "40-49 years";
+    if (age >= 50 && age <= 59) return "50-59 years";
+    if (age >= 60) return "60 years or above";
+    return "";
+  };
+
   const mapValueToScore = (field, value) => {
     const mappings = {
       age: {
@@ -86,6 +110,16 @@ const RiskAssessment = ({ currentFmId }) => {
     const storedSex = localStorage.getItem("sex");
     if (storedSex) {
       setSex(storedSex);
+    }
+    // Fetch age from local storage and set it in the form
+    const storedBirthDate = localStorage.getItem("age");
+    if (storedBirthDate) {
+      const age = calculateAge(storedBirthDate);
+      const ageRange = getAgeRange(age);
+      setFormData((prevState) => ({
+        ...prevState,
+        age: ageRange,
+      }));
     }
   }, [currentFmId]);
 

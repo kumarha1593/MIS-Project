@@ -16,6 +16,20 @@ const CKDAssessment = ({ currentFmId }) => {
     riskaAssessment: "",
   });
 
+  const calculateAge = (birthDate) => {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birth.getDate())
+    ) {
+      age--;
+    }
+    return age;
+  };
+
   const calculateCKDRiskScore = useCallback(() => {
     let score = 0;
     if (
@@ -109,6 +123,16 @@ const CKDAssessment = ({ currentFmId }) => {
   useEffect(() => {
     if (currentFmId) {
       fetchCKDData();
+    }
+
+    // Fetch age from local storage and set ageAbove50
+    const storedBirthDate = localStorage.getItem("age");
+    if (storedBirthDate) {
+      const age = calculateAge(storedBirthDate);
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        ageAbove50: age > 50 ? "Yes" : "No",
+      }));
     }
   }, [currentFmId, fetchCKDData]);
 

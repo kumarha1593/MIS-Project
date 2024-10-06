@@ -73,6 +73,7 @@ const HealthProfileForm = ({ formData, handleInputChange, currentFmId }) => {
 
       if (response.data.success) {
         alert("Personal information saved successfully!");
+        window.location.reload();
       }
     } catch (error) {
       console.error("Error saving personal information:", error);

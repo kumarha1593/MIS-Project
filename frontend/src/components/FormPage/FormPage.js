@@ -259,6 +259,7 @@ const FormPage = () => {
 
         // Store sex in localStorage
         localStorage.setItem("sex", fetchedData.sex);
+        localStorage.setItem("age", fetchedData.dob);
       }
     } catch (error) {
       console.error("Error fetching personal information:", error);
