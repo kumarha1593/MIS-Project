@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import SelectAll from "../global/SelectAll";
 
 const OralCancerAssessment = ({ currentFmId }) => {
-  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     known_case: "",
     persistent_ulcer: "",
@@ -92,12 +92,26 @@ const OralCancerAssessment = ({ currentFmId }) => {
     },
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  const handleSelectAllChange = (value) => {
+    const newValue = value ? "No" : "";  // Set "NO" if true, otherwise empty string
+    setFormData({
+      known_case: newValue,
+      persistent_ulcer: newValue,
+      persistent_patch: newValue,
+      difficulty_chewing: newValue,
+      difficulty_opening_mouth: newValue,
+      growth_in_mouth: newValue,
+      swelling_in_neck: newValue,
+      suspected_oral_cancer: newValue,
+    });
+  };
 
   return (
     <div style={styles.formSection}>
+      <SelectAll
+        label='Select All No'
+        onChange={handleSelectAllChange}
+      />
       {/* Form groups for each field */}
       <div style={styles.formGroup}>
         <label style={styles.label}>Known Case *</label>

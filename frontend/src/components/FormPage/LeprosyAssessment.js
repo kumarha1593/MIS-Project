@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import SelectAll from "../global/SelectAll";
 
 const LeprosyAssessment = ({ currentFmId }) => {
   const [formData, setFormData] = useState({
@@ -98,8 +99,23 @@ const LeprosyAssessment = ({ currentFmId }) => {
     },
   };
 
+  const handleSelectAllChange = (value) => {
+    const newValue = value ? "No" : "";  // Set "NO" if true, otherwise empty string
+    setFormData({
+      lesionSensationLoss: newValue,
+      ulceration: newValue,
+      clawingFingers: newValue,
+      inabilityToCloseEyelid: newValue,
+      weaknessFeet: newValue,
+    });
+  };
+
   return (
     <div style={styles.formSection}>
+      <SelectAll
+        label='Select All No'
+        onChange={handleSelectAllChange}
+      />
       <div style={styles.formGroup}>
         <label style={styles.label}>
           Hypopigmented or discolored lesion(s) with loss of sensation *
