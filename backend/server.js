@@ -3053,6 +3053,57 @@ app.get("/api/family-heads", async (req, res) => {
   }
 });
 
+app.get("/api/users/:user_id/associates", async (req, res) => {
+  const { user_id } = req.params;
+  const { start_date, end_date } = req.query; // Get date range from query parameters
+
+  try {
+    // Query to get all associated users
+    const [associatedUsers] = await db.promise().query(
+      `SELECT * FROM Users WHERE manager_id = ?`, [user_id]
+    );
+
+    if (associatedUsers.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No associated users found for the given user_id"
+      });
+    }
+
+    // Iterate through each associated user to get their family members within the date range
+    const results = await Promise.all(
+      associatedUsers.map(async (user) => {
+        let query = `SELECT * FROM family_members WHERE fc_id = ?`;
+        let params = [user.user_id];
+
+        // Add date range filter if both start_date and end_date are provided
+        if (start_date && end_date) {
+          query += ` AND date BETWEEN ? AND ?`;
+          params.push(start_date, end_date);
+        }
+
+        const [familyMembers] = await db.promise().query(query, params);
+
+        return {
+          user: user,
+          familyMembers: familyMembers
+        };
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      data: results
+    });
+  } catch (error) {
+    console.error("Error fetching associated users and family members:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+});
+
 app.get("/api/family-details/", async (req, res) => {
   try {
     const { head_id } = req.query;
@@ -3174,8 +3225,8 @@ app.post("/api/users", async (req, res) => {
   try {
     // Update the family_members table's status field to 1 for the given fm_id
     const [result] = await db.promise().query(
-      `INSERT INTO Users (name, email, phone, verification_id, verification_id_type, role, password, district_info_id)
-         VALUES (?,?,?,?,?,?,?,NULL)`,
+      `INSERT INTO Users (name, email, phone, verification_id, verification_id_type, role, password, district_info_id, manager_id)
+         VALUES (?,?,?,?,?,?,?,NULL,?)`,
       [
         name,
         email,
@@ -3184,6 +3235,7 @@ app.post("/api/users", async (req, res) => {
         verification_id_type,
         role,
         password,
+        user_id
       ]
     );
 
