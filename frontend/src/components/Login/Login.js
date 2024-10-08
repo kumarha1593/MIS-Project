@@ -5,6 +5,7 @@ import "./Login.css";
 import defaultInstance from "../../axiosHelper";
 import { API_ENDPOINTS } from "../../utils/apiEndPoints";
 import { ROLE_TYPE } from "../../utils/helper";
+import moment from 'moment';
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -19,15 +20,16 @@ const Login = () => {
     try {
       const response = await defaultInstance.post(API_ENDPOINTS.LOGIN, apiPayload);
       if (response?.data?.token) {
+        const date = moment().format('YYYY-MM-DD')
         const userData = response?.data?.user_info;
         localStorage.setItem("token", response?.data?.token);
         localStorage.setItem("user_id", response?.data?.user_id);
         const roleNavigationMap = {
           'Field Coordinator': response?.data?.hasDistrictInfo ? "/FieldDashboard" : "/home",
-          'State Coordinator': `/users?role_type=${ROLE_TYPE.STATE_COORDINATOR}`,
-          'Assistant State Coordinator': `/users?role_type=${ROLE_TYPE.ASSISTANT_STATE_COORDINATOR}`,
-          'Zonal Manager': `/users?role_type=${ROLE_TYPE.ZONAL_MANAGER}`,
-          'Supervisor': `/users?role_type=${ROLE_TYPE.SUPER_VISOR}`,
+          'State Coordinator': `/users?role_type=${ROLE_TYPE.STATE_COORDINATOR}&start_date=${date}&end_date=${date}&search=&status=`,
+          'Assistant State Coordinator': `/users?role_type=${ROLE_TYPE.ASSISTANT_STATE_COORDINATOR}&start_date=${date}&end_date=${date}&search=&status=`,
+          'Zonal Manager': `/users?role_type=${ROLE_TYPE.ZONAL_MANAGER}&start_date=${date}&end_date=${date}&search=&status=`,
+          'Supervisor': `/users?role_type=${ROLE_TYPE.SUPER_VISOR}&start_date=${date}&end_date=${date}&search=&status=`,
           'admin': `admin-home`,
         };
 
