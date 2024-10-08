@@ -17,7 +17,7 @@
 
 .add-user-button {
   display: block;
-  margin: 0 auto 20px;
+  /* margin: 0 auto 20px; */
   background-color: #4caf50;
   color: white;
   border: none;

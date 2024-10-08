@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AdminHomePage.css";
 import defaultInstance from "../../axiosHelper";
 import { API_ENDPOINTS } from "../../utils/apiEndPoints";
 
 const AdminHomePage = () => {
+
+  const fileInputRef = useRef(null);
+
   const navigate = useNavigate();
   const [allData, setAllData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,12 +44,32 @@ const AdminHomePage = () => {
     }
   }
 
+
+  const handleFileChange = (event) => {
+    const file = event?.target?.files?.[0];
+    if (file) {
+      const fd = new FormData();
+      fd.append('file', file)
+      defaultInstance.post(API_ENDPOINTS.BULK_DATA, fd).then(() => {
+        fetchUsers();
+      }).catch((err) => console.log(err))
+    }
+  };
+
   return (
     <div className="admin-home-container">
       <h1 className="welcome-heading">Welcome, Admin</h1>
-      <button onClick={() => navigate("/admin-form")} className="add-user-button">
-        Add New User
-      </button>
+      <div style={{ display: 'flex', marginBottom: 20, justifyContent: 'center' }}>
+        <button onClick={() => navigate("/admin-form")} className="add-user-button">Add User Manually</button>
+        <button onClick={() => fileInputRef?.current?.click()} className="add-user-button">Bulk Import</button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+          accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        />
+      </div>
       <div className="table-container">
         {isLoading ? (
           <div className="loading">Loading data...</div>

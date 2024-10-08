@@ -75,9 +75,14 @@ export const setLowerLevelParams = (role) => {
     return roleMapping[role] || '';
 };
 
-export const getUserDataByRole = async (roleType, successCallBack) => {
+export const getUserDataByRole = async (queryParams, successCallBack) => {
     try {
-        const response = await defaultInstance.get(API_ENDPOINTS.USER_LIST, { params: { user_type: setLowerLevelParams(roleType) } });
+        const params={
+             user_type: setLowerLevelParams(queryParams?.role_type),
+            ...queryParams,
+        }
+        delete params?.role_type;
+        const response = await defaultInstance.get(API_ENDPOINTS.USER_LIST, { params: params });
         if (response?.data?.success) {
             const list = response?.data?.data?.length > 0 ? response?.data?.data : []
             list?.map((item) => {
