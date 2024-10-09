@@ -11,13 +11,12 @@ const Users = () => {
 
     const location = useLocation();
 
-    const queryParams = new URLSearchParams(location.search);
-    const roleType = queryParams.get('role_type') || '';
+    const queryParams = Object.fromEntries(new URLSearchParams(location?.search));
 
     const [allData, setAllData] = useState([]);
 
     const fetchUsers = async () => {
-        getUserDataByRole(roleType, (data) => {
+        getUserDataByRole(queryParams, (data) => {
             setAllData(data);
         })
     };
@@ -27,7 +26,7 @@ const Users = () => {
     }, []);
 
     const renderMainView = () => {
-        switch (roleType) {
+        switch (queryParams?.role_type) {
             case ROLE_TYPE.SUPER_VISOR:
                 return <SuperVisor data={allData} />;
             case ROLE_TYPE.ASSISTANT_STATE_COORDINATOR:
@@ -43,7 +42,7 @@ const Users = () => {
 
     return (
         <div className="role-container">
-            <Filters roleType={roleType} />
+            <Filters queryParams={queryParams} />
             {renderMainView()}
         </div>
     )

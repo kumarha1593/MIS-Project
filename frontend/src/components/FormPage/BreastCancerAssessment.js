@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import SelectAll from "../global/SelectAll";
 
 const BreastCancerAssessment = ({ currentFmId }) => {
-  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     known_case: "",
     lump_in_breast: "",
@@ -59,12 +59,25 @@ const BreastCancerAssessment = ({ currentFmId }) => {
     });
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  const handleSelectAllChange = (value) => {
+    const newValue = value ? "No" : "";  // Set "NO" if true, otherwise empty string
+    setFormData({
+      known_case: newValue,
+      lump_in_breast: newValue,
+      blood_stained_discharge: newValue,
+      change_in_shape: newValue,
+      constant_pain_or_swelling: newValue,
+      redness_or_ulcer: newValue,
+      suspected_breast_cancer: newValue,
+    });
+  };
 
   return (
     <div style={styles.formSection}>
+      <SelectAll
+        label='Select All No'
+        onChange={handleSelectAllChange}
+      />
       <div style={styles.formGroup}>
         <label style={styles.label}>Known Case *</label>
         <select
