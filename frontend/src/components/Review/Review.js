@@ -39,122 +39,88 @@ const Review = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const personalInfoResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/personal-info/${currentFmId}`
-        );
-        setPersonalInfo(personalInfoResponse.data.data);
+      setLoading(true);
+      setError(null);
 
-        const healthProfileResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/health-measurements/${currentFmId}`
-        );
-        setHealthProfile(healthProfileResponse.data.data);
+      const apiCalls = [
+        { name: "personalInfo", endpoint: "api/personal-info" },
+        { name: "healthProfile", endpoint: "api/health-measurements" },
+        { name: "htnAssessment", endpoint: "api/htn-assessment" },
+        { name: "dmAssessment", endpoint: "api/dm-assessment" },
+        { name: "riskAssessment", endpoint: "api/risk-assessment" },
+        {
+          name: "oralCancerAssessment",
+          endpoint: "api/oral-cancer-assessment",
+        },
+        {
+          name: "breastCancerAssessment",
+          endpoint: "api/breast-cancer-assessment",
+        },
+        {
+          name: "cervicalCancerAssessment",
+          endpoint: "api/cervical-cancer-assessment",
+        },
+        { name: "cvdAssessment", endpoint: "api/cvd-assessment" },
+        {
+          name: "postStrokeAssessment",
+          endpoint: "api/post-stroke-assessment",
+        },
+        { name: "ckdAssessment", endpoint: "api/ckd-assessment" },
+        { name: "copdTbAssessment", endpoint: "api/copd-tb-assessment" },
+        { name: "cataractAssessment", endpoint: "api/cataract-assessment" },
+        {
+          name: "hearingIssueAssessment",
+          endpoint: "api/hearing-issue-assessment",
+        },
+        { name: "leprosyAssessment", endpoint: "api/leprosy-assessment" },
+        { name: "elderlyAssessment", endpoint: "api/elderly-assessment" },
+        {
+          name: "mentalHealthAssessment",
+          endpoint: "api/mental-health-assessment",
+        },
+        { name: "abhaIdStatus", endpoint: "api/abhaid-assessment" },
+        {
+          name: "assessmentAndActionTaken",
+          endpoint: "api/assessment-and-action-taken",
+        },
+      ];
 
-        const htnAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/htn-assessment/${currentFmId}`
-        );
-        setHtnAssessment(htnAssessmentResponse.data.data);
+      const results = {};
 
-        const dmAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/dm-assessment/${currentFmId}`
-        );
-        setDmAssessment(dmAssessmentResponse.data.data);
-
-        const riskAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/risk-assessment/${currentFmId}`
-        );
-        setRiskAssessment(riskAssessmentResponse.data.data);
-
-        const oralCancerAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/oral-cancer-assessment/${currentFmId}`
-        );
-        setOralCancerAssessment(oralCancerAssessmentResponse.data.data);
-
-        const breastCancerAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/breast-cancer-assessment/${currentFmId}`
-        );
-        setBreastCancerAssessment(breastCancerAssessmentResponse.data.data);
-
+      for (const call of apiCalls) {
         try {
-          const [cervicalCancerAssessmentResponse, anotherApiResponse] =
-            await Promise.all([
-              axios.get(
-                `${process.env.REACT_APP_BASE_URL}api/cervical-cancer-assessment/${currentFmId}`
-              ),
-              axios.get(
-                `${process.env.REACT_APP_BASE_URL}api/another-endpoint/${currentFmId}`
-              ),
-            ]);
-
-          setCervicalCancerAssessment(
-            cervicalCancerAssessmentResponse.data.data
+          const response = await axios.get(
+            `${process.env.REACT_APP_BASE_URL}${call.endpoint}/${currentFmId}`
           );
-          // handle another API response here
+          results[call.name] = response.data.data;
         } catch (error) {
-          console.error("Error with API calls:", error);
+          console.error(`Error fetching ${call.name}:`, error);
+          results[call.name] = null;
         }
-
-        const cvdAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/cvd-assessment/${currentFmId}`
-        );
-        console.log(cvdAssessmentResponse.data.data);
-        setCvdAssessment(cvdAssessmentResponse.data.data);
-
-        const postStrokeAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/post-stroke-assessment/${currentFmId}`
-        );
-        setPostStrokeAssessment(postStrokeAssessmentResponse.data.data);
-
-        const ckdAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/ckd-assessment/${currentFmId}`
-        );
-        setCkdAssessment(ckdAssessmentResponse.data.data);
-
-        const copdTbAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/copd-tb-assessment/${currentFmId}`
-        );
-        setCopdTbAssessment(copdTbAssessmentResponse.data.data);
-
-        const cataractAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/cataract-assessment/${currentFmId}`
-        );
-        setCataractAssessment(cataractAssessmentResponse.data.data);
-
-        const hearingIssueAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/hearing-issue-assessment/${currentFmId}`
-        );
-        setHearingIssueAssessment(hearingIssueAssessmentResponse.data.data);
-
-        const leprosyAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/leprosy-assessment/${currentFmId}`
-        );
-        setLeprosyAssessment(leprosyAssessmentResponse.data.data);
-
-        const elderlyAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/elderly-assessment/${currentFmId}`
-        );
-        setElderlyAssessment(elderlyAssessmentResponse.data.data);
-
-        const mentalHealthAssessmentResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/mental-health-assessment/${currentFmId}`
-        );
-        setMentalHealthAssessment(mentalHealthAssessmentResponse.data.data);
-
-        const abhaIdStatusResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/abhaid-assessment/${currentFmId}`
-        );
-        setAbhaIdStatus(abhaIdStatusResponse.data.data);
-
-        const assessmentAndActionTakenResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}api/assessment-and-action-taken/${currentFmId}`
-        );
-        setAssessmentAndActionTaken(assessmentAndActionTakenResponse.data.data);
-
-        setLoading(false);
-      } catch (err) {
-        setError(err);
-        setLoading(false);
       }
+
+      // Set all state variables at once
+      setPersonalInfo(results.personalInfo);
+      setHealthProfile(results.healthProfile);
+      setHtnAssessment(results.htnAssessment);
+      setDmAssessment(results.dmAssessment);
+      setRiskAssessment(results.riskAssessment);
+      setOralCancerAssessment(results.oralCancerAssessment);
+      setBreastCancerAssessment(results.breastCancerAssessment);
+      setCervicalCancerAssessment(results.cervicalCancerAssessment);
+      setCvdAssessment(results.cvdAssessment);
+      setPostStrokeAssessment(results.postStrokeAssessment);
+      setCkdAssessment(results.ckdAssessment);
+      setCopdTbAssessment(results.copdTbAssessment);
+      setCataractAssessment(results.cataractAssessment);
+      setHearingIssueAssessment(results.hearingIssueAssessment);
+      setLeprosyAssessment(results.leprosyAssessment);
+      setElderlyAssessment(results.elderlyAssessment);
+      setMentalHealthAssessment(results.mentalHealthAssessment);
+      setAbhaIdStatus(results.abhaIdStatus);
+      setAssessmentAndActionTaken(results.assessmentAndActionTaken);
+
+      setLoading(false);
     };
 
     fetchData();
@@ -187,7 +153,7 @@ const Review = () => {
   };
 
   if (loading) return <div>Loading...</div>;
-  // if (error) return <div>Error fetching data: {error.message}</div>;
+  if (error) return <div>Error fetching data: {error.message}</div>;
 
   return (
     <div className="review-page">
@@ -218,22 +184,22 @@ const Review = () => {
       <h2>Health Measurements</h2>
       <div>
         <p>
-          <strong>Height:</strong> {healthProfile.height || "Not Filled"}
+          <strong>Height:</strong> {healthProfile?.height ?? "Not Filled"}
         </p>
         <p>
-          <strong>Weight:</strong> {healthProfile.weight || "Not Filled"}
+          <strong>Weight:</strong> {healthProfile?.weight ?? "Not Filled"}
         </p>
         <p>
-          <strong>BMI:</strong> {healthProfile.bmi || "Not Filled"}
+          <strong>BMI:</strong> {healthProfile?.bmi ?? "Not Filled"}
         </p>
         <p>
-          <strong>Temperature:</strong> {healthProfile.temp || "Not Filled"}
+          <strong>Temperature:</strong> {healthProfile?.temp ?? "Not Filled"}
         </p>
         <p>
-          <strong>SpO2:</strong> {healthProfile.spO2 || "Not Filled"}
+          <strong>SpO2:</strong> {healthProfile?.spO2 ?? "Not Filled"}
         </p>
         <p>
-          <strong>Pulse:</strong> {healthProfile.pulse || "Not Filled"}
+          <strong>Pulse:</strong> {healthProfile?.pulse ?? "Not Filled"}
         </p>
       </div>
 
