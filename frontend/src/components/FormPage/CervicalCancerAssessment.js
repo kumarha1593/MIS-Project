@@ -75,8 +75,6 @@ const CervicalCancerAssessment = ({ currentFmId }) => {
       bleeding_after_menopause: newValue,
       bleeding_after_intercourse: newValue,
       foul_smelling_discharge: newValue,
-      via_appointment_date: newValue,
-      via_result: newValue,
     });
   };
 
