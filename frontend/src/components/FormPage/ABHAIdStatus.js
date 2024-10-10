@@ -3,7 +3,8 @@ import axios from "axios";
 
 const ABHAIdStatus = ({ currentFmId }) => {
   const [formData, setFormData] = useState({
-    abhaIdStatus: "", // Initialize with an empty string
+    abhaIdStatus: "",
+    screeningDate: "",
   });
 
   useEffect(() => {
@@ -23,8 +24,29 @@ const ABHAIdStatus = ({ currentFmId }) => {
       }
     };
 
+    const fetchScreeningDate = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}api/family-member-date/${currentFmId}`
+        );
+        if (response.data.success) {
+          const dateStr = response.data.data.date;
+          if (dateStr) {
+            setFormData((prevState) => ({
+              ...prevState,
+              screeningDate: dateStr,
+            }));
+          }
+          // If dateStr is null or empty, do not update screeningDate
+        }
+      } catch (error) {
+        console.error("Error fetching Screening Date:", error);
+      }
+    };
+
     if (currentFmId) {
-      fetchAbhaIdData(); // Fetch data only if `currentFmId` is available
+      fetchAbhaIdData();
+      fetchScreeningDate();
     }
   }, [currentFmId]);
 
@@ -38,19 +60,34 @@ const ABHAIdStatus = ({ currentFmId }) => {
 
   const handleSave = async () => {
     try {
-      const response = await axios.post(
+      // Save ABHA ID status
+      const abhaResponse = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/abhaid-assessment`,
         {
           fm_id: currentFmId,
-          abhaidStatus: formData.abhaIdStatus, // Make sure this matches the backend field
+          abhaidStatus: formData.abhaIdStatus,
         }
       );
-      if (response.data.success) {
-        alert("ABHA ID status saved successfully!");
+
+      let dateResponse = { data: { success: true } }; // Default response
+      // Save Screening Date only if it's not empty
+      if (formData.screeningDate && formData.screeningDate.trim() !== "") {
+        dateResponse = await axios.post(
+          `${process.env.REACT_APP_BASE_URL}api/family-member-date/${currentFmId}`,
+          {
+            date: formData.screeningDate,
+          }
+        );
+      }
+
+      if (abhaResponse.data.success && dateResponse.data.success) {
+        alert("Data saved successfully!");
+      } else {
+        alert("Failed to save some data. Please try again.");
       }
     } catch (error) {
-      console.error("Error saving ABHA ID status:", error);
-      alert("Failed to save ABHA ID status. Please try again.");
+      console.error("Error saving data:", error);
+      alert("Failed to save data. Please try again.");
     }
   };
 
@@ -103,6 +140,18 @@ const ABHAIdStatus = ({ currentFmId }) => {
           <option value="None">None</option>
         </select>
       </div>
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Screening Date</label>
+        <input
+          type="date"
+          name="screeningDate"
+          value={formData.screeningDate}
+          onChange={handleInputChange}
+          style={styles.input}
+        />
+      </div>
+
       <button type="button" onClick={handleSave} style={styles.button}>
         Save Draft
       </button>

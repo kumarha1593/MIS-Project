@@ -3059,14 +3059,14 @@ app.get("/api/users/:user_id/associates", async (req, res) => {
 
   try {
     // Query to get all associated users
-    const [associatedUsers] = await db.promise().query(
-      `SELECT * FROM Users WHERE manager_id = ?`, [user_id]
-    );
+    const [associatedUsers] = await db
+      .promise()
+      .query(`SELECT * FROM Users WHERE manager_id = ?`, [user_id]);
 
     if (associatedUsers.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No associated users found for the given user_id"
+        message: "No associated users found for the given user_id",
       });
     }
 
@@ -3086,20 +3086,20 @@ app.get("/api/users/:user_id/associates", async (req, res) => {
 
         return {
           user: user,
-          familyMembers: familyMembers
+          familyMembers: familyMembers,
         };
       })
     );
 
     res.status(200).json({
       success: true,
-      data: results
+      data: results,
     });
   } catch (error) {
     console.error("Error fetching associated users and family members:", error);
     res.status(500).json({
       success: false,
-      message: "Server error"
+      message: "Server error",
     });
   }
 });
@@ -3235,7 +3235,7 @@ app.post("/api/users", async (req, res) => {
         verification_id_type,
         role,
         password,
-        user_id
+        user_id,
       ]
     );
 
@@ -3337,6 +3337,55 @@ app.patch("/api/users/:user_id", async (req, res) => {
       success: false,
       message: "Server error",
     });
+  }
+});
+
+//Screening Date
+app.get("/api/family-member-date/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [familyMemberData] = await db
+      .promise()
+      .query(
+        `SELECT id, name, DATE_FORMAT(date, '%Y-%m-%d') AS date FROM family_members WHERE id = ?`,
+        [id]
+      );
+    if (familyMemberData.length > 0) {
+      res.status(200).json({
+        success: true,
+        data: familyMemberData[0],
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "Family member not found",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching family member:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.post("/api/family-member-date/:id", async (req, res) => {
+  const { id } = req.params;
+  const { date } = req.body;
+  try {
+    if (date && date.trim() !== "") {
+      // Update the date only if a valid date is provided
+      await db
+        .promise()
+        .query(`UPDATE family_members SET date = ? WHERE id = ?`, [date, id]);
+    } else {
+      // Do not update the date if no valid date is provided
+      console.log("No valid date provided; skipping date update.");
+    }
+    res
+      .status(200)
+      .json({ success: true, message: "Date updated successfully" });
+  } catch (error) {
+    console.error("Error updating date:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
