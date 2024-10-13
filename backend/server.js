@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "$Mumuksh14$",
+  password: "Satyam@10332",
   database: "manipur",
 });
 
@@ -3186,22 +3186,27 @@ app.get("/api/family-details/", async (req, res) => {
 
 app.get("/api/user-list/", async (req, res) => {
   try {
-    const { user_type } = req.query;
-    if (user_type == "all") {
-      const [familyMembers] = await db.promise().query(`SELECT * FROM Users`);
-      res.status(200).json({
-        success: true,
-        data: familyMembers,
-      });
-    } else {
-      const [familyMembers] = await db
-        .promise()
-        .query(`SELECT * FROM Users WHERE role = ?`, [user_type]);
-      res.status(200).json({
-        success: true,
-        data: familyMembers,
-      });
+    const { user_type, is_active } = req.query;  
+
+    let query = `
+      SELECT u.*, m.name as manager_name
+      FROM Users u
+      LEFT JOIN Users m ON u.manager_id = m.id
+      WHERE u.is_active = ?
+    `;
+    let queryParams = [is_active !== undefined ? is_active : true];  
+
+    if (user_type && user_type !== "all") {
+      query += ` AND u.role = ?`;
+      queryParams.push(user_type);
     }
+
+    const [users] = await db.promise().query(query, queryParams);
+
+    res.status(200).json({
+      success: true,
+      data: users,
+    });
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({
