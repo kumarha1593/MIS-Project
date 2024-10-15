@@ -3347,7 +3347,7 @@ app.patch("/api/users/:user_id", async (req, res) => {
 
 // village apis
 app.post("/api/create-village", async (req, res) => {
-  const { village_name, village_id } = req.params;
+  const { village_name, village_id } = req.body;
   if (!village_name || !village_id) {
     return res.status(500).json({ success: false, message: "Village name and ID are required" });
   }

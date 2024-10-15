@@ -7,7 +7,7 @@ export const API_ENDPOINTS = {
   FAMILY_DETAILS: `${process.env.REACT_APP_API_PREFIX}family-details/`,
   LOGIN: `${process.env.REACT_APP_API_PREFIX}login/`,
   ADMIN_LOGIN: `${process.env.REACT_APP_API_PREFIX}admin/login/`,
-  CREATE_VILLAGE: 'create-village/',
-  VILLAGE_LIST: 'village-list/',
+  CREATE_VILLAGE: `${process.env.REACT_APP_API_PREFIX}create-village/`,
+  VILLAGE_LIST: `${process.env.REACT_APP_API_PREFIX}village-list/`,
   // Add more API endpoints as needed
 };
