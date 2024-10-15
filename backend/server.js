@@ -3353,7 +3353,7 @@ app.post("/api/create-village", async (req, res) => {
   }
   try {
     const [rows] = await db.promise().query(
-      "INSERT INTO villages (village_id, village_name) VALUES (?, ?)",
+      "INSERT INTO villages (village_id, name) VALUES (?, ?)",
       [village_id, village_name]
     );
     res.status(200).json({
