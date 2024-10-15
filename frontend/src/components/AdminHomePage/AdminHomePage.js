@@ -97,7 +97,7 @@ const AdminHomePage = () => {
                   <td>{user?.phone || 'N/A'}</td>
                   <td>{user?.role || 'N/A'}</td>
                   <td>{user?.verification_id || 'N/A'}</td>
-                  <td>N/A</td>
+                  <td>{user?.manager_name || 'N/A'}</td>
                   <td>
                     <div className="user-actions">
                       <div onClick={() => navigate("/admin-form", { state: { form_data: user, type: 'EDIT' } })} className="common-actions-btn edit">Edit</div>
