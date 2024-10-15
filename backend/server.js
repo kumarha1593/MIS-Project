@@ -3345,6 +3345,41 @@ app.patch("/api/users/:user_id", async (req, res) => {
   }
 });
 
+// village apis
+app.post("/api/create-village", async (req, res) => {
+  const { village_name, village_id } = req.params;
+  if (!village_name || !village_id) {
+    return res.status(500).json({ success: false, message: "Village name and ID are required" });
+  }
+  try {
+    const [rows] = await db.promise().query(
+      "INSERT INTO villages (village_id, village_name) VALUES (?, ?)",
+      [village_id, village_name]
+    );
+    res.status(200).json({
+      success: true,
+      message: "Village created successfully",
+      data: rows
+    });
+  } catch (error) {
+    console.error("Error creating village:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/village-list", async (req, res) => {
+  try {
+    const [rows] = await db.promise().query("SELECT * FROM villages");
+    res.status(200).json({
+      success: true,
+      data: rows,
+    });
+  } catch (error) {
+    console.error("Error fetching village:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 //Screening Date
 app.get("/api/family-member-date/:id", async (req, res) => {
   const { id } = req.params;
