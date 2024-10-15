@@ -57,6 +57,11 @@ export const validateVillageForm = Yup.object().shape({
     village_id: Yup.string().required('Village id is required'),
 });
 
+export const validateMemForm = Yup.object().shape({
+    name: Yup.string().required('Name is required'),
+    aadhar: Yup.string().required('Aadhar is required'),
+});
+
 
 export const getRoleLabel = (role) => roleOptions.find(({ value }) => value === role)?.label || '';
 export const getRoleValue = (role) => roleOptions.find(({ label }) => label === role)?.value || '';
