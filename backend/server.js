@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "Satyam@10332",
+  password: "$Mumuksh14$",
   database: "manipur",
 });
 
@@ -3186,7 +3186,7 @@ app.get("/api/family-details/", async (req, res) => {
 
 app.get("/api/user-list/", async (req, res) => {
   try {
-    const { user_type, is_active } = req.query;  
+    const { user_type, is_active } = req.query;
 
     let query = `
       SELECT u.*, m.name as manager_name
@@ -3194,7 +3194,7 @@ app.get("/api/user-list/", async (req, res) => {
       LEFT JOIN Users m ON u.manager_id = m.id
       WHERE u.is_active = ?
     `;
-    let queryParams = [is_active !== undefined ? is_active : true];  
+    let queryParams = [is_active !== undefined ? is_active : true];
 
     if (user_type && user_type !== "all") {
       query += ` AND u.role = ?`;

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./AdminHomePage.css";
 import defaultInstance from "../../axiosHelper";
 import { API_ENDPOINTS } from "../../utils/apiEndPoints";
+import AddVillage from "./AddVillage";
 
 const AdminHomePage = () => {
 
@@ -11,6 +12,7 @@ const AdminHomePage = () => {
   const navigate = useNavigate();
   const [allData, setAllData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showVillageModal, setShowVillageModal] = useState(false);
 
   const fetchUsers = async () => {
     try {
@@ -62,6 +64,7 @@ const AdminHomePage = () => {
       <div style={{ display: 'flex', marginBottom: 20, justifyContent: 'center' }}>
         <button onClick={() => navigate("/admin-form")} className="add-user-button">Add User Manually</button>
         <button onClick={() => fileInputRef?.current?.click()} className="add-user-button">Bulk Import</button>
+        <button onClick={() => setShowVillageModal(true)} className="add-user-button">Add Village</button>
         <input
           type="file"
           ref={fileInputRef}
@@ -111,6 +114,10 @@ const AdminHomePage = () => {
           </div>
         )}
       </div>
+      <AddVillage
+        visible={showVillageModal}
+        onDismiss={() => setShowVillageModal(false)}
+      />
     </div>
   );
 };
