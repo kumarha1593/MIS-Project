@@ -6,8 +6,9 @@ import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import SearchableDropdown from '../global/SearchableDropdown';
-import { villageOptions } from '../../utils/helper'
 import AddFamilyHead from "../global/AddFamilyHead";
+import defaultInstance from "../../axiosHelper";
+import { API_ENDPOINTS } from "../../utils/apiEndPoints";
 
 const FieldDashboard = () => {
   const [districtInfo, setDistrictInfo] = useState(null);
@@ -21,13 +22,26 @@ const FieldDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [statusFilter, setStatusFilter] = useState(null); // Add this line
+  const [villageOptions, setVillageOptions] = useState([])
 
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchDistrictInfo();
     fetchFamilyMembers();
+    fetchVillages()
   }, []);
+
+  const fetchVillages = async () => {
+    const response = await defaultInstance.get(API_ENDPOINTS.VILLAGE_LIST);
+    if (response?.data?.success) {
+      const villages = response?.data?.data?.map(({ village_id, name }) => ({
+        value: village_id,
+        label: name,
+      }));
+      setVillageOptions(villages)
+    }
+  }
 
   const fetchDistrictInfo = async () => {
     const user_id = localStorage.getItem("user_id");

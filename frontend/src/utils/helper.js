@@ -52,6 +52,17 @@ export const validateFamilyHeadForm = Yup.object().shape({
     govtId: Yup.string().required('Government id type is required'),
 });
 
+export const validateVillageForm = Yup.object().shape({
+    village_name: Yup.string().required('Village name is required'),
+    village_id: Yup.string().required('Village id is required'),
+});
+
+export const validateMemForm = Yup.object().shape({
+    name: Yup.string().required('Name is required'),
+    aadhar: Yup.string().required('Aadhar is required'),
+});
+
+
 export const getRoleLabel = (role) => roleOptions.find(({ value }) => value === role)?.label || '';
 export const getRoleValue = (role) => roleOptions.find(({ label }) => label === role)?.value || '';
 
@@ -77,8 +88,8 @@ export const setLowerLevelParams = (role) => {
 
 export const getUserDataByRole = async (queryParams, successCallBack) => {
     try {
-        const params={
-             user_type: setLowerLevelParams(queryParams?.role_type),
+        const params = {
+            user_type: setLowerLevelParams(queryParams?.role_type),
             ...queryParams,
         }
         delete params?.role_type;

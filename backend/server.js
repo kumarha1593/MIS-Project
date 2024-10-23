@@ -3186,22 +3186,27 @@ app.get("/api/family-details/", async (req, res) => {
 
 app.get("/api/user-list/", async (req, res) => {
   try {
-    const { user_type } = req.query;
-    if (user_type == "all") {
-      const [familyMembers] = await db.promise().query(`SELECT * FROM Users`);
-      res.status(200).json({
-        success: true,
-        data: familyMembers,
-      });
-    } else {
-      const [familyMembers] = await db
-        .promise()
-        .query(`SELECT * FROM Users WHERE role = ?`, [user_type]);
-      res.status(200).json({
-        success: true,
-        data: familyMembers,
-      });
+    const { user_type, is_active } = req.query;
+
+    let query = `
+      SELECT u.*, m.name as manager_name
+      FROM Users u
+      LEFT JOIN Users m ON u.manager_id = m.id
+      WHERE u.is_active = ?
+    `;
+    let queryParams = [is_active !== undefined ? is_active : true];
+
+    if (user_type && user_type !== "all") {
+      query += ` AND u.role = ?`;
+      queryParams.push(user_type);
     }
+
+    const [users] = await db.promise().query(query, queryParams);
+
+    res.status(200).json({
+      success: true,
+      data: users,
+    });
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({
@@ -3337,6 +3342,41 @@ app.patch("/api/users/:user_id", async (req, res) => {
       success: false,
       message: "Server error",
     });
+  }
+});
+
+// village apis
+app.post("/api/create-village", async (req, res) => {
+  const { village_name, village_id } = req.body;
+  if (!village_name || !village_id) {
+    return res.status(500).json({ success: false, message: "Village name and ID are required" });
+  }
+  try {
+    const [rows] = await db.promise().query(
+      "INSERT INTO villages (village_id, name) VALUES (?, ?)",
+      [village_id, village_name]
+    );
+    res.status(200).json({
+      success: true,
+      message: "Village created successfully",
+      data: rows
+    });
+  } catch (error) {
+    console.error("Error creating village:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/village-list", async (req, res) => {
+  try {
+    const [rows] = await db.promise().query("SELECT * FROM villages");
+    res.status(200).json({
+      success: true,
+      data: rows,
+    });
+  } catch (error) {
+    console.error("Error fetching village:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
