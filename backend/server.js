@@ -19,6 +19,13 @@ const db = mysql.createConnection({
   database: "manipur",
 });
 
+// const db = mysql.createConnection({
+//   host: "localhost",
+//   user: "root",
+//   password: "Admin@123",
+//   database: "manipur",
+// });
+
 db.connect((err) => {
   if (err) {
     console.error("Database connection failed:", err);
@@ -3429,8 +3436,139 @@ app.post("/api/family-member-date/:id", async (req, res) => {
   }
 });
 
+// Created by Tanmay Pradhan - 28 Oct 2024
+app.get("/api/get-master-list", async (req, res) => {
+  try {
+    const [result] = await db
+      .promise()
+      .query(
+        `SELECT 'Family Member Name','Field Coordinator Name','District','Village','PI Name','PI Identifier',
+        'PI Card Number','PI DOB','PI Sex','PI Tel No','PI Address','PI State Health Insurance','PI State Health Insurance Remark',
+        'PI Disability','PI Disability Remark','Height','Weight','BMI','Temperature','SpO2','Pulse','Case of HTN','Action High BP',
+        'Referral Center HTN','Upper BP','Lower BP','Case of DM','Action High BS','Referral Center DM',
+        'Fasting Blood Sugar','Post Prandial Blood Sugar','Random Blood Sugar','Age','Tobacco Use','Alcohol Use',
+        'Waist Female','Waist Male','Physical Activity','Family Diabetes History','Risk Score','OC Known Case',
+        'Persistent Ulcer','Persistent Patch','Difficulty Chewing','Difficulty Opening Mouth','Growth in Mouth',
+        'Swelling in Neck','Suspected Oral Cancer','BC Known Case','Lump in Breast','Blood Stained Discharge','Change in Shape',
+        'Constant Pain or Swelling','Redness or Ulcer','Suspected Breast Cancer','CC Known Case',
+        'Bleeding Between Periods','Bleeding After Menopause','Bleeding After Intercourse','Foul Smelling Discharge',
+        'VIA Appointment Date','VIA Result','CVD Known Case','Heart Sound','Symptom','CVD Date',
+        'Suspected CVD','CVD Teleconsultation','CVD Referral','CVD Referral Centre','History of Stroke',
+        'Stroke Date','Present Condition','Stroke Sign Action','Referral Center Name','Known CKD',
+        'History CKD Stone','Age Above 50','Hypertension Patient','Diabetes Patient','Anemia Patient',
+        'History of Stroke CKD','Swelling Face Leg','History NSAIDS','CKD Risk Score','Risk Assessment',
+        'Known Case CRD','CRD Specify','Occupational Exposure','Cooking Fuel Type','Chest Sound','Chest Sound Action',
+        'Referral Center Name CT','COPD Confirmed','COPD Confirmation Date','Shortness of Breath','Coughing More Than 2 Weeks',
+        'Blood in Sputum','Fever More Than 2 Weeks','Night Sweats','Taking Anti-TB Drugs','Family TB History',
+        'History of TB','Cloudy Blurred Vision','Pain or Redness','Cataract Assessment Result','Difficulty Hearing',
+        'Hypopigmented Patch','Recurrent Ulceration','Clawing of Fingers','Inability to Close Eyelid','Difficulty Holding Objects',
+        'Unsteady Walking','Physical Disability','Help from Others','Forget Names','Little Interest or Pleasure',
+        'Feeling Down or Depressed','Mental Health Score','Mental Health Problem','History of Fits','Other Mental Disorder',
+        'Brief Intervention Given','Intervention Type','Major NCD Detected','Any Other Disease Detected','Known Case DM HTN',
+        'Teleconsultation','Prescription Given','Other Advices','Remarks','ABHA ID Status'
+        UNION ALL
+        SELECT family_members.name AS 'Family Member Name',Users.name AS 'Field Coordinator Name',
+        district_info.district,district_info.village,pi.name AS 'PI Name',pi.identifier AS 'PI Identifier',
+        pi.card_number AS 'PI Card Number',
+        pi.dob AS 'PI DOB',pi.sex AS 'PI Sex',pi.tel_no AS 'PI Tel No',pi.address AS 'PI Address',pi.state_health_insurance AS 'PI State Health Insurance',
+        pi.state_health_insurance_remark AS 'PI State Health Insurance Remark',pi.disability AS 'PI Disability',
+        pi.disability_remark AS 'PI Disability Remark',h.height AS 'Height',h.weight AS 'Weight',h.bmi AS 'BMI',
+        h.temp AS 'Temperature',h.spO2 AS 'SpO2',h.pulse AS 'Pulse',ht.case_of_htn AS 'Case of HTN',ht.action_high_bp AS 'Action High BP',
+        ht.referral_center AS 'Referral Center HTN',ht.upper_bp AS 'Upper BP',ht.lower_bp AS 'Lower BP',
+        dm.case_of_dm AS 'Case of DM',dm.action_high_bs AS 'Action High BS',dm.referral_center AS 'Referral Center DM',
+        dm.fasting_blood_sugar AS 'Fasting Blood Sugar',dm.post_prandial_blood_sugar AS 'Post Prandial Blood Sugar',
+        dm.random_blood_sugar AS 'Random Blood Sugar',ra.age AS 'Age',ra.tobacco_use AS 'Tobacco Use',ra.alcohol_use AS 'Alcohol Use',
+        ra.waist_female AS 'Waist Female',ra.waist_male AS 'Waist Male',ra.physical_activity AS 'Physical Activity',
+        ra.family_diabetes_history AS 'Family Diabetes History',ra.risk_score AS 'Risk Score',
+        oc.known_case AS 'OC Known Case',oc.persistent_ulcer AS 'Persistent Ulcer',oc.persistent_patch AS 'Persistent Patch',
+        oc.difficulty_chewing AS 'Difficulty Chewing',oc.difficulty_opening_mouth AS 'Difficulty Opening Mouth',
+        oc.growth_in_mouth AS 'Growth in Mouth',oc.swelling_in_neck AS 'Swelling in Neck',
+        oc.suspected_oral_cancer AS 'Suspected Oral Cancer',bc.known_case AS 'BC Known Case',bc.lump_in_breast AS 'Lump in Breast',
+        bc.blood_stained_discharge AS 'Blood Stained Discharge',bc.change_in_shape AS 'Change in Shape',
+        bc.constant_pain_or_swelling AS 'Constant Pain or Swelling',bc.redness_or_ulcer AS 'Redness or Ulcer',
+        bc.suspected_breast_cancer AS 'Suspected Breast Cancer',cc.known_case AS 'CC Known Case',
+        cc.bleeding_between_periods AS 'Bleeding Between Periods',cc.bleeding_after_menopause AS 'Bleeding After Menopause',
+        cc.bleeding_after_intercourse AS 'Bleeding After Intercourse',cc.foul_smelling_discharge AS 'Foul Smelling Discharge',
+        cc.via_appointment_date AS 'VIA Appointment Date',cc.via_result AS 'VIA Result',cvd.known_case AS 'CVD Known Case',
+        cvd.heart_sound AS 'Heart Sound',cvd.symptom AS 'Symptom',cvd.cvd_date AS 'CVD Date',cvd.suspected_cvd AS 'Suspected CVD',
+        cvd.teleconsultation AS 'CVD Teleconsultation',cvd.referral AS 'CVD Referral',cvd.referral_centre AS 'CVD Referral Centre',
+        ps.history_of_stroke AS 'History of Stroke',ps.stroke_date AS 'Stroke Date',ps.present_condition AS 'Present Condition',ps.stroke_sign_action AS 'Stroke Sign Action',
+        ps.referral_center_name AS 'Referral Center Name',ckd.knownCKD AS 'Known CKD',ckd.historyCKDStone AS 'History CKD Stone',
+        ckd.ageAbove50 AS 'Age Above 50',ckd.hypertensionPatient AS 'Hypertension Patient',ckd.diabetesPatient AS 'Diabetes Patient',
+        ckd.anemiaPatient AS 'Anemia Patient',ckd.historyOfStroke AS 'History of Stroke CKD',ckd.swellingFaceLeg AS 'Swelling Face Leg',
+        ckd.historyNSAIDS AS 'History NSAIDS',ckd.ckdRiskScore AS 'CKD Risk Score',ckd.riskaAssessment AS 'Risk Assessment',
+        ct.known_case_crd AS 'Known Case CRD',ct.crd_specify AS 'CRD Specify',ct.occupational_exposure AS 'Occupational Exposure',
+        ct.cooking_fuel_type AS 'Cooking Fuel Type',ct.chest_sound AS 'Chest Sound',ct.chest_sound_action AS 'Chest Sound Action',
+        ct.referral_center_name AS 'Referral Center Name CT',ct.copd_confirmed AS 'COPD Confirmed',ct.copd_confirmation_date AS 'COPD Confirmation Date',
+        ct.shortness_of_breath AS 'Shortness of Breath',ct.coughing_more_than_2_weeks AS 'Coughing More Than 2 Weeks',ct.blood_in_sputum AS 'Blood in Sputum',
+        ct.fever_more_than_2_weeks AS 'Fever More Than 2 Weeks',ct.night_sweats AS 'Night Sweats',ct.taking_anti_tb_drugs AS 'Taking Anti-TB Drugs',
+        ct.family_tb_history AS 'Family TB History',ct.history_of_tb AS 'History of TB',ca.cloudy_blurred_vision AS 'Cloudy Blurred Vision',
+        ca.pain_or_redness AS 'Pain or Redness',ca.cataract_assessment_result AS 'Cataract Assessment Result',
+        hi.difficulty_hearing AS 'Difficulty Hearing',lp.hypopigmented_patch AS 'Hypopigmented Patch',
+        lp.recurrent_ulceration AS 'Recurrent Ulceration',lp.clawing_of_fingers AS 'Clawing of Fingers',
+        lp.inability_to_close_eyelid AS 'Inability to Close Eyelid',lp.difficulty_holding_objects AS 'Difficulty Holding Objects',
+        el.unsteady_walking AS 'Unsteady Walking',el.physical_disability AS 'Physical Disability',el.help_from_others AS 'Help from Others',
+        el.forget_names AS 'Forget Names',mh.little_interest_or_pleasure AS 'Little Interest or Pleasure',
+        mh.feeling_down_or_depressed AS 'Feeling Down or Depressed',mh.mental_health_score AS 'Mental Health Score',
+        mh.mental_health_problem AS 'Mental Health Problem',mh.history_of_fits AS 'History of Fits',mh.other_mental_disorder AS 'Other Mental Disorder',
+        mh.brief_intervention_given AS 'Brief Intervention Given',mh.intervention_type AS 'Intervention Type',
+        aat.major_ncd_detected AS 'Major NCD Detected',aat.any_other_disease_detected AS 'Any Other Disease Detected',
+        aat.known_case_dm_htn AS 'Known Case DM HTN',aat.teleconsultation AS 'Teleconsultation',aat.prescription_given AS 'Prescription Given',
+        aat.other_advices AS 'Other Advices',aat.remarks AS 'Remarks',ab.abhaid_status AS 'ABHA ID Status'
+        FROM family_members
+        JOIN Users ON Users.id = family_members.fc_id AND Users.role = 'Field Coordinator'
+        LEFT JOIN (SELECT dif1.user_id, dif1.district, dif1.village
+        FROM
+          district_info_fc dif1
+        INNER JOIN (
+          SELECT user_id, MAX(id) AS max_id
+          FROM
+            district_info_fc
+          GROUP BY
+            user_id
+          ) dif2 ON dif1.user_id = dif2.user_id AND dif1.id = dif2.max_id
+        ) AS district_info ON district_info.user_id = Users.id
+        LEFT JOIN master_data ON master_data.id = family_members.master_data_id
+        LEFT JOIN personal_info AS pi ON pi.id = master_data.personal_info_id
+        LEFT JOIN health AS h ON h.id = master_data.health_id
+        LEFT JOIN htn AS ht ON ht.id = master_data.htn_id
+        LEFT JOIN DM AS dm ON dm.id = master_data.dm_id
+        LEFT JOIN risk_assessment AS ra ON ra.id = master_data.risk_assessment_id
+        LEFT JOIN oralcancer AS oc ON oc.id = master_data.oral_cancer_id
+        LEFT JOIN breastcancer AS bc ON bc.id = master_data.breast_cancer_id
+        LEFT JOIN cervicalcancer AS cc ON cc.id = master_data.cervical_cancer_id
+        LEFT JOIN cvd AS cvd ON cvd.id = master_data.CVD_id
+        LEFT JOIN poststroke AS ps ON ps.id = master_data.post_stroke_id
+        LEFT JOIN ckd_assessment AS ckd ON ckd.id = master_data.CKD_id
+        LEFT JOIN copdtb AS ct ON ct.id = master_data.COPD_TB
+        LEFT JOIN cataract AS ca ON ca.id = master_data.cataract_id
+        LEFT JOIN hearingissue AS hi ON hi.id = master_data.hearing_id
+        LEFT JOIN leprosy AS lp ON lp.id = master_data.leprosy_id
+        LEFT JOIN elderly AS el ON el.id = master_data.elderly_id
+        LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
+        LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
+        LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
+        WHERE family_members.status = 1;`,
+      );
+    if (result.length > 0) {
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "Data Not Found!!",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching demo:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
