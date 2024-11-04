@@ -3445,6 +3445,41 @@ app.get("/api/get-master-list", async (req, res) => {
   try {
     const [result] = await db.promise().query(
       `SELECT 'Family Member Name','Field Coordinator Name','District','Village','PI Name','PI Identifier',
+  const { 
+    skip_count, 
+    page_limit, 
+    from_date, 
+    to_date, 
+    status, 
+    risk_score,
+    case_of_htn,
+    case_of_dm,
+    suspected_oral_cancer,
+    suspected_breast_cancer,
+    cervical_cancer,
+    known_cvd,
+    history_of_stroke,
+    known_ckd,
+    cataract_assessment_result,
+    difficulty_hearing,
+    abhaid_status,
+    search_term,
+  } = req.query;
+
+  console.log("Query Parameters:", req.query);
+
+  if (!skip_count || !page_limit) {
+    return res.status(500).json({ success: false, message: "Skip Count and Page Limit required" });
+  }
+  if(!from_date) {
+    from_date = format(new Date(), 'yyyy-MM-dd');
+  }
+  if(!to_date) {
+    to_date = format(new Date(), 'yyyy-MM-dd');
+  }
+  try {
+
+    let query = `SELECT 'Family Member Name','Field Coordinator Name','District','Village','PI Name','PI Identifier',
         'PI Card Number','PI DOB','PI Sex','PI Tel No','PI Address','PI State Health Insurance','PI State Health Insurance Remark',
         'PI Disability','PI Disability Remark','Height','Weight','BMI','Temperature','SpO2','Pulse','Case of HTN','Action High BP',
         'Referral Center HTN','Upper BP','Lower BP','Case of DM','Action High BS','Referral Center DM',
@@ -3471,8 +3506,8 @@ app.get("/api/get-master-list", async (req, res) => {
         UNION ALL
         SELECT family_members.name AS 'Family Member Name',Users.name AS 'Field Coordinator Name',
         district_info.district,district_info.village,pi.name AS 'PI Name',pi.identifier AS 'PI Identifier',
-        pi.card_number AS 'PI Card Number',
-        pi.dob AS 'PI DOB',pi.sex AS 'PI Sex',pi.tel_no AS 'PI Tel No',pi.address AS 'PI Address',pi.state_health_insurance AS 'PI State Health Insurance',
+        pi.card_number AS 'PI Card Number',pi.dob AS 'PI DOB',pi.sex AS 'PI Sex',pi.tel_no AS 'PI Tel No',
+        pi.address AS 'PI Address',pi.state_health_insurance AS 'PI State Health Insurance',
         pi.state_health_insurance_remark AS 'PI State Health Insurance Remark',pi.disability AS 'PI Disability',
         pi.disability_remark AS 'PI Disability Remark',h.height AS 'Height',h.weight AS 'Weight',h.bmi AS 'BMI',
         h.temp AS 'Temperature',h.spO2 AS 'SpO2',h.pulse AS 'Pulse',ht.case_of_htn AS 'Case of HTN',ht.action_high_bp AS 'Action High BP',
@@ -3552,6 +3587,90 @@ app.get("/api/get-master-list", async (req, res) => {
         LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
         WHERE family_members.status = 1;`
     );
+        WHERE family_members.date BETWEEN ? AND ?`;
+
+        const params = [from_date, to_date];
+
+        if(status) {
+          query += 'AND family_members.status = ? ';
+          params.push(status);
+        }
+
+        if(risk_score) {
+          query += 'AND ra.risk_score = ? ';
+          params.push(risk_score);
+        }
+
+        if(case_of_htn) {
+          query += 'AND ht.case_of_htn = ? ';
+          params.push(case_of_htn);
+        }
+
+        if(case_of_dm) {
+          query += 'AND dm.case_of_dm = ? ';
+          params.push(case_of_dm);
+        }
+
+        if(suspected_oral_cancer) {
+          query += 'AND oc.suspected_oral_cancer = ? ';
+          params.push(suspected_oral_cancer);
+        }
+
+        if(suspected_breast_cancer) {
+          query += 'AND bc.suspected_breast_cancer = ? ';
+          params.push(suspected_breast_cancer);
+        }
+
+        if(cervical_cancer) {
+          query += 'AND cc.known_case = ? ';
+          params.push(cervical_cancer);
+        }
+
+        if(known_cvd) {
+          query += 'AND cvd.known_case = ? ';
+          params.push(known_cvd);
+        }
+
+        if(history_of_stroke) {
+          query += 'AND ps.history_of_stroke = ? ';
+          params.push(history_of_stroke);
+        }
+
+        if(known_ckd) {
+          query += 'AND ckd.knownCKD = ? ';
+          params.push(known_ckd);
+        }
+
+        if(cataract_assessment_result) {
+          query += 'AND ca.cataract_assessment_result = ? ';
+          params.push(cataract_assessment_result);
+        }
+
+        if(difficulty_hearing) {
+          query += 'AND hi.difficulty_hearing = ? ';
+          params.push(difficulty_hearing);
+        }
+
+        if(abhaid_status) {
+          query += 'AND ab.abhaid_status = ? ';
+          params.push(abhaid_status);
+        }
+
+        if (search_term) {
+          query += "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.district LIKE ? OR district_info.village LIKE ?) ";
+          queryParams.push(`%${search_term}%`, `%${search_term}%`,`%${search_term}%`,`%${search_term}%`);
+        }
+
+        query += `LIMIT ? OFFSET ?;`;
+        params.push(parseInt(page_limit));
+        params.push(parseInt(skip_count));
+
+    const [result] = await db
+      .promise()
+      .query(
+        query,
+        params,
+      );
     if (result.length > 0) {
       res.status(200).json({
         success: true,
@@ -3564,7 +3683,7 @@ app.get("/api/get-master-list", async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error fetching demo:", error);
+    console.error("Error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
