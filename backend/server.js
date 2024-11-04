@@ -3442,15 +3442,12 @@ app.post("/api/family-member-date/:id", async (req, res) => {
 
 // Created by Tanmay Pradhan - 28 Oct 2024
 app.get("/api/get-master-list", async (req, res) => {
-  try {
-    const [result] = await db.promise().query(
-      `SELECT 'Family Member Name','Field Coordinator Name','District','Village','PI Name','PI Identifier',
-  const { 
-    skip_count, 
-    page_limit, 
-    from_date, 
-    to_date, 
-    status, 
+  const {
+    skip_count,
+    page_limit,
+    from_date,
+    to_date,
+    status,
     risk_score,
     case_of_htn,
     case_of_dm,
@@ -3469,16 +3466,17 @@ app.get("/api/get-master-list", async (req, res) => {
   console.log("Query Parameters:", req.query);
 
   if (!skip_count || !page_limit) {
-    return res.status(500).json({ success: false, message: "Skip Count and Page Limit required" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Skip Count and Page Limit required" });
   }
-  if(!from_date) {
-    from_date = format(new Date(), 'yyyy-MM-dd');
+  if (!from_date) {
+    from_date = format(new Date(), "yyyy-MM-dd");
   }
-  if(!to_date) {
-    to_date = format(new Date(), 'yyyy-MM-dd');
+  if (!to_date) {
+    to_date = format(new Date(), "yyyy-MM-dd");
   }
   try {
-
     let query = `SELECT 'Family Member Name','Field Coordinator Name','District','Village','PI Name','PI Identifier',
         'PI Card Number','PI DOB','PI Sex','PI Tel No','PI Address','PI State Health Insurance','PI State Health Insurance Remark',
         'PI Disability','PI Disability Remark','Height','Weight','BMI','Temperature','SpO2','Pulse','Case of HTN','Action High BP',
@@ -3585,92 +3583,91 @@ app.get("/api/get-master-list", async (req, res) => {
         LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
         LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
         LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
-        WHERE family_members.status = 1;`
-    );
         WHERE family_members.date BETWEEN ? AND ?`;
 
-        const params = [from_date, to_date];
+    const params = [from_date, to_date];
 
-        if(status) {
-          query += 'AND family_members.status = ? ';
-          params.push(status);
-        }
+    if (status) {
+      query += "AND family_members.status = ? ";
+      params.push(status);
+    }
 
-        if(risk_score) {
-          query += 'AND ra.risk_score = ? ';
-          params.push(risk_score);
-        }
+    if (risk_score) {
+      query += "AND ra.risk_score = ? ";
+      params.push(risk_score);
+    }
 
-        if(case_of_htn) {
-          query += 'AND ht.case_of_htn = ? ';
-          params.push(case_of_htn);
-        }
+    if (case_of_htn) {
+      query += "AND ht.case_of_htn = ? ";
+      params.push(case_of_htn);
+    }
 
-        if(case_of_dm) {
-          query += 'AND dm.case_of_dm = ? ';
-          params.push(case_of_dm);
-        }
+    if (case_of_dm) {
+      query += "AND dm.case_of_dm = ? ";
+      params.push(case_of_dm);
+    }
 
-        if(suspected_oral_cancer) {
-          query += 'AND oc.suspected_oral_cancer = ? ';
-          params.push(suspected_oral_cancer);
-        }
+    if (suspected_oral_cancer) {
+      query += "AND oc.suspected_oral_cancer = ? ";
+      params.push(suspected_oral_cancer);
+    }
 
-        if(suspected_breast_cancer) {
-          query += 'AND bc.suspected_breast_cancer = ? ';
-          params.push(suspected_breast_cancer);
-        }
+    if (suspected_breast_cancer) {
+      query += "AND bc.suspected_breast_cancer = ? ";
+      params.push(suspected_breast_cancer);
+    }
 
-        if(cervical_cancer) {
-          query += 'AND cc.known_case = ? ';
-          params.push(cervical_cancer);
-        }
+    if (cervical_cancer) {
+      query += "AND cc.known_case = ? ";
+      params.push(cervical_cancer);
+    }
 
-        if(known_cvd) {
-          query += 'AND cvd.known_case = ? ';
-          params.push(known_cvd);
-        }
+    if (known_cvd) {
+      query += "AND cvd.known_case = ? ";
+      params.push(known_cvd);
+    }
 
-        if(history_of_stroke) {
-          query += 'AND ps.history_of_stroke = ? ';
-          params.push(history_of_stroke);
-        }
+    if (history_of_stroke) {
+      query += "AND ps.history_of_stroke = ? ";
+      params.push(history_of_stroke);
+    }
 
-        if(known_ckd) {
-          query += 'AND ckd.knownCKD = ? ';
-          params.push(known_ckd);
-        }
+    if (known_ckd) {
+      query += "AND ckd.knownCKD = ? ";
+      params.push(known_ckd);
+    }
 
-        if(cataract_assessment_result) {
-          query += 'AND ca.cataract_assessment_result = ? ';
-          params.push(cataract_assessment_result);
-        }
+    if (cataract_assessment_result) {
+      query += "AND ca.cataract_assessment_result = ? ";
+      params.push(cataract_assessment_result);
+    }
 
-        if(difficulty_hearing) {
-          query += 'AND hi.difficulty_hearing = ? ';
-          params.push(difficulty_hearing);
-        }
+    if (difficulty_hearing) {
+      query += "AND hi.difficulty_hearing = ? ";
+      params.push(difficulty_hearing);
+    }
 
-        if(abhaid_status) {
-          query += 'AND ab.abhaid_status = ? ';
-          params.push(abhaid_status);
-        }
+    if (abhaid_status) {
+      query += "AND ab.abhaid_status = ? ";
+      params.push(abhaid_status);
+    }
 
-        if (search_term) {
-          query += "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.district LIKE ? OR district_info.village LIKE ?) ";
-          queryParams.push(`%${search_term}%`, `%${search_term}%`,`%${search_term}%`,`%${search_term}%`);
-        }
-
-        query += `LIMIT ? OFFSET ?;`;
-        params.push(parseInt(page_limit));
-        params.push(parseInt(skip_count));
-
-    const [result] = await db
-      .promise()
-      .query(
-        query,
-        params,
+    if (search_term) {
+      query +=
+        "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.district LIKE ? OR district_info.village LIKE ?) ";
+      queryParams.push(
+        `%${search_term}%`,
+        `%${search_term}%`,
+        `%${search_term}%`,
+        `%${search_term}%`
       );
+    }
+
+    query += `LIMIT ? OFFSET ?;`;
+    params.push(parseInt(page_limit));
+    params.push(parseInt(skip_count));
+
+    const [result] = await db.promise().query(query, params);
     if (result.length > 0) {
       res.status(200).json({
         success: true,
