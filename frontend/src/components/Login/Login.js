@@ -26,10 +26,10 @@ const Login = () => {
         localStorage.setItem("user_id", response?.data?.user_id);
         const roleNavigationMap = {
           'Field Coordinator': response?.data?.hasDistrictInfo ? "/FieldDashboard" : "/home",
-          'State Coordinator': `/users?role_type=${ROLE_TYPE.STATE_COORDINATOR}&from_date=${date}&to_date=${date}&search=&page_limit=20&skip_count=`,
-          'Assistant State Coordinator': `/users?role_type=${ROLE_TYPE.ASSISTANT_STATE_COORDINATOR}&from_date=${date}&to_date=${date}&search=&page_limit=20&skip_count=`,
-          'Zonal Manager': `/users?role_type=${ROLE_TYPE.ZONAL_MANAGER}&from_date=${date}&to_date=${date}&search=&page_limit=20&skip_count=`,
-          'Supervisor': `/users?role_type=${ROLE_TYPE.SUPER_VISOR}&from_date=${date}&to_date=${date}&search=&page_limit=20&skip_count=`,
+          'State Coordinator': `/users?role_type=${ROLE_TYPE.STATE_COORDINATOR}&from_date=${date}&to_date=${date}&search_term=&page_limit=20&skip_count=&status=1`,
+          'Assistant State Coordinator': `/users?role_type=${ROLE_TYPE.ASSISTANT_STATE_COORDINATOR}&from_date=${date}&to_date=${date}&search_term=&page_limit=20&skip_count=&status=1`,
+          'Zonal Manager': `/users?role_type=${ROLE_TYPE.ZONAL_MANAGER}&from_date=${date}&to_date=${date}&search_term=&page_limit=20&skip_count=&status=1`,
+          'Supervisor': `/users?role_type=${ROLE_TYPE.SUPER_VISOR}&from_date=${date}&to_date=${date}&search_term=&page_limit=20&skip_count=&status=1`,
           'admin': `admin-home`,
         };
 

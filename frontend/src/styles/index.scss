@@ -394,4 +394,30 @@
     align-items: center;
     justify-content: end;
     padding-top: 15px;
+
+    .option-container {
+        display: inline-flex;
+        border: 1px solid green;
+        border-radius: 25px;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .option {
+        padding: 10px 20px;
+        cursor: pointer;
+        flex: 1;
+        text-align: center;
+        border-right: 1px solid green;
+    }
+
+    .option:last-child {
+        border-right: none;
+    }
+
+    .option:hover {
+        background-color: #f0f0f0;
+    }
 }

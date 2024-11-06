@@ -23,6 +23,12 @@ const FamilyMembers = ({ data }) => {
                                     const readableDate = date.toLocaleDateString('en-US', options);
                                     details.pi_dob = readableDate
                                 }
+                                if (item?.value === 'screening_date' && mem?.screening_date) {
+                                    const date = new Date(mem?.screening_date);
+                                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                                    const readableDate = date.toLocaleDateString('en-US', options);
+                                    details.screening_date = readableDate
+                                }
                                 return (
                                     <td key={dataIdx}>{mem?.[item?.value] || 'Not filled'}</td>
                                 )
