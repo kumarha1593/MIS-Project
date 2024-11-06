@@ -12,8 +12,8 @@ const Filters = ({ queryParams }) => {
     const filterDefaults = {
         from_date: currentDate,
         to_date: currentDate,
-        status: 'all',
-        search: '',
+        status: '1',
+        search_term: '',
         page_limit: 20,
         skip_count: 0
     }
@@ -28,13 +28,13 @@ const Filters = ({ queryParams }) => {
 
     const applyFilters = () => {
         setShowFilterDropdown((prevState) => !prevState);
-        navigate(`/users?role_type=${queryParams?.role_type}&from_date=${filterData?.from_date}&to_date=${filterData?.to_date}&search=${filterData?.search}&status=${filterData?.status}&page_limit=${filterData?.page_limit || 20}&skip_count=${filterData?.skip_count || 0}`)
+        navigate(`/users?role_type=${queryParams?.role_type}&from_date=${filterData?.from_date}&to_date=${filterData?.to_date}&search_term=${filterData?.search_term}&status=${filterData?.status || 1}&page_limit=${filterData?.page_limit || 20}&skip_count=${filterData?.skip_count || 0}`)
     }
 
     const resetFilters = () => {
         setFilterData(filterDefaults);
         setShowFilterDropdown((prevState) => !prevState);
-        navigate(`/users?role_type=${queryParams?.role_type}&from_date=${currentDate}&to_date=${currentDate}&search=&status=&page_limit=20&skip_count=0`)
+        navigate(`/users?role_type=${queryParams?.role_type}&from_date=${currentDate}&to_date=${currentDate}&search_term=&status=&page_limit=20&skip_count=0&status=1`)
     }
 
     useEffect(() => {
@@ -42,8 +42,8 @@ const Filters = ({ queryParams }) => {
             setFilterData({
                 from_date: queryParams?.from_date || null,
                 to_date: queryParams?.to_date,
-                status: queryParams?.status || 'all',
-                search: queryParams?.search || '',
+                status: queryParams?.status || '1',
+                search_term: queryParams?.search_term || '',
                 skip_count: queryParams?.skip_count || 0,
                 page_limit: queryParams?.page_limit || 20,
             })
@@ -84,18 +84,18 @@ const Filters = ({ queryParams }) => {
                                 value={filterData?.status || ""}
                                 onChange={(e) => updateValue('status', e.target.value || '')}
                             >
-                                <option value="">All</option>
-                                <option value="0">Active</option>
-                                <option value="1">InActive</option>
+                                <option value="all">All</option>
+                                <option value="0">Pending</option>
+                                <option value="1">Completed</option>
                             </select>
                         </div>
                         <div className="filter-option">
                             <label>Search:</label>
                             <input
                                 type="text"
-                                value={filterData?.search}
-                                onChange={(e) => updateValue('search', e.target.value)}
-                                placeholder="Search by name or Aadhaar"
+                                value={filterData?.search_term}
+                                onChange={(e) => updateValue('search_term', e.target.value)}
+                                placeholder="Search by name or Aadhar"
                             />
                         </div>
                         <div className="filter-actions">

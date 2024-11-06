@@ -113,6 +113,7 @@ export const allParameters = [
     { label: "Field Coordinator Name", value: "field_coordinator_name" },
     { label: "District", value: "district" },
     { label: "Village", value: "village" },
+    { label: "Screening Date", value: "screening_date" },
     { label: "PI Name", value: "pi_name" },
     { label: "PI Identifier", value: "pi_identifier" },
     { label: "PI Card Number", value: "pi_card_number" },

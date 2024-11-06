@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Filters from './Filters';
 import defaultInstance from '../../axiosHelper';
 import { API_ENDPOINTS } from '../../utils/apiEndPoints';
@@ -10,11 +10,14 @@ const Users = () => {
 
     const location = useLocation();
 
+    const navigate = useNavigate();
+
     const currentDate = moment().format('YYYY-MM-DD')
 
     const queryParams = Object.fromEntries(new URLSearchParams(location?.search));
 
     const [allData, setAllData] = useState([]);
+    const [totalCount, setTotalCount] = useState(0);
 
     const getMasterList = async () => {
         const params = {
@@ -22,7 +25,7 @@ const Users = () => {
             skip_count: queryParams?.skip_count || 0,
             from_date: queryParams?.from_date || currentDate,
             to_date: queryParams?.to_date || currentDate,
-            status: "",
+            status: queryParams?.status == "all" ? "" : queryParams?.status ? queryParams?.status : 1,
             risk_score: "",
             case_of_htn: "",
             case_of_dm: "",
@@ -35,13 +38,27 @@ const Users = () => {
             cataract_assessment_result: "",
             difficulty_hearing: "",
             abhaid_status: "",
-            search_term: ""
+            search_term: queryParams?.search_term || ""
         }
         const response = await defaultInstance.get(API_ENDPOINTS.USER_MASTER_LIST, { params: params });
         if (response?.data?.data?.length > 0 && response?.data?.success) {
-            setAllData(response?.data?.data)
+            setAllData(response?.data?.data);
+            setTotalCount(response?.data?.total_count || 0)
         }
     }
+
+    const handlePaginate = (type) => {
+        const { role_type, from_date, to_date, search_term, status, page_limit = 20, skip_count = 0 } = queryParams || {};
+        const newPageLimit = Number(page_limit) + (type === 'N' ? 20 : -20);
+        const newSkipCount = Number(skip_count) + (type === 'N' ? 20 : -20);
+        if (type == 'P' && newPageLimit >= 20) {
+            navigate(`/users?role_type=${role_type}&from_date=${from_date || currentDate}&to_date=${to_date || currentDate}&search_term=${search_term || ''}&status=${status || 1}&page_limit=${newPageLimit}&skip_count=${newSkipCount}`);
+        }
+        if (type == 'N' && newPageLimit <= totalCount) {
+            navigate(`/users?role_type=${role_type}&from_date=${from_date || currentDate}&to_date=${to_date || currentDate}&search_term=${search_term || ''}&status=${status || 1}&page_limit=${newPageLimit}&skip_count=${newSkipCount}`);
+        }
+    };
+
 
     useEffect(() => {
         getMasterList();
@@ -51,6 +68,12 @@ const Users = () => {
         <div className="role-container">
             <Filters queryParams={queryParams} />
             <FamilyMembers data={allData} />
+            <div className='custom-pagination'>
+                <div class="option-container">
+                    <div onClick={() => handlePaginate('P')} class="option">Previous</div>
+                    <div onClick={() => handlePaginate('N')} class="option">Next</div>
+                </div>
+            </div>
         </div>
     )
 }
