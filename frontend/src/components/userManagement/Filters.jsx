@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import DatePicker from 'react-datepicker';
 import { MdOutlineClose } from "react-icons/md";
 import { FaFilter } from 'react-icons/fa';
-import { getRoleLabel, ROLE_TYPE } from '../../utils/helper';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,10 +10,12 @@ const Filters = ({ queryParams }) => {
     const currentDate = moment().format('YYYY-MM-DD')
 
     const filterDefaults = {
-        start_date: currentDate,
-        end_date: currentDate,
+        from_date: currentDate,
+        to_date: currentDate,
         status: 'all',
-        search: ''
+        search: '',
+        page_limit: 20,
+        skip_count: 0
     }
 
     const navigate = useNavigate();
@@ -27,29 +28,31 @@ const Filters = ({ queryParams }) => {
 
     const applyFilters = () => {
         setShowFilterDropdown((prevState) => !prevState);
-        navigate(`/users?role_type=${queryParams?.role_type}&start_date=${filterData?.start_date}&end_date=${filterData?.end_date}&search=${filterData?.search}&status=${filterData?.status}`)
+        navigate(`/users?role_type=${queryParams?.role_type}&from_date=${filterData?.from_date}&to_date=${filterData?.to_date}&search=${filterData?.search}&status=${filterData?.status}&page_limit=${filterData?.page_limit || 20}&skip_count=${filterData?.skip_count || 0}`)
     }
 
     const resetFilters = () => {
         setFilterData(filterDefaults);
         setShowFilterDropdown((prevState) => !prevState);
-        navigate(`/users?role_type=${queryParams?.role_type}&start_date=${currentDate}&end_date=${currentDate}&search=&status=`)
+        navigate(`/users?role_type=${queryParams?.role_type}&from_date=${currentDate}&to_date=${currentDate}&search=&status=&page_limit=20&skip_count=0`)
     }
 
     useEffect(() => {
         setTimeout(() => {
             setFilterData({
-                start_date: queryParams?.start_date || null,
-                end_date: queryParams?.end_date,
+                from_date: queryParams?.from_date || null,
+                to_date: queryParams?.to_date,
                 status: queryParams?.status || 'all',
-                search: queryParams?.search || ''
+                search: queryParams?.search || '',
+                skip_count: queryParams?.skip_count || 0,
+                page_limit: queryParams?.page_limit || 20,
             })
         }, 1000);
     }, [])
 
     return (
         <div className="filters-container">
-            <span>Welcome Back, {getRoleLabel(queryParams?.role_type || ROLE_TYPE.STATE_COORDINATOR)}</span>
+            <span>Welcome Back</span>
             <div className="filter-container">
                 <button onClick={() => setShowFilterDropdown((prevState) => !prevState)} className="filter-button"><FaFilter /> Filter</button>
                 {showFilterDropdown && (
@@ -60,17 +63,19 @@ const Filters = ({ queryParams }) => {
                         <div className="filter-option">
                             <label>From Date:</label>
                             <DatePicker
-                                selected={filterData?.start_date ? moment(filterData.start_date, 'YYYY-MM-DD').toDate() : null}
-                                onChange={(date) => updateValue('start_date', moment(date).format('YYYY-MM-DD'))}
+                                selected={filterData?.from_date ? moment(filterData.from_date, 'YYYY-MM-DD').toDate() : null}
+                                onChange={(date) => updateValue('from_date', moment(date).format('YYYY-MM-DD'))}
                                 placeholderText="Select From Date"
+                                dateFormat="dd/MM/yyyy"
                             />
                         </div>
                         <div className="filter-option">
                             <label>To Date:</label>
                             <DatePicker
-                                selected={filterData?.end_date ? moment(filterData?.end_date, 'YYYY-MM-DD').toDate() : null}
-                                onChange={(date) => updateValue('end_date', moment(date).format('YYYY-MM-DD'))}
+                                selected={filterData?.to_date ? moment(filterData?.to_date, 'YYYY-MM-DD').toDate() : null}
+                                onChange={(date) => updateValue('to_date', moment(date).format('YYYY-MM-DD'))}
                                 placeholderText="Select To Date"
+                                dateFormat="dd/MM/yyyy"
                             />
                         </div>
                         <div className="filter-option">

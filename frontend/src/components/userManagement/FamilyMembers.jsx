@@ -17,14 +17,14 @@ const FamilyMembers = ({ data }) => {
                         <tr key={memIdx}>
                             {allParameters?.map((item, dataIdx) => {
                                 let details = mem;
-                                if (item?.key === 'dob' && mem?.dob) {
-                                    const date = new Date(mem?.dob);
+                                if (item?.value === 'pi_dob' && mem?.pi_dob) {
+                                    const date = new Date(mem?.pi_dob);
                                     const options = { year: 'numeric', month: 'long', day: 'numeric' };
                                     const readableDate = date.toLocaleDateString('en-US', options);
-                                    details.dob = readableDate
+                                    details.pi_dob = readableDate
                                 }
                                 return (
-                                    <td key={dataIdx}>{mem?.[item?.key] || 'Not filled'}</td>
+                                    <td key={dataIdx}>{mem?.[item?.value] || 'Not filled'}</td>
                                 )
                             })}
                         </tr>
