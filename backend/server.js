@@ -3746,6 +3746,80 @@ app.get("/api/get-master-list", async (req, res) => {
   }
 });
 
+// Created by Tanmay Pradhan - 05 Nov 2024
+app.get("/api/get-screening-report", async (req, res) => {
+  const {
+    skip_count,
+    page_limit,
+    from_date,
+    to_date,
+    search_term,
+  } = req.query;
+
+  if (!skip_count || !page_limit) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Skip Count and Page Limit required" });
+  }
+  if (!from_date) {
+    from_date = format(new Date(), "yyyy-MM-dd");
+  }
+  if (!to_date) {
+    to_date = format(new Date(), "yyyy-MM-dd");
+  }
+  try {
+
+    let query = `SELECT u.name AS 'field_coordinator_name', dif.district, dif.village, COUNT(fm.id) AS 'screen_count'
+    FROM Users u 
+    JOIN district_info_fc dif ON u.district_info_id = dif.id 
+    LEFT JOIN family_members fm ON fm.fc_id = u.id
+    WHERE u.role = 'Field Coordinator'
+    AND fm.date BETWEEN ? AND ?
+    AND fm.status = 1 `;
+
+    const params = [from_date, to_date];
+
+    if (search_term) {
+      query += "AND (u.name LIKE ? OR dif.district LIKE ? OR dif.village LIKE ?) ";
+      params.push(`%${search_term}%`,`%${search_term}%`,`%${search_term}%`);
+    }
+
+    query += `GROUP BY u.name, dif.district, dif.village LIMIT ? OFFSET ?;`;
+    params.push(parseInt(page_limit));
+    params.push(parseInt(skip_count));
+
+    let totalScreenQuery = `SELECT COUNT(fm.id) AS 'total_screenings' 
+    FROM family_members fm;`;
+
+    let currentScreenQuery = `SELECT COUNT(fm.id) AS 'today_screenings' 
+    FROM family_members fm
+    WHERE fm.date = NOW();`;
+
+    const [result] = await db.promise().query(query, params);
+
+    const [totalResult] = await db.promise().query(totalScreenQuery);
+
+    const [currentResult] = await db.promise().query(currentScreenQuery);
+
+    if (result.length > 0) {
+      res.status(200).json({
+        success: true,
+        total_screenings_till_date : totalResult[0].total_screenings,
+        today_screenings : currentResult[0].today_screenings,
+        data: result,
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "Data Not Found!!",
+      });
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
