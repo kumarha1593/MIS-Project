@@ -13,20 +13,20 @@ app.use(bodyParser.json());
 
 // MySQL database connection
 // REMOTE
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "$Mumuksh14$",
-  database: "manipur",
-});
-
-// LOCAL
 // const db = mysql.createConnection({
 //   host: "localhost",
 //   user: "root",
-//   password: "Admin@123",
+//   password: "$Mumuksh14$",
 //   database: "manipur",
 // });
+
+// LOCAL
+const db = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "Admin@123",
+  database: "manipur",
+});
 
 db.connect((err) => {
   if (err) {
@@ -3463,6 +3463,14 @@ app.get("/api/get-master-list", async (req, res) => {
     difficulty_hearing,
     abhaid_status,
     search_term,
+    village,
+    district,
+    health_facility,
+    sex,
+    age,
+    alcohol_use,
+    disability,
+    leprosy
   } = req.query;
 
   if (!skip_count || !page_limit) {
@@ -3611,10 +3619,11 @@ app.get("/api/get-master-list", async (req, res) => {
           aat.other_advices AS 'other_advices',
           aat.remarks AS 'remarks',
           ab.abhaid_status AS 'abha_id_status',
-          family_members.date AS 'screening_date'
+          family_members.date AS 'screening_date',
+          district_info.health_facility AS 'health_facility'
         FROM family_members
         JOIN Users ON Users.id = family_members.fc_id AND Users.role = 'Field Coordinator'
-        LEFT JOIN (SELECT dif1.user_id, dif1.district, dif1.village
+        LEFT JOIN (SELECT dif1.user_id, dif1.district, dif1.village, dif1.health_facility
         FROM
           district_info_fc dif1
         INNER JOIN (
@@ -3652,7 +3661,7 @@ app.get("/api/get-master-list", async (req, res) => {
           COUNT(*) AS total_rows
         FROM family_members
         JOIN Users ON Users.id = family_members.fc_id AND Users.role = 'Field Coordinator'
-        LEFT JOIN (SELECT dif1.user_id, dif1.district, dif1.village
+        LEFT JOIN (SELECT dif1.user_id, dif1.district, dif1.village, dif1.health_facility
         FROM
           district_info_fc dif1
         INNER JOIN (
@@ -3765,6 +3774,58 @@ app.get("/api/get-master-list", async (req, res) => {
       params.push(abhaid_status);
     }
 
+    if(village) {
+      query += "AND district_info.village = ? ";
+      totalQuery += "AND district_info.village = ? ";
+      params.push(village);
+    }
+
+    if(district) {
+      query += "AND district_info.district LIKE ? ";
+      totalQuery += "AND district_info.district LIKE ? ";
+      params.push(`%${district}%`,);
+    }
+
+    if(health_facility) {
+      query += "AND district_info.health_facility LIKE ? ";
+      totalQuery += "AND district_info.health_facility LIKE ? ";
+      params.push(`%${health_facility}%`,);
+    }
+
+    if(sex) {
+      query += "AND pi.sex = ? ";
+      totalQuery += "AND pi.sex = ? ";
+      params.push(sex);
+    }
+
+    if(age) {
+      query += "AND ra.age = ? ";
+      totalQuery += "AND ra.age = ? ";
+      params.push(age);
+    }
+
+    if(alcohol_use) {
+      query += "AND ra.alcohol_use = ? ";
+      totalQuery += "AND ra.alcohol_use = ? ";
+      params.push(alcohol_use);
+    }
+
+    if(disability) {
+      query += "AND pi.disability = ? ";
+      totalQuery += "AND pi.disability = ? ";
+      params.push(disability);
+    }
+
+    if(leprosy == 'Yes') {
+      query += "AND (lp.hypopigmented_patch = ? OR lp.recurrent_ulceration = ? OR lp.clawing_of_fingers = ? OR lp.inability_to_close_eyelid = ? OR lp.difficulty_holding_objects = ?) ";
+      totalQuery += "AND (lp.hypopigmented_patch = ? OR lp.recurrent_ulceration = ? OR lp.clawing_of_fingers = ? OR lp.inability_to_close_eyelid = ? OR lp.difficulty_holding_objects = ?) ";
+      params.push(leprosy,leprosy,leprosy,leprosy,leprosy);
+    } else if(leprosy == 'No'){
+      query += "AND (lp.hypopigmented_patch = ? AND lp.recurrent_ulceration = ? AND lp.clawing_of_fingers = ? AND lp.inability_to_close_eyelid = ? AND lp.difficulty_holding_objects = ?) ";
+      totalQuery += "AND (lp.hypopigmented_patch = ? AND lp.recurrent_ulceration = ? AND lp.clawing_of_fingers = ? AND lp.inability_to_close_eyelid = ? AND lp.difficulty_holding_objects = ?) ";
+      params.push(leprosy,leprosy,leprosy,leprosy,leprosy);
+    }
+
     if (search_term) {
       query +=
         "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.district LIKE ? OR district_info.village LIKE ?) ";
@@ -3778,13 +3839,17 @@ app.get("/api/get-master-list", async (req, res) => {
       );
     }
 
-    query += `LIMIT ? OFFSET ?;`;
-    params.push(parseInt(page_limit));
-    params.push(parseInt(skip_count));
+    if(page_limit != '-1' && skip_count != '-1') {
+      query += `LIMIT ? OFFSET ?;`;
+      params.push(parseInt(page_limit));
+      params.push(parseInt(skip_count));
+    }
 
     const [result] = await db.promise().query(query, params);
     
-    params.splice(-2, 2);
+    if(page_limit != '-1' && skip_count != '-1') {
+      params.splice(-2, 2);
+    }
 
     const [totalResult] = await db.promise().query(totalQuery, params);
 
@@ -3883,7 +3948,7 @@ app.get("/api/get-screening-report", async (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
