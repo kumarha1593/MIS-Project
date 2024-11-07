@@ -10,5 +10,6 @@ export const API_ENDPOINTS = {
   ADMIN_LOGIN: `${process.env.REACT_APP_API_PREFIX}admin/login/`,
   CREATE_VILLAGE: `${process.env.REACT_APP_API_PREFIX}create-village/`,
   VILLAGE_LIST: `${process.env.REACT_APP_API_PREFIX}village-list/`,
+  SCREENING_REPORT: `${process.env.REACT_APP_API_PREFIX}get-screening-report/`,
   // Add more API endpoints as needed
 };

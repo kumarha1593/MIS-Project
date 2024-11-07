@@ -19,7 +19,7 @@ const Users = () => {
     const [allData, setAllData] = useState([]);
     const [totalCount, setTotalCount] = useState(0);
 
-    const getMasterList = async () => {
+    const fetchMasterList = async () => {
         const params = {
             page_limit: queryParams?.page_limit || 20,
             skip_count: queryParams?.skip_count || 0,
@@ -49,24 +49,36 @@ const Users = () => {
 
     const handlePaginate = (type) => {
         const { role_type, from_date, to_date, search_term, status, page_limit = 20, skip_count = 0 } = queryParams || {};
-        const newPageLimit = Number(page_limit) + (type === 'N' ? 20 : -20);
-        const newSkipCount = Number(skip_count) + (type === 'N' ? 20 : -20);
-        if (type == 'P' && newPageLimit >= 20) {
-            navigate(`/users?role_type=${role_type}&from_date=${from_date || currentDate}&to_date=${to_date || currentDate}&search_term=${search_term || ''}&status=${status || 1}&page_limit=${newPageLimit}&skip_count=${newSkipCount}`);
+        const newPageLimit = page_limit;
+        let newSkipCount = Number(skip_count);
+
+        if (type === 'N') {
+            newSkipCount += 20;
+            if (newSkipCount >= totalCount) {
+                newSkipCount = totalCount - (totalCount % page_limit);
+            }
+        } else if (type === 'P') {
+            newSkipCount -= 20;
+            if (newSkipCount < 0) {
+                newSkipCount = 0;
+            }
         }
-        if (type == 'N' && newPageLimit <= totalCount) {
-            navigate(`/users?role_type=${role_type}&from_date=${from_date || currentDate}&to_date=${to_date || currentDate}&search_term=${search_term || ''}&status=${status || 1}&page_limit=${newPageLimit}&skip_count=${newSkipCount}`);
-        }
+
+        navigate(`/users?role_type=${role_type}&from_date=${from_date || currentDate}&to_date=${to_date || currentDate}&search_term=${search_term || ''}&status=${status || 1}&page_limit=${newPageLimit}&skip_count=${newSkipCount}`);
     };
 
 
     useEffect(() => {
-        getMasterList();
+        fetchMasterList();
     }, [JSON.stringify(queryParams)]);
 
     return (
         <div className="role-container">
-            <Filters queryParams={queryParams} />
+            <Filters
+                queryParams={queryParams}
+                totalCount={totalCount}
+                viewingCount={Number(queryParams?.skip_count) + 20}
+            />
             <FamilyMembers data={allData} />
             <div className='custom-pagination'>
                 <div class="option-container">
