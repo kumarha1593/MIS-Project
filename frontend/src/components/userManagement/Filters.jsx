@@ -55,7 +55,7 @@ const Filters = ({ queryParams, totalCount, viewingCount }) => {
             <span>Welcome Back</span>
             <div style={{ display: 'flex', alignItems: 'center' }}>
                 <p style={{ marginRight: '5px' }}>{`Showing ${viewingCount > totalCount ? totalCount : viewingCount} of ${totalCount} results`}</p>
-                <button style={{ padding: '8px 10px' }} onClick={() => navigate(`/screening-count?from_date=${currentDate}&to_date=${currentDate}&search_term=&page_limit=20&skip_count=`)} className="add-user-button">Screening Count</button>
+                <button style={{ padding: '8px 10px' }} onClick={() => navigate(`/screening-count?role_type=${queryParams?.role_type}&from_date=${currentDate}&to_date=${currentDate}&search_term=&page_limit=20&skip_count=`)} className="add-user-button">Screening Count</button>
                 <button style={{ padding: '8px 10px' }} onClick={() => alert('to be implemented!')} className="add-user-button">Bulk Export</button>
                 <div className="filter-container">
                     <button onClick={() => setShowFilterDropdown((prevState) => !prevState)} className="filter-button"><FaFilter /> Filter</button>

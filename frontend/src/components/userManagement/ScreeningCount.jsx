@@ -52,13 +52,14 @@ const ScreeningCount = () => {
                     </tbody>
                 </table>
             </div>
-            <div style={{ marginTop: 50 }} className="fm-item-container">
+            <div style={{ marginTop: 40 }} className="fm-item-container">
                 <table className="fm-item-table">
                     <thead>
                         <tr>
                             <th>Field Coordinator Name</th>
                             <th>District</th>
                             <th>Village</th>
+                            <th>Health Facility</th>
                             <th>Screen Count</th>
                         </tr>
                     </thead>
@@ -69,6 +70,7 @@ const ScreeningCount = () => {
                                     <td>{item?.field_coordinator_name || 'Not filled'}</td>
                                     <td>{item?.district || 'Not filled'}</td>
                                     <td>{item?.village || 'Not filled'}</td>
+                                    <td>{item?.health_facility || 'Not filled'}</td>
                                     <td>{item?.screen_count || '0'}</td>
                                 </tr>
                             )
