@@ -3473,16 +3473,10 @@ app.get("/api/get-master-list", async (req, res) => {
     leprosy
   } = req.query;
 
-  if (!skip_count || !page_limit) {
+  if (!skip_count || !page_limit || !from_date || !to_date) {
     return res
       .status(500)
-      .json({ success: false, message: "Skip Count and Page Limit required" });
-  }
-  if (!from_date) {
-    from_date = format(new Date(), "yyyy-MM-dd");
-  }
-  if (!to_date) {
-    to_date = format(new Date(), "yyyy-MM-dd");
+      .json({ success: false, message: "Skip Count, Page Limit, From Date and To Date are required" });
   }
   try {
 
@@ -3883,16 +3877,10 @@ app.get("/api/get-screening-report", async (req, res) => {
     search_term,
   } = req.query;
 
-  if (!skip_count || !page_limit) {
+  if (!skip_count || !page_limit || !from_date || !to_date) {
     return res
       .status(500)
-      .json({ success: false, message: "Skip Count and Page Limit required" });
-  }
-  if (!from_date) {
-    from_date = format(new Date(), "yyyy-MM-dd");
-  }
-  if (!to_date) {
-    to_date = format(new Date(), "yyyy-MM-dd");
+      .json({ success: false, message: "Skip Count, Page Limit, From Date and To Date are required" });
   }
   try {
 
@@ -3920,13 +3908,13 @@ app.get("/api/get-screening-report", async (req, res) => {
 
     let currentScreenQuery = `SELECT COUNT(fm.id) AS 'today_screenings' 
     FROM family_members fm
-    WHERE fm.date = ? ;`;
+    WHERE fm.date = CURDATE();`;
 
     const [result] = await db.promise().query(query, params);
 
     const [totalResult] = await db.promise().query(totalScreenQuery);
 
-    const [currentResult] = await db.promise().query(currentScreenQuery,[format(new Date(), "yyyy-MM-dd")]);
+    const [currentResult] = await db.promise().query(currentScreenQuery);
 
     if (result.length > 0) {
       res.status(200).json({
