@@ -3884,12 +3884,13 @@ app.get("/api/get-screening-report", async (req, res) => {
   }
   try {
 
-    let query = `SELECT u.name AS 'field_coordinator_name', dif.district, dif.village, COUNT(fm.id) AS 'screen_count'
+    let query = `SELECT u.name AS 'field_coordinator_name', dif.district, dif.village, 
+    dif.health_facility,
+    COUNT(fm.id) AS 'screen_count'
     FROM Users u 
-    JOIN district_info_fc dif ON u.district_info_id = dif.id 
+    LEFT JOIN district_info_fc dif ON u.district_info_id = dif.id 
     LEFT JOIN family_members fm ON fm.fc_id = u.id
-    WHERE u.role = 'Field Coordinator'
-    AND fm.date BETWEEN ? AND ?
+    WHERE fm.date BETWEEN ? AND ?
     AND fm.status = 1 `;
 
     const params = [from_date, to_date];
@@ -3899,7 +3900,7 @@ app.get("/api/get-screening-report", async (req, res) => {
       params.push(`%${search_term}%`,`%${search_term}%`,`%${search_term}%`);
     }
 
-    query += `GROUP BY u.name, dif.district, dif.village LIMIT ? OFFSET ?;`;
+    query += `GROUP BY u.name, dif.district, dif.village, dif.health_facility LIMIT ? OFFSET ?;`;
     params.push(parseInt(page_limit));
     params.push(parseInt(skip_count));
 
