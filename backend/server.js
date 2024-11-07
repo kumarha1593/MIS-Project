@@ -13,20 +13,20 @@ app.use(bodyParser.json());
 
 // MySQL database connection
 // REMOTE
-// const db = mysql.createConnection({
-//   host: "localhost",
-//   user: "root",
-//   password: "$Mumuksh14$",
-//   database: "manipur",
-// });
-
-// LOCAL
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "Admin@123",
+  password: "$Mumuksh14$",
   database: "manipur",
 });
+
+// LOCAL
+// const db = mysql.createConnection({
+//   host: "localhost",
+//   user: "root",
+//   password: "Admin@123",
+//   database: "manipur",
+// });
 
 db.connect((err) => {
   if (err) {
@@ -3948,7 +3948,7 @@ app.get("/api/get-screening-report", async (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
