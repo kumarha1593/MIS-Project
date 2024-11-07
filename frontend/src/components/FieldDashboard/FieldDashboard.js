@@ -151,15 +151,26 @@ const FieldDashboard = () => {
   };
 
   const handleAddRow = () => {
+    if (!districtInfo?.village) {
+      alert('Please complete the village information first!')
+      return
+    }
     setShowModal(true);
   };
 
   const handleRowClick = (id) => {
-    // Pass the id of the clicked person to FamilyDetails page
+    if (!districtInfo?.village) {
+      alert('Please complete the village information first!')
+      return
+    }
     navigate(`/family-details/${id}`);
   };
 
   const handleCompleteForm = (fm_id) => {
+    if (!districtInfo?.village) {
+      alert('Please complete the village information first!')
+      return
+    }
     localStorage.setItem("current_fm_id", fm_id);
     navigate("/FormPage");
   };
@@ -350,14 +361,14 @@ const FieldDashboard = () => {
         <tbody>
           {filteredData.map((row) => (
             <tr key={row.id}>
-              <td onClick={() => handleRowClick(row.id)}>{row.name}</td>
+              <td style={{ cursor: 'pointer' }} onClick={() => handleRowClick(row.id)}>{row.name}</td>
               <td>{row.familyMemberCount + 1}</td>
               <td>{row.Aadhar}</td>
               <td>
                 {row.status === 0 ? (
                   <button
                     onClick={() => handleCompleteForm(row.id)}
-                    style={{ padding: "3px", backgroundColor: "red" }}
+                    style={{ padding: "3px", backgroundColor: "red", cursor: 'pointer' }}
                   >
                     Pending
                   </button>

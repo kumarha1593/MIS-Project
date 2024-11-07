@@ -27,13 +27,13 @@ const ScreeningFilter = ({ queryParams }) => {
 
     const applyFilters = () => {
         setShowFilterDropdown((prevState) => !prevState);
-        navigate(`/screening-count?from_date=${filterData?.from_date}&to_date=${filterData?.to_date}&search_term=${filterData?.search_term}&page_limit=${filterData?.page_limit || 20}&skip_count=${filterData?.skip_count || 0}`)
+        navigate(`/screening-count?role_type=${queryParams?.role_type}&from_date=${filterData?.from_date}&to_date=${filterData?.to_date}&search_term=${filterData?.search_term}&page_limit=${filterData?.page_limit || 20}&skip_count=${filterData?.skip_count || 0}`)
     }
 
     const resetFilters = () => {
         setFilterData(filterDefaults);
         setShowFilterDropdown((prevState) => !prevState);
-        navigate(`/screening-count?from_date=${currentDate}&to_date=${currentDate}&search_term=&page_limit=20&skip_count=0`)
+        navigate(`/screening-count?role_type=${queryParams?.role_type}&from_date=${currentDate}&to_date=${currentDate}&search_term=&page_limit=20&skip_count=0`)
     }
 
     useEffect(() => {
@@ -53,7 +53,7 @@ const ScreeningFilter = ({ queryParams }) => {
 
     return (
         <div className="filters-container">
-            <span>Screening Count</span>
+            <span style={{ cursor: 'pointer' }} onClick={() => navigate(`/users?role_type=${queryParams?.role_type}&from_date=${currentDate}&to_date=${currentDate}&search_term=&page_limit=20&skip_count=0&status=1`)} >Screening Count</span>
             <div className="filter-container">
                 <button onClick={() => setShowFilterDropdown((prevState) => !prevState)} className="filter-button"><FaFilter /> Filter</button>
                 {showFilterDropdown && (

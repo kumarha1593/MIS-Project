@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import moment from "moment";
 
 const ABHAIdStatus = ({ currentFmId }) => {
   const [formData, setFormData] = useState({
@@ -147,11 +148,19 @@ const ABHAIdStatus = ({ currentFmId }) => {
           type="date"
           name="screeningDate"
           value={formData.screeningDate}
-          onChange={handleInputChange}
+          onChange={(evt) => {
+            const today = moment();
+            const pastYear = moment().subtract(1, 'year');
+            const selectedMoment = moment(evt.target?.value);
+            if (selectedMoment.isBetween(pastYear, today, undefined, '[]')) {
+              handleInputChange(evt)
+            } else {
+              alert('Please select a date within the past year.');
+            }
+          }}
           style={styles.input}
         />
       </div>
-
       <button type="button" onClick={handleSave} style={styles.button}>
         Save Draft
       </button>
