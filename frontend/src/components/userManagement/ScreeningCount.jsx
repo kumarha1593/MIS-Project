@@ -22,8 +22,9 @@ const ScreeningCount = () => {
         const params = { from_date, to_date, search_term, page_limit, skip_count: skip_count || '0' }
 
         const response = await defaultInstance.get(API_ENDPOINTS.SCREENING_REPORT, { params });
-        if (response?.data?.data?.length > 0 && response?.data?.success) {
-            setAllData(response?.data?.data);
+
+        if (response?.data?.success) {
+            setAllData(response?.data?.data?.length > 0 ? response?.data?.data : []);
             setTodayScreenings(response?.data?.today_screenings || 0)
             setTotalScreeningsTillDate(response?.data?.total_screenings_till_date || 0)
         }
