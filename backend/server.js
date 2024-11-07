@@ -3904,11 +3904,13 @@ app.get("/api/get-screening-report", async (req, res) => {
     params.push(parseInt(skip_count));
 
     let totalScreenQuery = `SELECT COUNT(fm.id) AS 'total_screenings' 
-    FROM family_members fm;`;
+    FROM family_members fm
+    WHERE fm.status = 1;`;
 
     let currentScreenQuery = `SELECT COUNT(fm.id) AS 'today_screenings' 
     FROM family_members fm
-    WHERE fm.date = CURDATE();`;
+    WHERE fm.date = CURDATE()
+    AND fm.status = 1;`;
 
     const [result] = await db.promise().query(query, params);
 
