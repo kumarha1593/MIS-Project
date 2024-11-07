@@ -3896,8 +3896,8 @@ app.get("/api/get-screening-report", async (req, res) => {
     const params = [from_date, to_date];
 
     if (search_term) {
-      query += "AND (u.name LIKE ? OR dif.district LIKE ? OR dif.village LIKE ?) ";
-      params.push(`%${search_term}%`,`%${search_term}%`,`%${search_term}%`);
+      query += "AND (u.name LIKE ? OR dif.district LIKE ? OR dif.village LIKE ? OR dif.health_facility LIKE ?) ";
+      params.push(`%${search_term}%`,`%${search_term}%`,`%${search_term}%`,`%${search_term}%`);
     }
 
     query += `GROUP BY u.name, dif.district, dif.village, dif.health_facility LIMIT ? OFFSET ?;`;
