@@ -6,6 +6,10 @@ const moment = require("moment");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const fs = require('fs');
+const jsonexport = require('jsonexport');
+const path = require('path');
+
 // Middleware
 app.use(cors()); // Use CORS middleware
 app.use(express.json()); // Added to parse JSON bodies
@@ -3825,7 +3829,7 @@ app.get("/api/get-master-list", async (req, res) => {
         "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.district LIKE ? OR district_info.village LIKE ?) ";
         totalQuery +=
         "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.district LIKE ? OR district_info.village LIKE ?) ";
-      queryParams.push(
+      params.push(
         `%${search_term}%`,
         `%${search_term}%`,
         `%${search_term}%`,
@@ -3937,6 +3941,358 @@ app.get("/api/get-screening-report", async (req, res) => {
         data: [],
       });
     }
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Created by Tanmay Pradhan - 28 Oct 2024
+app.get("/api/export-master-list", async (req, res) => {
+  const {
+    from_date,
+    to_date,
+    status,
+    risk_score,
+    case_of_htn,
+    case_of_dm,
+    suspected_oral_cancer,
+    suspected_breast_cancer,
+    cervical_cancer,
+    known_cvd,
+    history_of_stroke,
+    known_ckd,
+    cataract_assessment_result,
+    difficulty_hearing,
+    abhaid_status,
+    search_term,
+    village,
+    district,
+    health_facility,
+    sex,
+    age,
+    alcohol_use,
+    disability,
+    leprosy
+  } = req.query;
+
+  if (!from_date || !to_date) {
+    return res
+      .status(500)
+      .json({ success: false, message: "From Date and To Date are required" });
+  }
+  try {
+
+    let query = `SELECT
+      ROW_NUMBER() OVER (ORDER BY district_info.district) AS 'Sr No',
+      district_info.district AS 'District',
+      district_info.health_facility AS 'Health Facility',
+      district_info.village AS 'Village',
+      Users.name AS 'Field Coordinator Name',
+      district_info.asha_name AS 'ASHA Name',
+      district_info.midori_staff_name AS 'Midori Staff Name',
+      family_members.date AS 'Screening Date',
+      head_members.name AS 'Head of Family',
+      pi.name AS 'Patient Name',
+      pi.tel_no AS 'Patient Tel No',
+      pi.identifier AS 'Patient Identifier',
+      pi.card_number AS 'Identification Number',
+      pi.dob AS 'Date of Birth',
+      pi.sex AS 'Sex',
+      pi.address AS 'Address',
+      dm.case_of_dm AS 'Case of DM',
+      dm.fasting_blood_sugar AS 'Fasting Blood Sugar',
+      dm.post_prandial_blood_sugar AS 'Post Prandial Blood Sugar',
+      dm.random_blood_sugar AS 'Random Blood Sugar',
+      ra.age AS 'Age',
+      pi.state_health_insurance AS 'State Health Insurance',
+      pi.state_health_insurance_remark AS 'State Health Insurance Remark',
+      pi.disability AS 'Disability',
+      pi.disability_remark AS 'Disability Remark',
+      h.height AS 'Height',
+      h.weight AS 'Weight',
+      h.bmi AS 'BMI',
+      h.temp AS 'Temperature',
+      h.spO2 AS 'SPO2',
+      h.pulse AS 'Pulse',
+      ht.case_of_htn AS 'Case of HTN',
+      ht.action_high_bp AS 'Action High BP',
+      ht.referral_center AS 'Referral Center HTN',
+      ht.upper_bp AS 'Upper BP',
+      ht.lower_bp AS 'Lower BP',
+      dm.action_high_bs AS 'Action High BS',
+      dm.referral_center AS 'Referral Center DM',
+      ra.tobacco_use AS 'Tobacco Use',
+      ra.alcohol_use AS 'Alcohol Use',
+      ra.waist_female AS 'Female Waist',
+      ra.waist_male AS 'Male Waist',
+      ra.physical_activity AS 'Physical Activity',
+      ra.family_diabetes_history AS 'Family Diabetes History',
+      ra.risk_score AS 'Risk Score',
+      oc.known_case AS 'OC Known Case',
+      oc.difficulty_opening_mouth AS 'Difficulty Opening Mouth',
+      oc.persistent_ulcer AS 'Persistent Ulcer',
+      oc.growth_in_mouth AS 'Growth in Mouth',
+      oc.persistent_patch AS 'Persistent Patch',
+      oc.difficulty_chewing AS 'Difficulty Chewing',
+      oc.swelling_in_neck AS 'Swelling in Neck',
+      oc.suspected_oral_cancer AS 'Suspected Oral Cancer',
+      bc.known_case AS 'BC Known Case',
+      bc.lump_in_breast AS 'Lump in Breast',
+      bc.blood_stained_discharge AS 'Blood Stained Discharge',
+      bc.change_in_shape AS 'Change in Shape',
+      bc.constant_pain_or_swelling AS 'Constant Pain or Swelling',
+      bc.redness_or_ulcer AS 'Redness or Ulcer',
+      bc.suspected_breast_cancer AS 'Suspected Breast Cancer',
+      cc.known_case AS 'CC Known Case',
+      cc.bleeding_between_periods AS 'Bleeding Between Periods',
+      cc.bleeding_after_menopause AS 'Bleeding After Menopause',
+      cc.bleeding_after_intercourse AS 'Bleeding After Intercourse',
+      cc.foul_smelling_discharge AS 'Foul Smelling Discharge',
+      cc.via_appointment_date AS 'VIA Appointment Date',
+      cc.via_result AS 'VIA Result',
+      cvd.known_case AS 'CVD Known Case',
+      cvd.heart_sound AS 'Heart Sound',
+      cvd.symptom AS 'Symptom',
+      cvd.cvd_date AS 'CVD Date',
+      cvd.suspected_cvd AS 'Suspected CVD',
+      cvd.teleconsultation AS 'Teleconsultation',
+      cvd.referral AS 'Referral',
+      cvd.referral_centre AS 'Referral Centre',
+      ps.history_of_stroke AS 'History of Stroke',
+      ps.stroke_date AS 'Stroke Date',
+      ps.present_condition AS 'Present Condition',
+      ps.stroke_sign_action AS 'Stroke Sign Action',
+      ps.referral_center_name AS 'Referral Center Name',
+      ckd.knownCKD AS 'Known CKD',
+      ckd.historyCKDStone AS 'History CKD Stone',
+      ckd.ageAbove50 AS 'Age Above 50',
+      ckd.hypertensionPatient AS 'Hypertension Patient',
+      ckd.diabetesPatient AS 'Diabetes Patient',
+      ckd.anemiaPatient AS 'Anemia Patient',
+      ckd.historyOfStroke AS 'History of Stroke CKD',
+      ckd.swellingFaceLeg AS 'Swelling Face Leg',
+      ckd.historyNSAIDS AS 'History NSAIDS',
+      ckd.ckdRiskScore AS 'CKD Risk Score',
+      ckd.riskaAssessment AS 'Risk Assessment',
+      ct.known_case_crd AS 'Known Case CRD',
+      ct.crd_specify AS 'CRD Specify',
+      ct.occupational_exposure AS 'Occupational Exposure',
+      ct.cooking_fuel_type AS 'Cooking Fuel Type',
+      ct.chest_sound AS 'Chest Sound',
+      ct.chest_sound_action AS 'Chest Sound Action',
+      ct.referral_center_name AS 'Referral Center Name CT',
+      ct.copd_confirmed AS 'COPD Confirmed',
+      ct.copd_confirmation_date AS 'COPD Confirmation Date',
+      ct.shortness_of_breath AS 'Shortness of Breath',
+      ct.coughing_more_than_2_weeks AS 'Coughing More Than 2 Weeks',
+      ct.blood_in_sputum AS 'Blood in Sputum',
+      ct.fever_more_than_2_weeks AS 'Fever More Than 2 Weeks',
+      ct.night_sweats AS 'Night Sweats',
+      ct.taking_anti_tb_drugs AS 'Taking Anti TB Drugs',
+      ct.family_tb_history AS 'Family TB History',
+      ct.history_of_tb AS 'History of TB',
+      ca.cloudy_blurred_vision AS 'Cloudy Blurred Vision',
+      ca.pain_or_redness AS 'Pain or Redness',
+      ca.cataract_assessment_result AS 'Cataract Assessment Result',
+      hi.difficulty_hearing AS 'Difficulty Hearing',
+      lp.hypopigmented_patch AS 'Hypopigmented Patch',
+      lp.recurrent_ulceration AS 'Recurrent Ulceration',
+      lp.clawing_of_fingers AS 'Clawing of Fingers',
+      lp.inability_to_close_eyelid AS 'Inability to Close Eyelid',
+      lp.difficulty_holding_objects AS 'Difficulty Holding Objects',
+      el.unsteady_walking AS 'Unsteady Walking',
+      el.physical_disability AS 'Physical Disability',
+      el.help_from_others AS 'Help from Others',
+      el.forget_names AS 'Forget Names',
+      mh.little_interest_or_pleasure AS 'Little Interest or Pleasure',
+      mh.feeling_down_or_depressed AS 'Feeling Down or Depressed',
+      mh.mental_health_score AS 'Mental Health Score',
+      mh.mental_health_problem AS 'Mental Health Problem',
+      mh.history_of_fits AS 'History of Fits',
+      mh.other_mental_disorder AS 'Other Mental Disorder',
+      mh.brief_intervention_given AS 'Brief Intervention Given',
+      mh.intervention_type AS 'Intervention Type',
+      aat.major_ncd_detected AS 'Major NCD Detected',
+      aat.any_other_disease_detected AS 'Any Other Disease Detected',
+      aat.known_case_dm_htn AS 'Known Case DM HTN',
+      aat.teleconsultation AS 'Teleconsultation',
+      aat.prescription_given AS 'Prescription Given',
+      aat.other_advices AS 'Other Advices',
+      aat.remarks AS 'Remarks',
+      ab.abhaid_status AS 'ABHA ID Status' 
+    FROM family_members
+    JOIN Users ON Users.id = family_members.fc_id AND Users.role = 'Field Coordinator'
+    LEFT JOIN (SELECT dif1.user_id, dif1.district, dif1.village, dif1.health_facility, dif1.asha_name, dif1.midori_staff_name
+    FROM
+      district_info_fc dif1
+    INNER JOIN (
+      SELECT user_id, MAX(id) AS max_id
+      FROM
+        district_info_fc
+      GROUP BY
+        user_id
+      ) dif2 ON dif1.user_id = dif2.user_id AND dif1.id = dif2.max_id
+    ) AS district_info ON district_info.user_id = Users.id
+    LEFT JOIN master_data ON master_data.id = family_members.master_data_id
+    LEFT JOIN personal_info AS pi ON pi.id = master_data.personal_info_id
+    LEFT JOIN health AS h ON h.id = master_data.health_id
+    LEFT JOIN htn AS ht ON ht.id = master_data.htn_id
+    LEFT JOIN DM AS dm ON dm.id = master_data.dm_id
+    LEFT JOIN risk_assessment AS ra ON ra.id = master_data.risk_assessment_id
+    LEFT JOIN oralcancer AS oc ON oc.id = master_data.oral_cancer_id
+    LEFT JOIN breastcancer AS bc ON bc.id = master_data.breast_cancer_id
+    LEFT JOIN cervicalcancer AS cc ON cc.id = master_data.cervical_cancer_id
+    LEFT JOIN cvd AS cvd ON cvd.id = master_data.CVD_id
+    LEFT JOIN poststroke AS ps ON ps.id = master_data.post_stroke_id
+    LEFT JOIN ckd_assessment AS ckd ON ckd.id = master_data.CKD_id
+    LEFT JOIN copdtb AS ct ON ct.id = master_data.COPD_TB
+    LEFT JOIN cataract AS ca ON ca.id = master_data.cataract_id
+    LEFT JOIN hearingissue AS hi ON hi.id = master_data.hearing_id
+    LEFT JOIN leprosy AS lp ON lp.id = master_data.leprosy_id
+    LEFT JOIN elderly AS el ON el.id = master_data.elderly_id
+    LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
+    LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
+    LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
+    LEFT JOIN family_members AS head_members ON head_members.id = family_members.head_id
+    WHERE family_members.date BETWEEN ? AND ? `;
+
+    const params = [from_date, to_date];
+
+    if (status) {
+      query += "AND family_members.status = ? ";
+      params.push(status);
+    }
+
+    if (risk_score) {
+      query += "AND ra.risk_score = ? ";
+      params.push(risk_score);
+    }
+
+    if (case_of_htn) {
+      query += "AND ht.case_of_htn = ? ";
+      params.push(case_of_htn);
+    }
+
+    if (case_of_dm) {
+      query += "AND dm.case_of_dm = ? ";
+      params.push(case_of_dm);
+    }
+
+    if (suspected_oral_cancer) {
+      query += "AND oc.suspected_oral_cancer = ? ";
+      params.push(suspected_oral_cancer);
+    }
+
+    if (suspected_breast_cancer) {
+      query += "AND bc.suspected_breast_cancer = ? ";
+      params.push(suspected_breast_cancer);
+    }
+
+    if (cervical_cancer) {
+      query += "AND cc.known_case = ? ";
+      params.push(cervical_cancer);
+    }
+
+    if (known_cvd) {
+      query += "AND cvd.known_case = ? ";
+      params.push(known_cvd);
+    }
+
+    if (history_of_stroke) {
+      query += "AND ps.history_of_stroke = ? ";
+      params.push(history_of_stroke);
+    }
+
+    if (known_ckd) {
+      query += "AND ckd.knownCKD = ? ";
+      params.push(known_ckd);
+    }
+
+    if (cataract_assessment_result) {
+      query += "AND ca.cataract_assessment_result = ? ";
+      params.push(cataract_assessment_result);
+    }
+
+    if (difficulty_hearing) {
+      query += "AND hi.difficulty_hearing = ? ";
+      params.push(difficulty_hearing);
+    }
+
+    if (abhaid_status) {
+      query += "AND ab.abhaid_status = ? ";
+      params.push(abhaid_status);
+    }
+
+    if(village) {
+      query += "AND district_info.village = ? ";
+      params.push(village);
+    }
+
+    if(district) {
+      query += "AND district_info.district LIKE ? ";
+      params.push(`%${district}%`,);
+    }
+
+    if(health_facility) {
+      query += "AND district_info.health_facility LIKE ? ";
+      params.push(`%${health_facility}%`,);
+    }
+
+    if(sex) {
+      query += "AND pi.sex = ? ";
+      params.push(sex);
+    }
+
+    if(age) {
+      query += "AND ra.age = ? ";
+      params.push(age);
+    }
+
+    if(alcohol_use) {
+      query += "AND ra.alcohol_use = ? ";
+      params.push(alcohol_use);
+    }
+
+    if(disability) {
+      query += "AND pi.disability = ? ";
+      params.push(disability);
+    }
+
+    if(leprosy == 'Yes') {
+      query += "AND (lp.hypopigmented_patch = ? OR lp.recurrent_ulceration = ? OR lp.clawing_of_fingers = ? OR lp.inability_to_close_eyelid = ? OR lp.difficulty_holding_objects = ?) ";
+      params.push(leprosy,leprosy,leprosy,leprosy,leprosy);
+    } else if(leprosy == 'No'){
+      query += "AND (lp.hypopigmented_patch = ? AND lp.recurrent_ulceration = ? AND lp.clawing_of_fingers = ? AND lp.inability_to_close_eyelid = ? AND lp.difficulty_holding_objects = ?) ";
+      params.push(leprosy,leprosy,leprosy,leprosy,leprosy);
+    }
+
+    if (search_term) {
+      query +=
+        "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.district LIKE ? OR district_info.village LIKE ?) ";
+      params.push(
+        `%${search_term}%`,
+        `%${search_term}%`,
+        `%${search_term}%`,
+        `%${search_term}%`
+      );
+    }
+
+    const [result] = await db.promise().query(query, params);
+
+    const filePath = path.join(__dirname, 'output.csv');
+    const csv = await jsonexport(result);
+    fs.writeFileSync(filePath, csv);
+    // Send the file as a response
+    res.download(filePath, 'data.csv', (err) => {
+      if (err) {
+        res.status(500).send("Error downloading the file.");
+      }
+
+      // Clean up the file after sending
+      fs.unlinkSync(filePath);
+    });
+
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ success: false, message: "Server error" });
