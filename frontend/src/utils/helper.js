@@ -248,8 +248,8 @@ export const allParameters = [
 export const getFilterQuery = (data) => {
 
     const queryParams = {
-        from_date: data?.from_date || moment().subtract(1, 'day').format('YYYY-MM-DD'),
-        to_date: data?.to_date || moment().subtract(1, 'day').format('YYYY-MM-DD'),
+        from_date: data?.from_date || moment().format('YYYY-MM-DD'),
+        to_date: data?.to_date || moment().format('YYYY-MM-DD'),
         search_term: data?.search_term || '',
         page_limit: data?.page_limit || 20,
         skip_count: data?.skip_count || 0,
@@ -286,8 +286,8 @@ export const getFilterQuery = (data) => {
 export const getScreeningFilterQuery = (data) => {
 
     const queryParams = {
-        from_date: data?.from_date || moment().subtract(1, 'day').format('YYYY-MM-DD'),
-        to_date: data?.to_date || moment().subtract(1, 'day').format('YYYY-MM-DD'),
+        from_date: data?.from_date || moment().format('YYYY-MM-DD'),
+        to_date: data?.to_date || moment().format('YYYY-MM-DD'),
         search_term: data?.search_term || '',
         page_limit: data?.page_limit || 20,
         skip_count: data?.skip_count || 0,
