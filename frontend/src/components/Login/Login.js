@@ -4,8 +4,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./Login.css";
 import defaultInstance from "../../axiosHelper";
 import { API_ENDPOINTS } from "../../utils/apiEndPoints";
-import { ROLE_TYPE } from "../../utils/helper";
-import moment from 'moment';
+import { ROLE_TYPE, getFilterQuery } from "../../utils/helper";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -20,16 +19,15 @@ const Login = () => {
     try {
       const response = await defaultInstance.post(API_ENDPOINTS.LOGIN, apiPayload);
       if (response?.data?.token) {
-        const date = moment().format('YYYY-MM-DD')
         const userData = response?.data?.user_info;
         localStorage.setItem("token", response?.data?.token);
         localStorage.setItem("user_id", response?.data?.user_id);
         const roleNavigationMap = {
           'Field Coordinator': response?.data?.hasDistrictInfo ? "/FieldDashboard" : "/home",
-          'State Coordinator': `/users?role_type=${ROLE_TYPE.STATE_COORDINATOR}&from_date=${date}&to_date=${date}&search_term=&page_limit=20&skip_count=&status=1`,
-          'Assistant State Coordinator': `/users?role_type=${ROLE_TYPE.ASSISTANT_STATE_COORDINATOR}&from_date=${date}&to_date=${date}&search_term=&page_limit=20&skip_count=&status=1`,
-          'Zonal Manager': `/users?role_type=${ROLE_TYPE.ZONAL_MANAGER}&from_date=${date}&to_date=${date}&search_term=&page_limit=20&skip_count=&status=1`,
-          'Supervisor': `/users?role_type=${ROLE_TYPE.SUPER_VISOR}&from_date=${date}&to_date=${date}&search_term=&page_limit=20&skip_count=&status=1`,
+          'State Coordinator': `/users?${getFilterQuery({ role_type: ROLE_TYPE.STATE_COORDINATOR })}`,
+          'Assistant State Coordinator': `/users?${getFilterQuery({ role_type: ROLE_TYPE.ASSISTANT_STATE_COORDINATOR })}`,
+          'Zonal Manager': `/users?${getFilterQuery({ role_type: ROLE_TYPE.ZONAL_MANAGER })}`,
+          'Supervisor': `/users?${getFilterQuery({ role_type: ROLE_TYPE.SUPER_VISOR })}`,
           'admin': `admin-home`,
         };
 

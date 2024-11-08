@@ -4,7 +4,7 @@ import Filters from './Filters';
 import defaultInstance from '../../axiosHelper';
 import { API_ENDPOINTS } from '../../utils/apiEndPoints';
 import FamilyMembers from './FamilyMembers';
-import moment from 'moment';
+import { getFilterQuery } from '../../utils/helper';
 
 const Users = () => {
 
@@ -12,43 +12,21 @@ const Users = () => {
 
     const navigate = useNavigate();
 
-    const currentDate = moment().format('YYYY-MM-DD')
-
     const queryParams = Object.fromEntries(new URLSearchParams(location?.search));
 
     const [allData, setAllData] = useState([]);
     const [totalCount, setTotalCount] = useState(0);
 
     const fetchMasterList = async () => {
-        const params = {
-            page_limit: queryParams?.page_limit || 20,
-            skip_count: queryParams?.skip_count || 0,
-            from_date: queryParams?.from_date || currentDate,
-            to_date: queryParams?.to_date || currentDate,
-            status: queryParams?.status == "all" ? "" : queryParams?.status ? queryParams?.status : 1,
-            risk_score: "",
-            case_of_htn: "",
-            case_of_dm: "",
-            suspected_oral_cancer: "",
-            suspected_breast_cancer: "",
-            cervical_cancer: "",
-            known_cvd: "",
-            history_of_stroke: "",
-            known_ckd: "",
-            cataract_assessment_result: "",
-            difficulty_hearing: "",
-            abhaid_status: "",
-            search_term: queryParams?.search_term || ""
-        }
-        const response = await defaultInstance.get(API_ENDPOINTS.USER_MASTER_LIST, { params: params });
-        if (response?.data?.data?.length > 0 && response?.data?.success) {
-            setAllData(response?.data?.data);
+        const response = await defaultInstance.get(API_ENDPOINTS.USER_MASTER_LIST, { params: queryParams });
+        if (response?.data?.success) {
+            setAllData(response?.data?.data?.length > 0 ? response?.data?.data : []);
             setTotalCount(response?.data?.total_count || 0)
         }
     }
 
     const handlePaginate = (type) => {
-        const { role_type, from_date, to_date, search_term, status, page_limit = 20, skip_count = 0 } = queryParams || {};
+        const { page_limit = 20, skip_count = 0 } = queryParams || {};
         const newPageLimit = page_limit;
         let newSkipCount = Number(skip_count);
 
@@ -64,7 +42,9 @@ const Users = () => {
             }
         }
 
-        navigate(`/users?role_type=${role_type}&from_date=${from_date || currentDate}&to_date=${to_date || currentDate}&search_term=${search_term || ''}&status=${status || 1}&page_limit=${newPageLimit}&skip_count=${newSkipCount}`);
+        const queryString = getFilterQuery({ ...queryParams, page_limit: newPageLimit, skip_count: newSkipCount })
+
+        navigate(`/users?${queryString}`);
     };
 
 

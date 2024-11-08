@@ -1,6 +1,7 @@
 import * as Yup from 'yup';
 import defaultInstance from '../axiosHelper';
 import { API_ENDPOINTS } from './apiEndPoints';
+import moment from 'moment';
 
 export const ROLE_TYPE = {
     STATE_COORDINATOR: 'SC',
@@ -242,4 +243,97 @@ export const allParameters = [
     { label: "Other Advices", value: "other_advices" },
     { label: "Remarks", value: "remarks" },
     { label: "ABHA ID Status", value: "abha_id_status" },
-];  
+];
+
+export const getFilterQuery = (data) => {
+
+    const queryParams = {
+        from_date: data?.from_date || moment().format('YYYY-MM-DD'),
+        to_date: data?.to_date || moment().format('YYYY-MM-DD'),
+        search_term: data?.search_term || '',
+        page_limit: data?.page_limit || 20,
+        skip_count: data?.skip_count || 0,
+        status: data?.status == "all" ? "" : data?.status ? data?.status : 1,
+        role_type: data?.role_type || '',
+        village: data?.village || '',
+        district: data?.district || '',
+        health_facility: data?.health_facility || '',
+        risk_score: data?.risk_score || '',
+        case_of_htn: data?.case_of_htn || '',
+        case_of_dm: data?.case_of_dm || '',
+        suspected_oral_cancer: data?.suspected_oral_cancer || '',
+        suspected_breast_cancer: data?.suspected_breast_cancer || '',
+        cervical_cancer: data?.cervical_cancer || '',
+        known_cvd: data?.known_cvd || '',
+        history_of_stroke: data?.history_of_stroke || '',
+        known_ckd: data?.known_ckd || '',
+        cataract_assessment_result: data?.cataract_assessment_result || '',
+        difficulty_hearing: data?.difficulty_hearing || '',
+        leprosy: data?.leprosy || '',
+        abhaid_status: data?.abhaid_status || '',
+        sex: data?.sex || '',
+        age: data?.age || '',
+        alcohol_use: data?.alcohol_use || '',
+        disability: data?.disability || '',
+    }
+
+    const queryString = new URLSearchParams(queryParams).toString();
+
+    return queryString
+}
+
+
+export const getScreeningFilterQuery = (data) => {
+
+    const queryParams = {
+        from_date: data?.from_date || moment().format('YYYY-MM-DD'),
+        to_date: data?.to_date || moment().format('YYYY-MM-DD'),
+        search_term: data?.search_term || '',
+        page_limit: data?.page_limit || 20,
+        skip_count: data?.skip_count || 0,
+        role_type: data?.role_type || '',
+    }
+
+    const queryString = new URLSearchParams(queryParams).toString();
+
+    return queryString
+}
+
+export const riskScore = [
+    { label: 'Select', value: "" },
+    { label: 1, value: 1 },
+    { label: 2, value: 2 },
+    { label: 3, value: 3 },
+    { label: 4, value: 4 },
+    { label: 5, value: 5 },
+    { label: 6, value: 6 },
+    { label: 7, value: 7 },
+    { label: 8, value: 8 },
+]
+
+export const yesNoOptions = [
+    { label: 'Select', value: "" },
+    { label: 'Yes', value: 'Yes' },
+    { label: 'No', value: 'No' },
+]
+
+export const AbhaIdStatus = [
+    { label: 'None', value: "None" },
+    { label: 'Created', value: 'Created' },
+    { label: 'Linked', value: 'Linked' },
+]
+
+export const sex = [
+    { label: 'Select', value: "" },
+    { label: 'Male', value: 'M' },
+    { label: 'Female', value: 'F' },
+]
+
+export const age = [
+    { label: 'Select', value: "" },
+    { label: '18-29 Years', value: '18-29' },
+    { label: '30-39 Years', value: '30-39' },
+    { label: '40-49 Years', value: '40-49' },
+    { label: '50-59 Years', value: '50-59' },
+    { label: '60 years or above', value: '60 & above' },
+]

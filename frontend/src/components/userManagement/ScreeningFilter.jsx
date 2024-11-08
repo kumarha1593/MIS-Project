@@ -4,18 +4,11 @@ import { MdOutlineClose } from "react-icons/md";
 import { FaFilter } from 'react-icons/fa';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
+import { getFilterQuery, getScreeningFilterQuery } from '../../utils/helper';
 
 const ScreeningFilter = ({ queryParams }) => {
 
-    const currentDate = moment().format('YYYY-MM-DD')
-
-    const filterDefaults = {
-        from_date: currentDate,
-        to_date: currentDate,
-        search_term: '',
-        page_limit: 20,
-        skip_count: 0
-    }
+    const filterDefaults = getScreeningFilterQuery(queryParams)
 
     const navigate = useNavigate();
 
@@ -27,13 +20,15 @@ const ScreeningFilter = ({ queryParams }) => {
 
     const applyFilters = () => {
         setShowFilterDropdown((prevState) => !prevState);
-        navigate(`/screening-count?role_type=${queryParams?.role_type}&from_date=${filterData?.from_date}&to_date=${filterData?.to_date}&search_term=${filterData?.search_term}&page_limit=${filterData?.page_limit || 20}&skip_count=${filterData?.skip_count || 0}`)
+        const queryString = getScreeningFilterQuery({ ...filterData, role_type: queryParams?.role_type })
+        navigate(`/screening-count?${queryString}`)
     }
 
     const resetFilters = () => {
         setFilterData(filterDefaults);
         setShowFilterDropdown((prevState) => !prevState);
-        navigate(`/screening-count?role_type=${queryParams?.role_type}&from_date=${currentDate}&to_date=${currentDate}&search_term=&page_limit=20&skip_count=0`)
+        const queryString = getScreeningFilterQuery({ role_type: queryParams?.role_type })
+        navigate(`/screening-count?${queryString}`)
     }
 
     useEffect(() => {
@@ -53,7 +48,15 @@ const ScreeningFilter = ({ queryParams }) => {
 
     return (
         <div className="filters-container">
-            <span style={{ cursor: 'pointer' }} onClick={() => navigate(`/users?role_type=${queryParams?.role_type}&from_date=${currentDate}&to_date=${currentDate}&search_term=&page_limit=20&skip_count=0&status=1`)} >Screening Count</span>
+            <span
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                    const queryString = getFilterQuery({ role_type: queryParams?.role_type })
+                    navigate(`/users?${queryString}`)
+                }}
+            >
+                Screening Count
+            </span>
             <div className="filter-container">
                 <button onClick={() => setShowFilterDropdown((prevState) => !prevState)} className="filter-button"><FaFilter /> Filter</button>
                 {showFilterDropdown && (
