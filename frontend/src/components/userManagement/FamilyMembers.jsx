@@ -8,7 +8,7 @@ const FamilyMembers = ({ data }) => {
                 <thead>
                     <tr>
                         {allParameters?.map((parameter, paramIdx) => (
-                            <th key={paramIdx}>{parameter?.label}</th>
+                            <th style={{ backgroundColor: '#217cc070' }} key={paramIdx}>{parameter?.label}</th>
                         ))}
                     </tr>
                 </thead>

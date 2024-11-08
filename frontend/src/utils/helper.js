@@ -113,6 +113,7 @@ export const allParameters = [
     { label: "Family Member's Name", value: "family_members_name" },
     { label: "Field Coordinator Name", value: "field_coordinator_name" },
     { label: "District", value: "district" },
+    { label: "Health Facility", value: "health_facility" },
     { label: "Village", value: "village" },
     { label: "Screening Date", value: "screening_date" },
     { label: "PI Name", value: "pi_name" },
@@ -251,7 +252,7 @@ export const getFilterQuery = (data) => {
         from_date: data?.from_date || moment().format('YYYY-MM-DD'),
         to_date: data?.to_date || moment().format('YYYY-MM-DD'),
         search_term: data?.search_term || '',
-        page_limit: data?.page_limit || 20,
+        page_limit: data?.page_limit || 50,
         skip_count: data?.skip_count || 0,
         status: data?.status == "all" ? "" : data?.status ? data?.status : 1,
         role_type: data?.role_type || '',
@@ -289,7 +290,7 @@ export const getScreeningFilterQuery = (data) => {
         from_date: data?.from_date || moment().format('YYYY-MM-DD'),
         to_date: data?.to_date || moment().format('YYYY-MM-DD'),
         search_term: data?.search_term || '',
-        page_limit: data?.page_limit || 20,
+        page_limit: data?.page_limit || 400,
         skip_count: data?.skip_count || 0,
         role_type: data?.role_type || '',
     }
@@ -318,6 +319,7 @@ export const yesNoOptions = [
 ]
 
 export const AbhaIdStatus = [
+    { label: 'Select', value: "" },
     { label: 'None', value: "None" },
     { label: 'Created', value: 'Created' },
     { label: 'Linked', value: 'Linked' },
@@ -327,13 +329,27 @@ export const sex = [
     { label: 'Select', value: "" },
     { label: 'Male', value: 'M' },
     { label: 'Female', value: 'F' },
+    { label: 'Other', value: 'O' },
 ]
 
 export const age = [
     { label: 'Select', value: "" },
-    { label: '18-29 Years', value: '18-29' },
-    { label: '30-39 Years', value: '30-39' },
-    { label: '40-49 Years', value: '40-49' },
-    { label: '50-59 Years', value: '50-59' },
-    { label: '60 years or above', value: '60 & above' },
+    { label: '18-29 Years', value: '18-29 years' },
+    { label: '30-39 Years', value: '30-39 years' },
+    { label: '40-49 Years', value: '40-49 years' },
+    { label: '50-59 Years', value: '50-59 years' },
+    { label: '60 years or above', value: '60 years or above' },
+]
+
+export const htnOptions = [
+    { label: 'Select', value: "" },
+    { label: 'Yes and on treatment', value: 'yes and on treatment' },
+    { label: 'Yes and not on treatment', value: 'yes and on treatment' },
+    { label: 'No', value: 'No' },
+]
+
+export const cataract = [
+    { label: 'Select', value: "" },
+    { label: 'Suspected', value: 'suspected' },
+    { label: 'Not Suspected', value: 'not suspected' },
 ]
