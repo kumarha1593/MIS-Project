@@ -3856,9 +3856,12 @@ app.get("/api/get-master-list", async (req, res) => {
         data: result,
       });
     } else {
-      res.status(404).json({
-        success: false,
-        message: "Data Not Found!!",
+      res.status(200).json({
+        success: true,
+        total_count : totalResult[0].total_rows,
+        skip_count : parseInt(skip_count),
+        page_limit : parseInt(page_limit),
+        data: [],
       });
     }
   } catch (error) {
@@ -3927,9 +3930,11 @@ app.get("/api/get-screening-report", async (req, res) => {
         data: result,
       });
     } else {
-      res.status(404).json({
-        success: false,
-        message: "Data Not Found!!",
+      res.status(200).json({
+        success: true,
+        total_screenings_till_date : totalResult[0].total_screenings,
+        today_screenings : currentResult[0].today_screenings,
+        data: [],
       });
     }
   } catch (error) {
