@@ -4,7 +4,7 @@ import { MdOutlineClose } from "react-icons/md";
 import { FaFilter } from 'react-icons/fa';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
-import { AbhaIdStatus, age, getFilterQuery, getScreeningFilterQuery, riskScore, sex, yesNoOptions } from '../../utils/helper';
+import { AbhaIdStatus, age, cataract, getFilterQuery, getScreeningFilterQuery, htnOptions, riskScore, sex, yesNoOptions } from '../../utils/helper';
 
 const Filters = ({ queryParams, totalCount, viewingCount, onExport }) => {
 
@@ -39,7 +39,7 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport }) => {
                 status: queryParams?.status || '1',
                 search_term: queryParams?.search_term || '',
                 skip_count: queryParams?.skip_count || 0,
-                page_limit: queryParams?.page_limit || 20,
+                page_limit: queryParams?.page_limit || 50,
             })
         }, 1000);
     }, [])
@@ -155,12 +155,12 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport }) => {
                             </div>
 
                             <div className="filter-option">
-                                <label>Htn:</label>
+                                <label>HTN:</label>
                                 <select
                                     value={filterData?.case_of_htn || ""}
                                     onChange={(e) => updateValue('case_of_htn', e.target.value || '')}
                                 >
-                                    {yesNoOptions.map((option, idx) => {
+                                    {htnOptions.map((option, idx) => {
                                         return (
                                             <option key={idx} value={option?.value}>{option?.label}</option>
                                         )
@@ -174,7 +174,7 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport }) => {
                                     value={filterData?.case_of_dm || ""}
                                     onChange={(e) => updateValue('case_of_dm', e.target.value || '')}
                                 >
-                                    {yesNoOptions.map((option, idx) => {
+                                    {htnOptions.map((option, idx) => {
                                         return (
                                             <option key={idx} value={option?.value}>{option?.label}</option>
                                         )
@@ -188,7 +188,7 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport }) => {
                                     value={filterData?.suspected_oral_cancer || ""}
                                     onChange={(e) => updateValue('suspected_oral_cancer', e.target.value || '')}
                                 >
-                                    {yesNoOptions.map((option, idx) => {
+                                    {htnOptions.map((option, idx) => {
                                         return (
                                             <option key={idx} value={option?.value}>{option?.label}</option>
                                         )
@@ -202,7 +202,7 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport }) => {
                                     value={filterData?.suspected_breast_cancer || ""}
                                     onChange={(e) => updateValue('suspected_breast_cancer', e.target.value || '')}
                                 >
-                                    {yesNoOptions.map((option, idx) => {
+                                    {htnOptions.map((option, idx) => {
                                         return (
                                             <option key={idx} value={option?.value}>{option?.label}</option>
                                         )
@@ -216,7 +216,7 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport }) => {
                                     value={filterData?.cervical_cancer || ""}
                                     onChange={(e) => updateValue('cervical_cancer', e.target.value || '')}
                                 >
-                                    {yesNoOptions.map((option, idx) => {
+                                    {htnOptions.map((option, idx) => {
                                         return (
                                             <option key={idx} value={option?.value}>{option?.label}</option>
                                         )
@@ -230,7 +230,7 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport }) => {
                                     value={filterData?.known_cvd || ""}
                                     onChange={(e) => updateValue('known_cvd', e.target.value || '')}
                                 >
-                                    {yesNoOptions.map((option, idx) => {
+                                    {htnOptions.map((option, idx) => {
                                         return (
                                             <option key={idx} value={option?.value}>{option?.label}</option>
                                         )
@@ -258,7 +258,7 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport }) => {
                                     value={filterData?.known_ckd || ""}
                                     onChange={(e) => updateValue('known_ckd', e.target.value || '')}
                                 >
-                                    {yesNoOptions.map((option, idx) => {
+                                    {htnOptions.map((option, idx) => {
                                         return (
                                             <option key={idx} value={option?.value}>{option?.label}</option>
                                         )
@@ -272,7 +272,7 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport }) => {
                                     value={filterData?.cataract_assessment_result || ""}
                                     onChange={(e) => updateValue('cataract_assessment_result', e.target.value || '')}
                                 >
-                                    {yesNoOptions.map((option, idx) => {
+                                    {cataract.map((option, idx) => {
                                         return (
                                             <option key={idx} value={option?.value}>{option?.label}</option>
                                         )

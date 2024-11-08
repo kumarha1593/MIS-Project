@@ -17,7 +17,7 @@ const ScreeningCount = () => {
 
     const fetchScreeningReport = async () => {
 
-        const { from_date, to_date, search_term, page_limit = 20, skip_count = 0 } = queryParams || {};
+        const { from_date, to_date, search_term, page_limit = 400, skip_count = 0 } = queryParams || {};
 
         const params = { from_date, to_date, search_term, page_limit, skip_count: skip_count || '0' }
 
@@ -41,14 +41,14 @@ const ScreeningCount = () => {
                 <table className="fm-item-table">
                     <thead>
                         <tr>
-                            <th>Total Screening</th>
-                            <th>Today Screening</th>
+                            <th style={{ backgroundColor: '#217cc070' }}>Total Screening</th>
+                            <th style={{ backgroundColor: '#217cc070' }}>Today Screening</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>{totalScreeningsTillDate}</td>
-                            <td>{todayScreenings}</td>
+                            <td style={{ fontSize: '20px', fontWeight: 700 }}>{totalScreeningsTillDate}</td>
+                            <td style={{ fontSize: '20px', fontWeight: 700 }}>{todayScreenings}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -57,11 +57,11 @@ const ScreeningCount = () => {
                 <table className="fm-item-table">
                     <thead>
                         <tr>
-                            <th>Field Coordinator Name</th>
-                            <th>District</th>
-                            <th>Village</th>
-                            <th>Health Facility</th>
-                            <th>Screen Count</th>
+                            <th style={{ backgroundColor: '#217cc070' }}>Field Coordinator Name</th>
+                            <th style={{ backgroundColor: '#217cc070' }}>District</th>
+                            <th style={{ backgroundColor: '#217cc070' }}>Village</th>
+                            <th style={{ backgroundColor: '#217cc070' }}>Health Facility</th>
+                            <th style={{ backgroundColor: '#217cc070' }}>Screen Count</th>
                         </tr>
                     </thead>
                     <tbody>

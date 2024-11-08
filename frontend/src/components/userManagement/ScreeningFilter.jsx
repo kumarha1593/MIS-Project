@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import DatePicker from 'react-datepicker';
 import { MdOutlineClose } from "react-icons/md";
-import { FaFilter } from 'react-icons/fa';
+import { FaFilter, FaHome } from 'react-icons/fa';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 import { getFilterQuery, getScreeningFilterQuery } from '../../utils/helper';
@@ -38,25 +38,26 @@ const ScreeningFilter = ({ queryParams }) => {
                 to_date: queryParams?.to_date,
                 search_term: queryParams?.search_term || '',
                 skip_count: queryParams?.skip_count || 0,
-                page_limit: queryParams?.page_limit || 20,
+                page_limit: queryParams?.page_limit || 400,
             })
         }, 1000);
     }, [])
 
-    const margin = 20;
+    const margin = 100;
     const records = Array.from({ length: 21 }, (_, i) => i * margin);
 
     return (
         <div className="filters-container">
-            <span
-                style={{ cursor: 'pointer' }}
+            <button
                 onClick={() => {
                     const queryString = getFilterQuery({ role_type: queryParams?.role_type })
                     navigate(`/users?${queryString}`)
                 }}
+                className="filter-button"
             >
-                Screening Count
-            </span>
+                <FaHome /> Home
+            </button>
+            <span style={{ fontSize: '35px' }}>Screening Count</span>
             <div className="filter-container">
                 <button onClick={() => setShowFilterDropdown((prevState) => !prevState)} className="filter-button"><FaFilter /> Filter</button>
                 {showFilterDropdown && (

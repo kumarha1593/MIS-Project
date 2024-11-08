@@ -26,17 +26,17 @@ const Users = () => {
     }
 
     const handlePaginate = (type) => {
-        const { page_limit = 20, skip_count = 0 } = queryParams || {};
+        const { page_limit = 50, skip_count = 0 } = queryParams || {};
         const newPageLimit = page_limit;
         let newSkipCount = Number(skip_count);
 
         if (type === 'N') {
-            newSkipCount += 20;
+            newSkipCount += 50;
             if (newSkipCount >= totalCount) {
                 newSkipCount = totalCount - (totalCount % page_limit);
             }
         } else if (type === 'P') {
-            newSkipCount -= 20;
+            newSkipCount -= 50;
             if (newSkipCount < 0) {
                 newSkipCount = 0;
             }
@@ -67,7 +67,7 @@ const Users = () => {
             <Filters
                 queryParams={queryParams}
                 totalCount={totalCount}
-                viewingCount={Number(queryParams?.skip_count) + 20}
+                viewingCount={Number(queryParams?.skip_count) + 50}
                 onExport={onExport}
             />
             <FamilyMembers data={allData} />
