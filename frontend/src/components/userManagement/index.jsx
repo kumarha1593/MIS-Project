@@ -47,6 +47,16 @@ const Users = () => {
         navigate(`/users?${queryString}`);
     };
 
+    const onExport = async () => {
+        const response = await defaultInstance.get(API_ENDPOINTS.EXPORT_MASTER_LIST, { params: queryParams });
+        const blob = new Blob([response?.data], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = "data.csv";
+        link.click();
+        URL.revokeObjectURL(url);
+    }
 
     useEffect(() => {
         fetchMasterList();
@@ -58,6 +68,7 @@ const Users = () => {
                 queryParams={queryParams}
                 totalCount={totalCount}
                 viewingCount={Number(queryParams?.skip_count) + 20}
+                onExport={onExport}
             />
             <FamilyMembers data={allData} />
             <div className='custom-pagination'>

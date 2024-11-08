@@ -6,7 +6,7 @@ import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 import { AbhaIdStatus, age, getFilterQuery, getScreeningFilterQuery, riskScore, sex, yesNoOptions } from '../../utils/helper';
 
-const Filters = ({ queryParams, totalCount, viewingCount }) => {
+const Filters = ({ queryParams, totalCount, viewingCount, onExport }) => {
 
     const filterDefaults = getFilterQuery(queryParams)
 
@@ -59,7 +59,7 @@ const Filters = ({ queryParams, totalCount, viewingCount }) => {
                 >
                     Screening Count
                 </button>
-                <button style={{ padding: '8px 10px' }} onClick={() => alert('to be implemented!')} className="add-user-button">Bulk Export</button>
+                <button style={{ padding: '8px 10px' }} onClick={onExport} className="add-user-button">Bulk Export</button>
                 <div className="filter-container">
                     <button onClick={() => setShowFilterDropdown((prevState) => !prevState)} className="filter-button"><FaFilter /> Filter</button>
                     {showFilterDropdown && (
