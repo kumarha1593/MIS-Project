@@ -228,10 +228,16 @@ app.post("/api/family-members-head", async (req, res) => {
     // Start a transaction
     await db.promise().beginTransaction();
 
+    // // Fetch di_id based on fc_id from district_info_fc
+    // const [diResult] = await db
+    //   .promise()
+    //   .query(`SELECT id FROM district_info_fc WHERE user_id = ?, [fc_id]`);
+    // const di_id = diResult.length > 0 ? diResult[0].id : null;
+
     // Fetch di_id based on fc_id from district_info_fc
     const [diResult] = await db
       .promise()
-      .query(`SELECT id FROM district_info_fc WHERE user_id = ?, [fc_id]`);
+      .query(`SELECT id FROM district_info_fc WHERE user_id = ? AND fc_id = ?`, [fc_id])
     const di_id = diResult.length > 0 ? diResult[0].id : null;
 
     // Insert into personal_info table
@@ -3649,7 +3655,7 @@ app.get("/api/get-master-list", async (req, res) => {
     LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
     LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
     LEFT JOIN family_members AS head_members ON head_members.id = family_members.head_id
-    WHERE family_members.date BETWEEN ? AND ? `; 
+    WHERE family_members.date BETWEEN ? AND ? `;
 
     const params = [from_date, to_date];
 
@@ -3731,62 +3737,62 @@ app.get("/api/get-master-list", async (req, res) => {
       params.push(abhaid_status);
     }
 
-    if(village) {
+    if (village) {
       query += "AND dif.village = ? ";
       totalQuery += "AND dif.village = ? ";
       params.push(village);
     }
 
-    if(district) {
+    if (district) {
       query += "AND dif.district LIKE ? ";
       totalQuery += "AND dif.district LIKE ? ";
       params.push(`%${district}%`,);
     }
 
-    if(health_facility) {
+    if (health_facility) {
       query += "AND dif.health_facility LIKE ? ";
       totalQuery += "AND dif.health_facility LIKE ? ";
       params.push(`%${health_facility}%`,);
     }
 
-    if(sex) {
+    if (sex) {
       query += "AND pi.sex = ? ";
       totalQuery += "AND pi.sex = ? ";
       params.push(sex);
     }
 
-    if(age) {
+    if (age) {
       query += "AND ra.age = ? ";
       totalQuery += "AND ra.age = ? ";
       params.push(age);
     }
 
-    if(alcohol_use) {
+    if (alcohol_use) {
       query += "AND ra.alcohol_use = ? ";
       totalQuery += "AND ra.alcohol_use = ? ";
       params.push(alcohol_use);
     }
 
-    if(disability) {
+    if (disability) {
       query += "AND pi.disability = ? ";
       totalQuery += "AND pi.disability = ? ";
       params.push(disability);
     }
 
-    if(leprosy == 'Yes') {
+    if (leprosy == 'Yes') {
       query += "AND (lp.hypopigmented_patch = ? OR lp.recurrent_ulceration = ? OR lp.clawing_of_fingers = ? OR lp.inability_to_close_eyelid = ? OR lp.difficulty_holding_objects = ?) ";
       totalQuery += "AND (lp.hypopigmented_patch = ? OR lp.recurrent_ulceration = ? OR lp.clawing_of_fingers = ? OR lp.inability_to_close_eyelid = ? OR lp.difficulty_holding_objects = ?) ";
-      params.push(leprosy,leprosy,leprosy,leprosy,leprosy);
-    } else if(leprosy == 'No'){
+      params.push(leprosy, leprosy, leprosy, leprosy, leprosy);
+    } else if (leprosy == 'No') {
       query += "AND (lp.hypopigmented_patch = ? AND lp.recurrent_ulceration = ? AND lp.clawing_of_fingers = ? AND lp.inability_to_close_eyelid = ? AND lp.difficulty_holding_objects = ?) ";
       totalQuery += "AND (lp.hypopigmented_patch = ? AND lp.recurrent_ulceration = ? AND lp.clawing_of_fingers = ? AND lp.inability_to_close_eyelid = ? AND lp.difficulty_holding_objects = ?) ";
-      params.push(leprosy,leprosy,leprosy,leprosy,leprosy);
+      params.push(leprosy, leprosy, leprosy, leprosy, leprosy);
     }
 
     if (search_term) {
       query +=
         "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.village LIKE ?) ";
-        totalQuery +=
+      totalQuery +=
         "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.village LIKE ?) ";
       params.push(
         `%${search_term}%`,
@@ -3796,15 +3802,15 @@ app.get("/api/get-master-list", async (req, res) => {
       );
     }
 
-    if(page_limit != '-1' && skip_count != '-1') {
+    if (page_limit != '-1' && skip_count != '-1') {
       query += `LIMIT ? OFFSET ?;`;
       params.push(parseInt(page_limit));
       params.push(parseInt(skip_count));
     }
 
     const [result] = await db.promise().query(query, params);
-    
-    if(page_limit != '-1' && skip_count != '-1') {
+
+    if (page_limit != '-1' && skip_count != '-1') {
       params.splice(-2, 2);
     }
 
@@ -3813,17 +3819,17 @@ app.get("/api/get-master-list", async (req, res) => {
     if (result.length > 0) {
       res.status(200).json({
         success: true,
-        total_count : totalResult[0].total_rows,
-        skip_count : parseInt(skip_count),
-        page_limit : parseInt(page_limit),
+        total_count: totalResult[0].total_rows,
+        skip_count: parseInt(skip_count),
+        page_limit: parseInt(page_limit),
         data: result,
       });
     } else {
       res.status(200).json({
         success: true,
-        total_count : totalResult[0].total_rows,
-        skip_count : parseInt(skip_count),
-        page_limit : parseInt(page_limit),
+        total_count: totalResult[0].total_rows,
+        skip_count: parseInt(skip_count),
+        page_limit: parseInt(page_limit),
         data: [],
       });
     }
@@ -3867,7 +3873,7 @@ app.get("/api/get-screening-report", async (req, res) => {
 
     if (search_term) {
       query += "AND (u.name LIKE ? OR dif.district LIKE ? OR dif.village LIKE ? OR dif.health_facility LIKE ?) ";
-      params.push(`%${search_term}%`,`%${search_term}%`,`%${search_term}%`,`%${search_term}%`);
+      params.push(`%${search_term}%`, `%${search_term}%`, `%${search_term}%`, `%${search_term}%`);
     }
 
     query += `GROUP BY u.name, dif.district, dif.village, dif.health_facility LIMIT ? OFFSET ?;`;
@@ -3892,15 +3898,15 @@ app.get("/api/get-screening-report", async (req, res) => {
     if (result.length > 0) {
       res.status(200).json({
         success: true,
-        total_screenings_till_date : totalResult[0].total_screenings,
-        today_screenings : currentResult[0].today_screenings,
+        total_screenings_till_date: totalResult[0].total_screenings,
+        today_screenings: currentResult[0].today_screenings,
         data: result,
       });
     } else {
       res.status(200).json({
         success: true,
-        total_screenings_till_date : totalResult[0].total_screenings,
-        today_screenings : currentResult[0].today_screenings,
+        total_screenings_till_date: totalResult[0].total_screenings,
+        today_screenings: currentResult[0].today_screenings,
         data: [],
       });
     }
@@ -3942,9 +3948,9 @@ app.get("/api/export-master-list", async (req, res) => {
   if (!from_date || !to_date) {
     return res
       .status(500)
-      .json({ 
-        success: false, 
-        message: "From Date and To Date are required" 
+      .json({
+        success: false,
+        message: "From Date and To Date are required"
       });
   }
   try {
@@ -4161,47 +4167,47 @@ app.get("/api/export-master-list", async (req, res) => {
       params.push(abhaid_status);
     }
 
-    if(village) {
+    if (village) {
       query += "AND dif.village = ? ";
       params.push(village);
     }
 
-    if(district) {
+    if (district) {
       query += "AND dif.district LIKE ? ";
       params.push(`%${district}%`,);
     }
 
-    if(health_facility) {
+    if (health_facility) {
       query += "AND dif.health_facility LIKE ? ";
       params.push(`%${health_facility}%`,);
     }
 
-    if(sex) {
+    if (sex) {
       query += "AND pi.sex = ? ";
       params.push(sex);
     }
 
-    if(age) {
+    if (age) {
       query += "AND ra.age = ? ";
       params.push(age);
     }
 
-    if(alcohol_use) {
+    if (alcohol_use) {
       query += "AND ra.alcohol_use = ? ";
       params.push(alcohol_use);
     }
 
-    if(disability) {
+    if (disability) {
       query += "AND pi.disability = ? ";
       params.push(disability);
     }
 
-    if(leprosy == 'Yes') {
+    if (leprosy == 'Yes') {
       query += "AND (lp.hypopigmented_patch = ? OR lp.recurrent_ulceration = ? OR lp.clawing_of_fingers = ? OR lp.inability_to_close_eyelid = ? OR lp.difficulty_holding_objects = ?) ";
-      params.push(leprosy,leprosy,leprosy,leprosy,leprosy);
-    } else if(leprosy == 'No'){
+      params.push(leprosy, leprosy, leprosy, leprosy, leprosy);
+    } else if (leprosy == 'No') {
       query += "AND (lp.hypopigmented_patch = ? AND lp.recurrent_ulceration = ? AND lp.clawing_of_fingers = ? AND lp.inability_to_close_eyelid = ? AND lp.difficulty_holding_objects = ?) ";
-      params.push(leprosy,leprosy,leprosy,leprosy,leprosy);
+      params.push(leprosy, leprosy, leprosy, leprosy, leprosy);
     }
 
     if (search_term) {
@@ -4238,7 +4244,7 @@ app.get("/api/export-master-list", async (req, res) => {
 
 // Created by Tanmay Pradhan - 08 Nov 2024
 app.put("/api/update-master-list/:fm_id", async (req, res) => {
-  const {fm_id} = req.params;
+  const { fm_id } = req.params;
   const {
     abhaid_status,
     major_ncd_detected,
@@ -4384,10 +4390,10 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
   if (!fm_id) {
     return res
       .status(500)
-      .json({ 
+      .json({
         success: false,
-         message: "FM ID is required" 
-        });
+        message: "FM ID is required"
+      });
   }
   try {
 
@@ -4942,18 +4948,18 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
     await db.promise().query(postStrokeQuery, postStrokeParams);
     await db.promise().query(raQuery, raParams);
     await db.promise().query(districtQuery, districtParams);
-    
+
     await db.promise().commit();
 
     res.status(200).json({
-      success : true,
-      message : "Updated!",
+      success: true,
+      message: "Updated!",
     });
 
   } catch (error) {
     console.error("Error:", error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: "Server error",
 
     });
