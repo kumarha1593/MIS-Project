@@ -1,5 +1,6 @@
 import React from 'react'
 import { allParameters } from '../../utils/helper'
+import moment from 'moment';
 
 const FamilyMembers = ({ data, onChange, selectedItem, showEditAction }) => {
     return (
@@ -28,7 +29,7 @@ const FamilyMembers = ({ data, onChange, selectedItem, showEditAction }) => {
                                         <input
                                             type="checkbox"
                                             id="select_all"
-                                            checked={selectedItem?.family_members_name == mem?.family_members_name ? true : false}
+                                            checked={selectedItem?.fm_id == mem?.fm_id ? true : false}
                                             onChange={(e) => onChange(mem)}
                                         />
                                     </div>
@@ -39,16 +40,10 @@ const FamilyMembers = ({ data, onChange, selectedItem, showEditAction }) => {
                             {allParameters?.map((item, dataIdx) => {
                                 let details = mem;
                                 if (item?.value === 'pi_dob' && mem?.pi_dob) {
-                                    const date = new Date(mem?.pi_dob);
-                                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                                    const readableDate = date.toLocaleDateString('en-US', options);
-                                    details.pi_dob = readableDate
+                                    details.pi_dob = moment(mem?.pi_dob).format('MMMM D, YYYY');
                                 }
                                 if (item?.value === 'screening_date' && mem?.screening_date) {
-                                    const date = new Date(mem?.screening_date);
-                                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                                    const readableDate = date.toLocaleDateString('en-US', options);
-                                    details.screening_date = readableDate
+                                    details.screening_date = moment(mem?.screening_date).format('MMMM D, YYYY');
                                 }
                                 return (
                                     <td style={{ minWidth: '200px' }} key={dataIdx}>{mem?.[item?.value] || 'Not filled'}</td>

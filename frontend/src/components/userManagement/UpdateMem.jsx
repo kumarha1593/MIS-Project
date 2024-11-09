@@ -3,16 +3,15 @@ import ButtonLoader from '../global/ButtonLoader';
 import Modal from "react-modal";
 import TextInput from '../global/TextInput';
 import SelectInput from '../global/SelectInput';
-import { inputFields } from '../../utils/helper';
-import SearchableDropdown from '../global/SearchableDropdown';
+import { formFields, inputFields } from '../../utils/helper';
+import { MdOutlineClose } from "react-icons/md";
+import moment from 'moment';
 import defaultInstance from '../../axiosHelper';
 import { API_ENDPOINTS } from '../../utils/apiEndPoints';
+const UpdateMem = ({ visible, onDismiss, data, onDone }) => {
 
-const UpdateMem = ({ visible, onDismiss, data }) => {
-
-    const [villageOptions, setVillageOptions] = useState([])
     const [isLoading, setIsLoading] = useState(false);
-    const [formData, setFormData] = useState(null);
+    const [formData, setFormData] = useState(formFields);
 
     const customStyles = {
         content: {
@@ -43,36 +42,47 @@ const UpdateMem = ({ visible, onDismiss, data }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // Perform update operation here
+        const response = await defaultInstance.put(`${API_ENDPOINTS.UPDATE_MASTER_LIST}/${data?.fm_id}/`, { data: formData });
         setIsLoading(false);
-        onDismiss();
-    }
-
-    const fetchVillages = async () => {
-        const response = await defaultInstance.get(API_ENDPOINTS.VILLAGE_LIST);
         if (response?.data?.success) {
-            const villages = response?.data?.data?.map(({ village_id, name }) => ({
-                value: village_id,
-                label: name,
-            }));
-            setVillageOptions(villages)
+            onDone();
         }
     }
 
     useEffect(() => {
-        if (visible) {
-            fetchVillages()
+        if (visible && data) {
+            updateFormData(data)
         }
-    }, [visible]);
+    }, [visible, JSON.stringify(data)])
+
+    const updateFormData = (item) => {
+        const dateFields = ['dob', 'cvd_date', 'screening_date'];
+        const smallFields = ["alcohol_use", "family_diabetes_history"];
+
+        const obj = Object.keys(formData).reduce((acc, key) => {
+            if (dateFields.includes(key)) {
+                acc[key] = item[key] ? moment(item[key], 'MMMM D, YYYY').format('YYYY-MM-DD') : '';
+            } else if (smallFields.includes(key)) {
+                acc[key] = ["0", "yes", "Yes"].includes(item[key]) ? "Yes" : ["1", "no", "No"].includes(item[key]) ? "No" : ''
+            } else {
+                acc[key] = item[key] || '';
+            }
+            return acc;
+        }, {});
+        setFormData(obj);
+    };
 
     return (
         <Modal
             isOpen={visible}
-            onRequestClose={onDismiss}
+            onRequestClose={() => { }}
             style={customStyles}
         >
             <div style={{ padding: '20px' }}>
                 <h2>Update Member Details</h2>
+                <div onClick={onDismiss} style={{ position: 'absolute', top: '20px', right: '20px', cursor: 'pointer' }}>
+                    <MdOutlineClose size={30} />
+                </div>
                 <form noValidate>
                     {inputFields.reduce((acc, field, index) => {
                         if (index % 2 === 0) {
@@ -83,37 +93,25 @@ const UpdateMem = ({ visible, onDismiss, data }) => {
                         return acc;
                     }, []).map((row, idx) => (
                         <div className="input-wrapper" key={idx}>
-                            {row.map(({ label, name, type, options }) =>
+                            {row?.map(({ label, key, type, options }) =>
                                 type === 'select' ? (
                                     <SelectInput
-                                        key={name}
+                                        key={key}
                                         label={label}
-                                        name={name}
-                                        value={formData?.[name] || ''}
+                                        name={key}
+                                        value={formData?.[key] || ''}
                                         options={options}
                                         onChange={updateValue}
                                         style={{ width: '49%' }}
                                         hideLabel
                                     />
-                                ) : type === 'village' ? (
-                                    <SearchableDropdown
-                                        options={villageOptions}
-                                        onSelect={(data) => {
-                                            setFormData(prev => ({ ...prev, ['village']: `${data?.label} / ${data?.value}` }));
-                                        }}
-                                        label='Village Name'
-                                        style={{ width: '49%' }}
-                                        value={formData?.village || ''}
-                                        inputStyle={{ padding: '11px' }}
-                                        labelStyle={{ marginTop: '-15px' }}
-                                    />
                                 ) :
                                     (
                                         <TextInput
-                                            key={name}
+                                            key={key}
                                             label={label}
-                                            name={name}
-                                            value={formData?.[name] || ''}
+                                            name={key}
+                                            value={formData?.[key] || ''}
                                             onChange={updateValue}
                                             type={type}
                                             style={{ width: '49%' }}
