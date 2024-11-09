@@ -228,17 +228,23 @@ app.post("/api/family-members-head", async (req, res) => {
     // Start a transaction
     await db.promise().beginTransaction();
 
+    // Fetch di_id based on fc_id from district_info_fc
+    const [diResult] = await db
+      .promise()
+      .query(`SELECT id FROM district_info_fc WHERE user_id = ?, [fc_id]`);
+    const di_id = diResult.length > 0 ? diResult[0].id : null;
+
     // Insert into personal_info table
     const [personalInfoResult] = await db
       .promise()
-      .query(`INSERT INTO personal_info (name) VALUES (?)`, [name]);
+      .query(`INSERT INTO personal_info (name) VALUES (?), [name]`);
     const personal_info_id = personalInfoResult.insertId;
 
-    // Insert the new family member into family_members table
+    // Insert the new family member into family_members table, including di_id
     const [familyResult] = await db.promise().query(
-      `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, status, date)
-       VALUES (?, ?, ?, 0, NULL, 0, NOW())`,
-      [fc_id, name, aadhar]
+      `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, di_id, status, date)
+       VALUES (?, ?, ?, 0, NULL, ?, 0, NOW())`,
+      [fc_id, name, aadhar, di_id]
     );
     const fm_id = familyResult.insertId;
 
@@ -246,7 +252,7 @@ app.post("/api/family-members-head", async (req, res) => {
     const [masterDataResult] = await db
       .promise()
       .query(
-        `INSERT INTO master_data (fm_id, personal_info_id) VALUES (?, ?)`,
+        `INSERT INTO master_data (fm_id, personal_info_id) VALUES (?, ?);`,
         [fm_id, personal_info_id]
       );
     const master_data_id = masterDataResult.insertId;
@@ -254,7 +260,7 @@ app.post("/api/family-members-head", async (req, res) => {
     // Update family_members with master_data_id
     await db
       .promise()
-      .query(`UPDATE family_members SET master_data_id = ? WHERE id = ?`, [
+      .query(`UPDATE family_members SET master_data_id = ? WHERE id = ?;`, [
         master_data_id,
         fm_id,
       ]);
@@ -264,13 +270,13 @@ app.post("/api/family-members-head", async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Family member added successfully",
+      message: "Family member (head) added successfully",
       fm_id,
       master_data_id,
       personal_info_id,
     });
   } catch (error) {
-    // If there's an error, rollback the transaction
+    // Rollback in case of an error
     await db.promise().rollback();
     console.error("Error inserting family member:", error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -357,19 +363,8 @@ app.get("/api/filtered-family-members/:user_id", async (req, res) => {
 //Adding family members under a family head
 app.post("/api/family-members", async (req, res) => {
   const { fc_id, name, aadhar, head_id } = req.body;
-  console.log("Received request to add family member:", {
-    fc_id,
-    name,
-    aadhar,
-    head_id,
-  });
 
-  // Validate head_id
   if (!head_id || isNaN(parseInt(head_id, 10))) {
-    console.error(
-      "Invalid or missing head_id provided in the request:",
-      head_id
-    );
     return res
       .status(400)
       .json({ success: false, message: "Valid head_id is required" });
@@ -381,59 +376,44 @@ app.post("/api/family-members", async (req, res) => {
     // Start a transaction
     await db.promise().beginTransaction();
 
+    // Fetch di_id based on fc_id from district_info_fc
+    const [diResult] = await db
+      .promise()
+      .query(`SELECT id FROM district_info_fc WHERE user_id = ?;`, [fc_id]);
+    const di_id = diResult.length > 0 ? diResult[0].id : null;
+
     // Insert into personal_info table
     const [personalInfoResult] = await db
       .promise()
       .query(`INSERT INTO personal_info (name) VALUES (?)`, [name]);
     const personal_info_id = personalInfoResult.insertId;
 
-    // Insert into family_members table
-    const insertQuery = `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, status, date)
-                         VALUES (?, ?, ?, ?, NULL, 0, NOW())`;
-    const insertValues = [fc_id, name, aadhar, parsedHeadId];
-    console.log(
-      "Executing insert query:",
-      insertQuery,
-      "with values:",
-      insertValues
-    );
-
+    // Insert into family_members table, including di_id
+    const insertQuery = `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, di_id, status, date)
+                         VALUES (?, ?, ?, ?, NULL, ?, 0, NOW())`;
+    const insertValues = [fc_id, name, aadhar, parsedHeadId, di_id];
     const [familyResult] = await db.promise().query(insertQuery, insertValues);
     const fm_id = familyResult.insertId;
-    console.log("Inserted family member with ID:", fm_id);
 
     // Insert into master_data and associate with personal_info_id
     const [masterDataResult] = await db
       .promise()
       .query(
-        `INSERT INTO master_data (fm_id, personal_info_id) VALUES (?, ?)`,
+        `INSERT INTO master_data (fm_id, personal_info_id) VALUES (?, ?);`,
         [fm_id, personal_info_id]
       );
     const master_data_id = masterDataResult.insertId;
-    console.log("Inserted master_data with ID:", master_data_id);
 
     // Update family_members with master_data_id
-    const updateQuery = `UPDATE family_members SET master_data_id = ? WHERE id = ?`;
-    const updateValues = [master_data_id, fm_id];
-    console.log(
-      "Executing update query:",
-      updateQuery,
-      "with values:",
-      updateValues
-    );
-
-    const [updateResult] = await db.promise().query(updateQuery, updateValues);
-    console.log("Update result:", updateResult);
+    await db
+      .promise()
+      .query(`UPDATE family_members SET master_data_id = ? WHERE id = ?;`, [
+        master_data_id,
+        fm_id,
+      ]);
 
     // Commit the transaction
     await db.promise().commit();
-    console.log("Transaction committed successfully");
-
-    // Fetch the inserted record to verify
-    const [verifyResult] = await db
-      .promise()
-      .query("SELECT * FROM family_members WHERE id = ?", [fm_id]);
-    console.log("Verification of inserted record:", verifyResult[0]);
 
     res.status(201).json({
       success: true,
@@ -441,18 +421,11 @@ app.post("/api/family-members", async (req, res) => {
       fm_id,
       master_data_id,
       personal_info_id,
-      verifiedRecord: verifyResult[0],
     });
   } catch (error) {
     // Rollback the transaction in case of an error
     await db.promise().rollback();
-    console.error("Error inserting family member:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: error.message,
-      stack: error.stack,
-    });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
