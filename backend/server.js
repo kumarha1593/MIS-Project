@@ -233,7 +233,7 @@ app.post("/api/family-members-head", async (req, res) => {
     // Insert into personal_info table
     const [personalInfoResult] = await db
       .promise()
-      .query(`INSERT INTO personal_info (name) VALUES (?), [name]`);
+      .query(`INSERT INTO personal_info (name) VALUES (?)`, [name]);
     const personal_info_id = personalInfoResult.insertId;
 
     // Insert the new family member into family_members table, including di_id
