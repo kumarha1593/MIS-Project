@@ -22,6 +22,7 @@ const Login = () => {
         const userData = response?.data?.user_info;
         localStorage.setItem("token", response?.data?.token);
         localStorage.setItem("user_id", response?.data?.user_id);
+        localStorage.setItem("user_data", JSON.stringify(userData));
         const roleNavigationMap = {
           'Field Coordinator': response?.data?.hasDistrictInfo ? "/FieldDashboard" : "/home",
           'State Coordinator': `/users?${getFilterQuery({ role_type: ROLE_TYPE.STATE_COORDINATOR })}`,

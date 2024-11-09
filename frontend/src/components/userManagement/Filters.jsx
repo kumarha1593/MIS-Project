@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import DatePicker from 'react-datepicker';
 import { MdOutlineClose } from "react-icons/md";
 import { FaFilter } from 'react-icons/fa';
@@ -6,9 +6,11 @@ import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 import { AbhaIdStatus, age, cataract, getFilterQuery, getScreeningFilterQuery, htnOptions, riskScore, sex, yesNoOptions } from '../../utils/helper';
 
-const Filters = ({ queryParams, totalCount, viewingCount, onExport }) => {
+const Filters = ({ queryParams, totalCount, viewingCount, onExport, selectedItem, onEdit }) => {
 
-    const filterDefaults = getFilterQuery(queryParams)
+    const filterDefaults = getFilterQuery(queryParams);
+
+    const userData = useRef(null)
 
     const navigate = useNavigate();
 
@@ -32,6 +34,10 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport }) => {
     }
 
     useEffect(() => {
+        const data = localStorage.getItem('user_data');
+        if (data) {
+            userData.current = JSON.parse(data);
+        }
         setTimeout(() => {
             setFilterData({
                 from_date: queryParams?.from_date || null,
@@ -46,9 +52,21 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport }) => {
 
     return (
         <div className="filters-container">
-            <span>Welcome Back</span>
+            <span>Welcome Back, {userData?.current?.name || ''}</span>
             <div style={{ display: 'flex', alignItems: 'center' }}>
                 <p style={{ marginRight: '5px' }}>{`Showing ${viewingCount > totalCount ? totalCount : viewingCount} of ${totalCount} results`}</p>
+                {selectedItem
+                    ?
+                    <button
+                        style={{ padding: '8px 10px' }}
+                        onClick={onEdit}
+                        className="add-user-button"
+                    >
+                        Edit
+                    </button>
+                    :
+                    null
+                }
                 <button
                     style={{ padding: '8px 10px' }}
                     onClick={() => {

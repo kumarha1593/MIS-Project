@@ -50,7 +50,6 @@
                 border: 1px solid #ddd;
                 text-align: center;
                 white-space: nowrap;
-                min-width: 200px;
             }
 
             th {
@@ -420,4 +419,10 @@
     .option:hover {
         background-color: #f0f0f0;
     }
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }

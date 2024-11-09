@@ -109,24 +109,190 @@ export const getUserDataByRole = async (queryParams, successCallBack) => {
     }
 }
 
+export const getFilterQuery = (data) => {
+
+    const queryParams = {
+        from_date: data?.from_date || moment().format('YYYY-MM-DD'),
+        to_date: data?.to_date || moment().format('YYYY-MM-DD'),
+        search_term: data?.search_term || '',
+        page_limit: data?.page_limit || 50,
+        skip_count: data?.skip_count || 0,
+        status: data?.status == "all" ? "" : data?.status ? data?.status : 1,
+        role_type: data?.role_type || '',
+        village: data?.village || '',
+        district: data?.district || '',
+        health_facility: data?.health_facility || '',
+        risk_score: data?.risk_score || '',
+        case_of_htn: data?.case_of_htn || '',
+        case_of_dm: data?.case_of_dm || '',
+        suspected_oral_cancer: data?.suspected_oral_cancer || '',
+        suspected_breast_cancer: data?.suspected_breast_cancer || '',
+        cervical_cancer: data?.cervical_cancer || '',
+        known_cvd: data?.known_cvd || '',
+        history_of_stroke: data?.history_of_stroke || '',
+        known_ckd: data?.known_ckd || '',
+        cataract_assessment_result: data?.cataract_assessment_result || '',
+        difficulty_hearing: data?.difficulty_hearing || '',
+        leprosy: data?.leprosy || '',
+        abhaid_status: data?.abhaid_status || '',
+        sex: data?.sex || '',
+        age: data?.age || '',
+        alcohol_use: data?.alcohol_use || '',
+        disability: data?.disability || '',
+    }
+
+    const queryString = new URLSearchParams(queryParams).toString();
+
+    return queryString
+}
+
+
+export const getScreeningFilterQuery = (data) => {
+
+    const queryParams = {
+        from_date: data?.from_date || moment().format('YYYY-MM-DD'),
+        to_date: data?.to_date || moment().format('YYYY-MM-DD'),
+        search_term: data?.search_term || '',
+        page_limit: data?.page_limit || 400,
+        skip_count: data?.skip_count || 0,
+        role_type: data?.role_type || '',
+    }
+
+    const queryString = new URLSearchParams(queryParams).toString();
+
+    return queryString
+}
+
+export const riskScore = [
+    { label: 'Select', value: "" },
+    { label: 1, value: 1 },
+    { label: 2, value: 2 },
+    { label: 3, value: 3 },
+    { label: 4, value: 4 },
+    { label: 5, value: 5 },
+    { label: 6, value: 6 },
+    { label: 7, value: 7 },
+    { label: 8, value: 8 },
+]
+
+export const yesNoOptions = [
+    { label: 'Select', value: "" },
+    { label: 'Yes', value: 'Yes' },
+    { label: 'No', value: 'No' },
+]
+
+export const AbhaIdStatus = [
+    { label: 'Select', value: "" },
+    { label: 'None', value: "None" },
+    { label: 'Created', value: 'Created' },
+    { label: 'Linked', value: 'Linked' },
+]
+
+export const occupationalExposure = [
+    { label: 'Select', value: "" },
+    { label: 'No', value: "No" },
+    { label: 'Crop residue burning', value: 'Crop residue burning' },
+    { label: 'Burning of garbage/leaves', value: 'Burning of garbage/leaves' },
+    { label: 'Working in industries with smoke, gas, and dust exposure', value: 'Working in industries with smoke, gas, and dust exposure' },
+]
+
+export const typeOfFuelUsedForCooking = [
+    { label: 'Select', value: "" },
+    { label: 'Firewood', value: "Firewood" },
+    { label: 'Crop Residue', value: "Crop Residue" },
+    { label: 'Cow dung cake', value: "Cow dung cake" },
+    { label: 'Coal', value: "Coal" },
+    { label: 'Kerosene', value: "Kerosene" },
+    { label: 'LPG', value: "LPG" },
+]
+
+export const sex = [
+    { label: 'Select', value: "" },
+    { label: 'Male', value: 'M' },
+    { label: 'Female', value: 'F' },
+    { label: 'Other', value: 'O' },
+]
+
+export const age = [
+    { label: 'Select', value: "" },
+    { label: '18-29 Years', value: '18-29 years' },
+    { label: '30-39 Years', value: '30-39 years' },
+    { label: '40-49 Years', value: '40-49 years' },
+    { label: '50-59 Years', value: '50-59 years' },
+    { label: '60 years or above', value: '60 years or above' },
+]
+export const tobaccoUse = [
+    { label: 'Select', value: "" },
+    { label: 'Never', value: 'Never' },
+    { label: 'Used to consume in the past/ Sometimes now', value: 'Used to consume in the past/ Sometimes now' },
+    { label: 'Daily', value: 'Daily' },
+]
+
+export const waistCircumference = [
+    { label: 'Select', value: "" },
+    { label: '80 cm or less', value: '80 cm or less' },
+    { label: '81-90 cm', value: '81-90 cm' },
+    { label: 'More than 90 cm', value: 'More than 90 cm' },
+]
+
+export const physicalActivity = [
+    { label: 'Select', value: "" },
+    { label: 'At least 150 minutes in a week', value: 'At least 150 minutes in a week' },
+    { label: 'Less than 150 minutes in a week', value: 'Less than 150 minutes in a week' },
+]
+
+export const feeling = [
+    { value: "", label: "Select" },
+    { value: "Not at all", label: "Not at all" },
+    { value: "Several days", label: "Several days" },
+    { value: "More than half the day", label: "More than half the day" },
+    { value: "Nearly every day", label: "Nearly every day" }
+]
+
+export const htnOptions = [
+    { label: 'Select', value: "" },
+    { label: 'Yes and on treatment', value: 'yes and on treatment' },
+    { label: 'Yes and not on treatment', value: 'yes and on treatment' },
+    { label: 'No', value: 'No' },
+]
+
+export const heartSound = [
+    { label: 'Select', value: "" },
+    { label: 'Normal', value: 'Normal' },
+    { label: 'Abnormal', value: 'Abnormal' },
+]
+
+export const cataract = [
+    { label: 'Select', value: "" },
+    { label: 'Suspected', value: 'suspected' },
+    { label: 'Not Suspected', value: 'not suspected' },
+]
+
+export const identifier = [
+    { label: 'Select Identifier', value: "" },
+    { label: 'ABHA ID', value: 'ABHA' },
+    { label: 'Aadhar Card', value: 'Aadhar' },
+    { label: 'Voter ID', value: 'Voter' },
+]
+
 export const allParameters = [
     { label: "Family Member's Name", value: "family_members_name" },
     { label: "Field Coordinator Name", value: "field_coordinator_name" },
     { label: "District", value: "district" },
     { label: "Health Facility", value: "health_facility" },
-    { label: "Village", value: "village" },
-    { label: "Screening Date", value: "screening_date" },
-    { label: "PI Name", value: "pi_name" },
-    { label: "PI Identifier", value: "pi_identifier" },
-    { label: "PI Card Number", value: "pi_card_number" },
-    { label: "PI Date of Birth", value: "pi_dob" },
-    { label: "PI Sex", value: "pi_sex" },
-    { label: "PI Telephone Number", value: "pi_tel_no" },
-    { label: "PI Address", value: "pi_address" },
-    { label: "PI State Health Insurance", value: "pi_state_health_insurance" },
-    { label: "PI State Health Insurance Remark", value: "pi_state_health_insurance_remark" },
-    { label: "PI Disability", value: "pi_disability" },
-    { label: "PI Disability Remark", value: "pi_disability_remark" },
+    { label: "Village", value: "village", type: 'village' },
+    { label: "Screening Date", value: "screening_date", type: 'date' },
+    { label: "Name", value: "pi_name" },
+    { label: "Identifier", value: "pi_identifier", },
+    { label: "Card Number", value: "pi_card_number", },
+    { label: "Date of Birth", value: "pi_dob", type: 'date' },
+    { label: "Sex", value: "pi_sex", },
+    { label: "Telephone Number", value: "pi_tel_no", },
+    { label: "Address", value: "pi_address" },
+    { label: "State Health Insurance", value: "pi_state_health_insurance", },
+    { label: "State Health Insurance Remark", value: "pi_state_health_insurance_remark" },
+    { label: "Disability", value: "pi_disability", },
+    { label: "Disability Remark", value: "pi_disability_remark" },
     { label: "Height", value: "height" },
     { label: "Weight", value: "weight" },
     { label: "BMI", value: "bmi" },
@@ -144,7 +310,7 @@ export const allParameters = [
     { label: "Fasting Blood Sugar", value: "fasting_blood_sugar" },
     { label: "Post-Prandial Blood Sugar", value: "post_prandial_blood_sugar" },
     { label: "Random Blood Sugar", value: "random_blood_sugar" },
-    { label: "Age", value: "age" },
+    { label: "Age", value: "age", },
     { label: "Tobacco Use", value: "tobacco_use" },
     { label: "Alcohol Use", value: "alcohol_use" },
     { label: "Waist (Female)", value: "waist_female" },
@@ -238,7 +404,7 @@ export const allParameters = [
     { label: "Intervention Type", value: "intervention_type" },
     { label: "Major NCD Detected", value: "major_ncd_detected" },
     { label: "Any Other Disease Detected", value: "any_other_disease_detected" },
-    { label: "Known Case of DM/HTN", value: "known_case_dm_htn" },
+    { label: "Known Case of DM/HTN", value: "known_case_dm_htn", },
     { label: "Teleconsultation", value: "teleconsultation" },
     { label: "Prescription Given", value: "prescription_given" },
     { label: "Other Advices", value: "other_advices" },
@@ -246,110 +412,103 @@ export const allParameters = [
     { label: "ABHA ID Status", value: "abha_id_status" },
 ];
 
-export const getFilterQuery = (data) => {
-
-    const queryParams = {
-        from_date: data?.from_date || moment().format('YYYY-MM-DD'),
-        to_date: data?.to_date || moment().format('YYYY-MM-DD'),
-        search_term: data?.search_term || '',
-        page_limit: data?.page_limit || 50,
-        skip_count: data?.skip_count || 0,
-        status: data?.status == "all" ? "" : data?.status ? data?.status : 1,
-        role_type: data?.role_type || '',
-        village: data?.village || '',
-        district: data?.district || '',
-        health_facility: data?.health_facility || '',
-        risk_score: data?.risk_score || '',
-        case_of_htn: data?.case_of_htn || '',
-        case_of_dm: data?.case_of_dm || '',
-        suspected_oral_cancer: data?.suspected_oral_cancer || '',
-        suspected_breast_cancer: data?.suspected_breast_cancer || '',
-        cervical_cancer: data?.cervical_cancer || '',
-        known_cvd: data?.known_cvd || '',
-        history_of_stroke: data?.history_of_stroke || '',
-        known_ckd: data?.known_ckd || '',
-        cataract_assessment_result: data?.cataract_assessment_result || '',
-        difficulty_hearing: data?.difficulty_hearing || '',
-        leprosy: data?.leprosy || '',
-        abhaid_status: data?.abhaid_status || '',
-        sex: data?.sex || '',
-        age: data?.age || '',
-        alcohol_use: data?.alcohol_use || '',
-        disability: data?.disability || '',
-    }
-
-    const queryString = new URLSearchParams(queryParams).toString();
-
-    return queryString
-}
-
-
-export const getScreeningFilterQuery = (data) => {
-
-    const queryParams = {
-        from_date: data?.from_date || moment().format('YYYY-MM-DD'),
-        to_date: data?.to_date || moment().format('YYYY-MM-DD'),
-        search_term: data?.search_term || '',
-        page_limit: data?.page_limit || 400,
-        skip_count: data?.skip_count || 0,
-        role_type: data?.role_type || '',
-    }
-
-    const queryString = new URLSearchParams(queryParams).toString();
-
-    return queryString
-}
-
-export const riskScore = [
-    { label: 'Select', value: "" },
-    { label: 1, value: 1 },
-    { label: 2, value: 2 },
-    { label: 3, value: 3 },
-    { label: 4, value: 4 },
-    { label: 5, value: 5 },
-    { label: 6, value: 6 },
-    { label: 7, value: 7 },
-    { label: 8, value: 8 },
-]
-
-export const yesNoOptions = [
-    { label: 'Select', value: "" },
-    { label: 'Yes', value: 'Yes' },
-    { label: 'No', value: 'No' },
-]
-
-export const AbhaIdStatus = [
-    { label: 'Select', value: "" },
-    { label: 'None', value: "None" },
-    { label: 'Created', value: 'Created' },
-    { label: 'Linked', value: 'Linked' },
-]
-
-export const sex = [
-    { label: 'Select', value: "" },
-    { label: 'Male', value: 'M' },
-    { label: 'Female', value: 'F' },
-    { label: 'Other', value: 'O' },
-]
-
-export const age = [
-    { label: 'Select', value: "" },
-    { label: '18-29 Years', value: '18-29 years' },
-    { label: '30-39 Years', value: '30-39 years' },
-    { label: '40-49 Years', value: '40-49 years' },
-    { label: '50-59 Years', value: '50-59 years' },
-    { label: '60 years or above', value: '60 years or above' },
-]
-
-export const htnOptions = [
-    { label: 'Select', value: "" },
-    { label: 'Yes and on treatment', value: 'yes and on treatment' },
-    { label: 'Yes and not on treatment', value: 'yes and on treatment' },
-    { label: 'No', value: 'No' },
-]
-
-export const cataract = [
-    { label: 'Select', value: "" },
-    { label: 'Suspected', value: 'suspected' },
-    { label: 'Not Suspected', value: 'not suspected' },
+export const inputFields = [
+    { label: "Name", key: "name", type: 'text', required: false, options: [] },
+    { label: "Identifier", key: "identifier", type: 'select', options: identifier, required: false },
+    { label: "Card Number", key: "card_number", type: 'number', required: false, options: [] },
+    { label: "Date of Birth", key: "dob", type: 'date', required: false, options: [] },
+    { label: "Sex", key: "sex", type: 'select', options: sex, required: false },
+    { label: "Phone Number", key: "phone_number", type: 'number', required: false, options: [] },
+    { label: "Address", key: "address", type: 'text', required: false, options: [] },
+    { label: "Health Insurance (State/Government/Private)", key: "health_insurance", type: 'select', options: yesNoOptions, required: false },
+    { label: "Disability", key: "disability", type: 'select', options: yesNoOptions, required: false },
+    { label: "Height (cm) *", key: "height", type: 'text', required: true, options: [] },
+    { label: "Weight (kg) *", key: "weight", type: 'text', required: true, options: [] },
+    { label: "BMI *", key: "bmi", type: 'text', required: true, options: [] },
+    { label: "Temperature (°F) *", key: "temperature", type: 'text', required: true, options: [] },
+    { label: "SpO2 (%) *", key: "spO2", type: 'text', required: true, options: [] },
+    { label: "Pulse (bpm) *", key: "pulse", type: 'text', required: true, options: [] },
+    { label: "Known case of HTN *", key: "htn", type: 'select', options: htnOptions, required: true },
+    { label: "Upper BP (mmHg) *", key: "upper_bp", type: 'text', required: true, options: [] },
+    { label: "Lower BP (mmHg) *", key: "lower_bp", type: 'text', required: true, options: [] },
+    { label: "Known case of DM *", key: "dm", type: 'select', required: true, options: htnOptions },
+    { label: "Fasting Blood Sugar (mg/dL)", key: "fasting_blood_sugar", type: 'text', required: false, options: [] },
+    { label: "Post Prandial Blood Sugar (mg/dL)", key: "post_prandial_blood_sugar", type: 'text', required: false, options: [] },
+    { label: "Random Blood Sugar (mg/dL)", key: "random_blood_sugar", type: 'text', required: false, options: [] },
+    { label: "Age *", key: "age", type: 'select', required: true, options: age },
+    { label: "Tobacco Use *", key: "tobacco_use", type: 'select', required: true, options: tobaccoUse },
+    { label: "Alcohol Consumption *", key: "alcohol_consumption", type: 'select', required: true, options: yesNoOptions },
+    { label: "Waist Circumference (Male) *", key: "waist_circumference", type: 'select', required: true, options: waistCircumference },
+    { label: "Physical Activity *", key: "physical_activity", type: 'select', required: true, options: physicalActivity },
+    { label: "Family History of Diabetes *", key: "family_history_of_diabetes", type: 'select', required: true, options: yesNoOptions },
+    { label: "Risk Score *", key: "risk_score", type: 'select', required: true, options: riskScore },
+    { label: "Known Case *", key: "known_case", type: 'select', required: true, options: htnOptions },
+    { label: "Persistent Ulcer *", key: "persistent_ulcer", type: 'select', required: true, options: yesNoOptions },
+    { label: "Persistent Patch *", key: "persistent_patch", type: 'select', required: true, options: yesNoOptions },
+    { label: "Difficulty Chewing *", key: "difficulty_chewing", type: 'select', required: true, options: yesNoOptions },
+    { label: "Difficulty Opening Mouth *", key: "difficulty_opening_mouth", type: 'select', required: true, options: yesNoOptions },
+    { label: "Growth in Mouth *", key: "growth_in_mouth", type: 'select', required: true, options: yesNoOptions },
+    { label: "Sudden change in voice *", key: "sudden_change_in_voice", type: 'select', required: true, options: yesNoOptions },
+    { label: "Suspected Oral Cancer *", key: "suspected_oral_cancer", type: 'select', required: true, options: yesNoOptions },
+    { label: "Lump in Breast *", key: "lump_in_breast", type: 'select', required: true, options: yesNoOptions },
+    { label: "Blood-Stained Discharge *", key: "blood_stained_discharge", type: 'select', required: true, options: yesNoOptions },
+    { label: "Change in Shape *", key: "change_in_shape", type: 'select', required: true, options: yesNoOptions },
+    { label: "Constant Pain or Swelling *", key: "constant_pain_or_swelling", type: 'select', required: true, options: yesNoOptions },
+    { label: "Redness or Ulcer *", key: "redness_or_ulcer", type: 'select', required: true, options: yesNoOptions },
+    { label: "Suspected Breast Cancer *", key: "suspected_breast_cancer", type: 'select', required: true, options: yesNoOptions },
+    { label: "Heart Sound *", key: "heart_sound", type: 'select', required: true, options: heartSound },
+    { label: "Symptom *", key: "symptom", type: 'select', required: true, options: yesNoOptions },
+    { label: "CVD Date *", key: "cvd_date", type: 'date', required: true, options: [] },
+    { label: "Suspected CVD *", key: "suspected_cvd", type: 'select', required: true, options: yesNoOptions },
+    { label: "History of Stroke *", key: "history_of_stroke", type: 'select', required: true, options: yesNoOptions },
+    { label: "Known case of CKD *", key: "known_case_of_ckd", type: 'select', required: true, options: htnOptions },
+    { label: "History of CKD/Stone *", key: "history_of_ckd_stone", type: 'select', required: true, options: yesNoOptions },
+    { label: "Age Above 50 *", key: "age_above_50", type: 'select', required: true, options: yesNoOptions },
+    { label: "Hypertension Patient *", key: "hypertension_patient", type: 'select', required: true, options: yesNoOptions },
+    { label: "Diabetes Patient *", key: "diabetes_patient", type: 'select', required: true, options: yesNoOptions },
+    { label: "Anemia Patient *", key: "anemia_patient", type: 'select', required: true, options: yesNoOptions },
+    { label: "History of Stroke *", key: "history_of_stroke", type: 'select', required: true, options: yesNoOptions },
+    { label: "Swelling on Face and Leg *", key: "swelling_on_face_and_leg", type: 'select', required: true, options: yesNoOptions },
+    { label: "History of NSAIDS *", key: "history_of_nsaids", type: 'select', required: true, options: yesNoOptions },
+    { label: "Risk Assessment *", key: "risk_assessment", type: 'select', required: true, options: yesNoOptions },
+    { label: "Known case of chronic respiratory diseases (ASTHMA/COPD/OTHERS) *", key: "known_case_of_chronic_respiratory_diseases", type: 'select', required: true, options: yesNoOptions },
+    { label: "Occupational Exposure *", key: "occupational_exposure", type: 'select', required: true, options: occupationalExposure },
+    { label: "Type of Fuel Used for Cooking *", key: "type_of_fuel_used_for_cooking", type: 'select', required: true, options: typeOfFuelUsedForCooking },
+    { label: "Shortness of Breath *", key: "shortness_of_breath", type: 'select', required: true, options: yesNoOptions },
+    { label: "Coughing for More Than 2 Weeks *", key: "coughing_for_more_than_2_weeks", type: 'select', required: true, options: yesNoOptions },
+    { label: "Blood in Sputum *", key: "blood_in_sputum", type: 'select', required: true, options: yesNoOptions },
+    { label: "Fever for More Than 2 Weeks *", key: "fever_for_more_than_2_weeks", type: 'select', required: true, options: yesNoOptions },
+    { label: "Night Sweats *", key: "night_sweats", type: 'select', required: true, options: yesNoOptions },
+    { label: "Are you currently taking anti-TB drugs? *", key: "currently_taking_anti_tb_drugs", type: 'select', required: true, options: yesNoOptions },
+    { label: "Anyone in family currently suffering from TB *", key: "family_currently_suffering_from_tb", type: 'select', required: true, options: yesNoOptions },
+    { label: "History of TB *", key: "history_of_tb", type: 'select', required: true, options: yesNoOptions },
+    { label: "Do you have cloudy or blurred vision? *", key: "cloudy_or_blurred_vision", type: 'select', required: true, options: yesNoOptions },
+    { label: "Pain or redness in eyes lasting for more than a week *", key: "pain_or_redness_in_eyes_lasting_more_than_week", type: 'select', required: true, options: yesNoOptions },
+    { label: "Cataract Assessment Result *", key: "cataract_assessment_result", type: 'select', required: true, options: cataract },
+    { label: "Do you have difficulty in hearing? *", key: "difficulty_in_hearing", type: 'select', required: true, options: yesNoOptions },
+    { label: "Hypopigmented or discolored lesion(s) with loss of sensation *", key: "hypopigmented_or_discolored_lesions_loss_of_sensation", type: 'select', required: true, options: yesNoOptions },
+    { label: "Recurrent ulceration on palm or sole *", key: "recurrent_ulceration_on_palm_or_sole", type: 'select', required: true, options: yesNoOptions },
+    { label: "Clawing of fingers or tingling/numbness in hands/feet *", key: "clawing_of_fingers_or_tingling_numbness_in_hands_feet", type: 'select', required: true, options: yesNoOptions },
+    { label: "Inability to close eyelid *", key: "inability_to_close_eyelid", type: 'select', required: true, options: yesNoOptions },
+    { label: "Difficulty in holding objects or weakness in feet *", key: "difficulty_in_holding_objects_or_weakness_in_feet", type: 'select', required: true, options: yesNoOptions },
+    { label: "Do you feel unsteady while standing or walking? *", key: "unsteady_while_standing_or_walking", type: 'select', required: true, options: yesNoOptions },
+    { label: "Are you suffering from any physical disability? *", key: "suffering_from_physical_disability", type: 'select', required: true, options: yesNoOptions },
+    { label: "Do you need help with everyday activities? *", key: "need_help_with_activities", type: 'select', required: true, options: yesNoOptions },
+    { label: "Do you forget names of near ones or your address? *", key: "forget_names_or_address", type: 'select', required: true, options: yesNoOptions },
+    { label: "Little interest or pleasure in doing things? *", key: "little_interest_or_pleasure_in_doing_things", type: 'select', required: true, options: feeling },
+    { label: "Feeling down, depressed, or hopeless? *", key: "feeling_down_depressed_or_hopeless", type: 'select', required: true, options: feeling },
+    { label: "Mental Health Score:", key: "mental_health_score", type: 'text', required: true, options: [] },
+    { label: "Mental Health problem detected through the questionnaire *", key: "mental_Health_problem_detected_through_the_questionnaire", type: 'select', required: true, options: yesNoOptions },
+    { label: "History of fits *", key: "history_of_fits", type: 'select', required: true, options: yesNoOptions },
+    { label: "Other mental disorder *", key: "other_mental_disorder", type: 'select', required: true, options: yesNoOptions },
+    { label: "Brief intervention given? *", key: "brief_intervention_given", type: 'select', required: true, options: yesNoOptions },
+    { label: "Major NCD Detected", key: "major_ncd_detected", type: 'text', required: true, options: [] },
+    { label: "Any Other Disease Detected", key: "any_other_disease_detected", type: 'text', required: true, options: [] },
+    { label: "Known Case of DM with HTN", key: "known_case_of_dm_with_htn", type: 'text', required: true, options: [] },
+    { label: "Teleconsultation", key: "teleconsultation", type: 'select', required: true, options: yesNoOptions },
+    { label: "Prescription Given", key: "prescription_given", type: 'select', required: true, options: yesNoOptions },
+    { label: "Other Advices", key: "other_advices", type: 'text', required: true, options: [] },
+    { label: "Remarks", key: "remarks", type: 'text', required: true, options: [] },
+    { label: "ABHA ID Status", key: "abha_id_status", type: 'select', required: true, options: AbhaIdStatus },
+    { label: "Screening Date", key: "screening_date", type: 'date', required: true, options: [] },
 ]
