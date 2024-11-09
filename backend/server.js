@@ -228,17 +228,13 @@ app.post("/api/family-members-head", async (req, res) => {
     // Start a transaction
     await db.promise().beginTransaction();
 
-    // // Fetch di_id based on fc_id from district_info_fc
+    // Fetch di_id based on fc_id from district_info_fc
     // const [diResult] = await db
     //   .promise()
     //   .query(`SELECT id FROM district_info_fc WHERE user_id = ?, [fc_id]`);
     // const di_id = diResult.length > 0 ? diResult[0].id : null;
 
-    // Fetch di_id based on fc_id from district_info_fc
-    const [diResult] = await db
-      .promise()
-      .query(`SELECT id FROM district_info_fc WHERE user_id = ? AND fc_id = ?`, [fc_id])
-    const di_id = diResult.length > 0 ? diResult[0].id : null;
+    const di_id = null;
 
     // Insert into personal_info table
     const [personalInfoResult] = await db
@@ -369,8 +365,19 @@ app.get("/api/filtered-family-members/:user_id", async (req, res) => {
 //Adding family members under a family head
 app.post("/api/family-members", async (req, res) => {
   const { fc_id, name, aadhar, head_id } = req.body;
+  console.log("Received request to add family member:", {
+    fc_id,
+    name,
+    aadhar,
+    head_id,
+  });
 
+  // Validate head_id
   if (!head_id || isNaN(parseInt(head_id, 10))) {
+    console.error(
+      "Invalid or missing head_id provided in the request:",
+      head_id
+    );
     return res
       .status(400)
       .json({ success: false, message: "Valid head_id is required" });
@@ -382,44 +389,59 @@ app.post("/api/family-members", async (req, res) => {
     // Start a transaction
     await db.promise().beginTransaction();
 
-    // Fetch di_id based on fc_id from district_info_fc
-    const [diResult] = await db
-      .promise()
-      .query(`SELECT id FROM district_info_fc WHERE user_id = ?;`, [fc_id]);
-    const di_id = diResult.length > 0 ? diResult[0].id : null;
-
     // Insert into personal_info table
     const [personalInfoResult] = await db
       .promise()
       .query(`INSERT INTO personal_info (name) VALUES (?)`, [name]);
     const personal_info_id = personalInfoResult.insertId;
 
-    // Insert into family_members table, including di_id
-    const insertQuery = `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, di_id, status, date)
-                         VALUES (?, ?, ?, ?, NULL, ?, 0, NOW())`;
-    const insertValues = [fc_id, name, aadhar, parsedHeadId, di_id];
+    // Insert into family_members table
+    const insertQuery = `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, status, date)
+                         VALUES (?, ?, ?, ?, NULL, 0, NOW())`;
+    const insertValues = [fc_id, name, aadhar, parsedHeadId];
+    console.log(
+      "Executing insert query:",
+      insertQuery,
+      "with values:",
+      insertValues
+    );
+
     const [familyResult] = await db.promise().query(insertQuery, insertValues);
     const fm_id = familyResult.insertId;
+    console.log("Inserted family member with ID:", fm_id);
 
     // Insert into master_data and associate with personal_info_id
     const [masterDataResult] = await db
       .promise()
       .query(
-        `INSERT INTO master_data (fm_id, personal_info_id) VALUES (?, ?);`,
+        `INSERT INTO master_data (fm_id, personal_info_id) VALUES (?, ?)`,
         [fm_id, personal_info_id]
       );
     const master_data_id = masterDataResult.insertId;
+    console.log("Inserted master_data with ID:", master_data_id);
 
     // Update family_members with master_data_id
-    await db
-      .promise()
-      .query(`UPDATE family_members SET master_data_id = ? WHERE id = ?;`, [
-        master_data_id,
-        fm_id,
-      ]);
+    const updateQuery = `UPDATE family_members SET master_data_id = ? WHERE id = ?`;
+    const updateValues = [master_data_id, fm_id];
+    console.log(
+      "Executing update query:",
+      updateQuery,
+      "with values:",
+      updateValues
+    );
+
+    const [updateResult] = await db.promise().query(updateQuery, updateValues);
+    console.log("Update result:", updateResult);
 
     // Commit the transaction
     await db.promise().commit();
+    console.log("Transaction committed successfully");
+
+    // Fetch the inserted record to verify
+    const [verifyResult] = await db
+      .promise()
+      .query("SELECT * FROM family_members WHERE id = ?", [fm_id]);
+    console.log("Verification of inserted record:", verifyResult[0]);
 
     res.status(201).json({
       success: true,
@@ -427,11 +449,18 @@ app.post("/api/family-members", async (req, res) => {
       fm_id,
       master_data_id,
       personal_info_id,
+      verifiedRecord: verifyResult[0],
     });
   } catch (error) {
     // Rollback the transaction in case of an error
     await db.promise().rollback();
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("Error inserting family member:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+      stack: error.stack,
+    });
   }
 });
 
@@ -3463,199 +3492,213 @@ app.get("/api/get-master-list", async (req, res) => {
   }
   try {
 
-    let query = `SELECT
-    family_members.id AS 'fm_id',
-    dif.district AS 'district',
-    dif.health_facility AS 'health_facility',
-    dif.village AS 'village',
-    Users.name AS 'field_coordinator_name',
-    family_members.name AS 'family_members_name',
-    dif.asha_name,
-    dif.midori_staff_name,
-    family_members.date AS 'screening_date',
-    head_members.name AS 'head_of_family',
-    pi.name AS 'pi_name',
-    pi.tel_no AS 'pi_tel_no',
-    pi.identifier AS 'pi_identifier',
-    pi.card_number AS 'pi_card_number',
-    pi.dob AS 'pi_dob',
-    pi.sex AS 'pi_sex',
-    pi.address AS 'pi_address',
-    dm.case_of_dm AS 'case_of_dm',
-    dm.fasting_blood_sugar AS 'fasting_blood_sugar',
-    dm.post_prandial_blood_sugar AS 'post_prandial_blood_sugar',
-    dm.random_blood_sugar AS 'random_blood_sugar',
-    ra.age AS 'age',
-    pi.state_health_insurance AS 'pi_state_health_insurance',
-    pi.state_health_insurance_remark AS 'pi_state_health_insurance_remark',
-    pi.disability AS 'pi_disability',
-    pi.disability_remark AS 'pi_disability_remark',
-    h.height AS 'height',
-    h.weight AS 'weight',
-    h.bmi AS 'bmi',
-    h.temp AS 'temperature',
-    h.spO2 AS 'spO2',
-    h.pulse AS 'pulse',
-    ht.case_of_htn AS 'case_of_htn',
-    ht.action_high_bp AS 'action_high_bp',
-    ht.referral_center AS 'referral_center_htn',
-    ht.upper_bp AS 'upper_bp',
-    ht.lower_bp AS 'lower_bp',
-    dm.action_high_bs AS 'action_high_bs',
-    dm.referral_center AS 'referral_center_dm',
-    ra.tobacco_use AS 'tobacco_use',
-    ra.alcohol_use AS 'alcohol_use',
-    ra.waist_female AS 'waist_female',
-    ra.waist_male AS 'waist_male',
-    ra.physical_activity AS 'physical_activity',
-    ra.family_diabetes_history AS 'family_diabetes_history',
-    ra.risk_score AS 'risk_score',
-    oc.known_case AS 'oc_known_case',
-    oc.difficulty_opening_mouth AS 'difficulty_opening_mouth',
-    oc.persistent_ulcer AS 'persistent_ulcer',
-    oc.growth_in_mouth AS 'growth_in_mouth',
-    oc.persistent_patch AS 'persistent_patch',
-    oc.difficulty_chewing AS 'difficulty_chewing',
-    oc.swelling_in_neck AS 'swelling_in_neck',
-    oc.suspected_oral_cancer AS 'suspected_oral_cancer',
-    bc.known_case AS 'bc_known_case',
-    bc.lump_in_breast AS 'lump_in_breast',
-    bc.blood_stained_discharge AS 'blood_stained_discharge',
-    bc.change_in_shape AS 'change_in_shape',
-    bc.constant_pain_or_swelling AS 'constant_pain_or_swelling',
-    bc.redness_or_ulcer AS 'redness_or_ulcer',
-    bc.suspected_breast_cancer AS 'suspected_breast_cancer',
-    cc.known_case AS 'cc_known_case',
-    cc.bleeding_between_periods AS 'bleeding_between_periods',
-    cc.bleeding_after_menopause AS 'bleeding_after_menopause',
-    cc.bleeding_after_intercourse AS 'bleeding_after_intercourse',
-    cc.foul_smelling_discharge AS 'foul_smelling_discharge',
-    cc.via_appointment_date AS 'via_appointment_date',
-    cc.via_result AS 'via_result',
-    cvd.known_case AS 'cvd_known_case',
-    cvd.heart_sound AS 'heart_sound',
-    cvd.symptom AS 'symptom',
-    cvd.cvd_date AS 'cvd_date',
-    cvd.suspected_cvd AS 'suspected_cvd',
-    cvd.teleconsultation AS 'cvd_teleconsultation',
-    cvd.referral AS 'cvd_referral',
-    cvd.referral_centre AS 'cvd_referral_centre',
-    ps.history_of_stroke AS 'history_of_stroke',
-    ps.stroke_date AS 'stroke_date',
-    ps.present_condition AS 'present_condition',
-    ps.stroke_sign_action AS 'stroke_sign_action',
-    ps.referral_center_name AS 'referral_center_name',
-    ckd.knownCKD AS 'known_ckd',
-    ckd.historyCKDStone AS 'history_ckd_stone',
-    ckd.ageAbove50 AS 'age_above_50',
-    ckd.hypertensionPatient AS 'hypertension_patient',
-    ckd.diabetesPatient AS 'diabetes_patient',
-    ckd.anemiaPatient AS 'anemia_patient',
-    ckd.historyOfStroke AS 'history_of_stroke_ckd',
-    ckd.swellingFaceLeg AS 'swelling_face_leg',
-    ckd.historyNSAIDS AS 'history_nsaids',
-    ckd.ckdRiskScore AS 'ckd_risk_score',
-    ckd.riskaAssessment AS 'risk_assessment',
-    ct.known_case_crd AS 'known_case_crd',
-    ct.crd_specify AS 'crd_specify',
-    ct.occupational_exposure AS 'occupational_exposure',
-    ct.cooking_fuel_type AS 'cooking_fuel_type',
-    ct.chest_sound AS 'chest_sound',
-    ct.chest_sound_action AS 'chest_sound_action',
-    ct.referral_center_name AS 'referral_center_name_ct',
-    ct.copd_confirmed AS 'copd_confirmed',
-    ct.copd_confirmation_date AS 'copd_confirmation_date',
-    ct.shortness_of_breath AS 'shortness_of_breath',
-    ct.coughing_more_than_2_weeks AS 'coughing_more_than_2_weeks',
-    ct.blood_in_sputum AS 'blood_in_sputum',
-    ct.fever_more_than_2_weeks AS 'fever_more_than_2_weeks',
-    ct.night_sweats AS 'night_sweats',
-    ct.taking_anti_tb_drugs AS 'taking_anti_tb_drugs',
-    ct.family_tb_history AS 'family_tb_history',
-    ct.history_of_tb AS 'history_of_tb',
-    ca.cloudy_blurred_vision AS 'cloudy_blurred_vision',
-    ca.pain_or_redness AS 'pain_or_redness',
-    ca.cataract_assessment_result AS 'cataract_assessment_result',
-    hi.difficulty_hearing AS 'difficulty_hearing',
-    lp.hypopigmented_patch AS 'hypopigmented_patch',
-    lp.recurrent_ulceration AS 'recurrent_ulceration',
-    lp.clawing_of_fingers AS 'clawing_of_fingers',
-    lp.inability_to_close_eyelid AS 'inability_to_close_eyelid',
-    lp.difficulty_holding_objects AS 'difficulty_holding_objects',
-    el.unsteady_walking AS 'unsteady_walking',
-    el.physical_disability AS 'physical_disability',
-    el.help_from_others AS 'help_from_others',
-    el.forget_names AS 'forget_names',
-    mh.little_interest_or_pleasure AS 'little_interest_or_pleasure',
-    mh.feeling_down_or_depressed AS 'feeling_down_or_depressed',
-    mh.mental_health_score AS 'mental_health_score',
-    mh.mental_health_problem AS 'mental_health_problem',
-    mh.history_of_fits AS 'history_of_fits',
-    mh.other_mental_disorder AS 'other_mental_disorder',
-    mh.brief_intervention_given AS 'brief_intervention_given',
-    mh.intervention_type AS 'intervention_type',
-    aat.major_ncd_detected AS 'major_ncd_detected',
-    aat.any_other_disease_detected AS 'any_other_disease_detected',
-    aat.known_case_dm_htn AS 'known_case_dm_htn',
-    aat.teleconsultation AS 'teleconsultation',
-    aat.prescription_given AS 'prescription_given',
-    aat.other_advices AS 'other_advices',
-    aat.remarks AS 'remarks',
-    ab.abhaid_status AS 'abha_id_status'   
-    FROM family_members
-    LEFT JOIN Users ON Users.id = family_members.fc_id
-    LEFT JOIN district_info_fc dif ON dif.id = family_members.di_id
-    LEFT JOIN master_data ON master_data.id = family_members.master_data_id
-    LEFT JOIN personal_info AS pi ON pi.id = master_data.personal_info_id
-    LEFT JOIN health AS h ON h.id = master_data.health_id
-    LEFT JOIN htn AS ht ON ht.id = master_data.htn_id
-    LEFT JOIN DM AS dm ON dm.id = master_data.dm_id
-    LEFT JOIN risk_assessment AS ra ON ra.id = master_data.risk_assessment_id
-    LEFT JOIN oralcancer AS oc ON oc.id = master_data.oral_cancer_id
-    LEFT JOIN breastcancer AS bc ON bc.id = master_data.breast_cancer_id
-    LEFT JOIN cervicalcancer AS cc ON cc.id = master_data.cervical_cancer_id
-    LEFT JOIN cvd AS cvd ON cvd.id = master_data.CVD_id
-    LEFT JOIN poststroke AS ps ON ps.id = master_data.post_stroke_id
-    LEFT JOIN ckd_assessment AS ckd ON ckd.id = master_data.CKD_id
-    LEFT JOIN copdtb AS ct ON ct.id = master_data.COPD_TB
-    LEFT JOIN cataract AS ca ON ca.id = master_data.cataract_id
-    LEFT JOIN hearingissue AS hi ON hi.id = master_data.hearing_id
-    LEFT JOIN leprosy AS lp ON lp.id = master_data.leprosy_id
-    LEFT JOIN elderly AS el ON el.id = master_data.elderly_id
-    LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
-    LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
-    LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
-    LEFT JOIN family_members AS head_members ON head_members.id = family_members.head_id
-    WHERE family_members.date BETWEEN ? AND ? `;
+    let query = `SELECT 
+          family_members.name AS 'family_members_name',
+          Users.name AS 'field_coordinator_name',
+          district_info.district AS 'district',
+          district_info.village AS 'village',
+          pi.name AS 'pi_name',
+          pi.identifier AS 'pi_identifier',
+          pi.card_number AS 'pi_card_number',
+          pi.dob AS 'pi_dob',
+          pi.sex AS 'pi_sex',
+          pi.tel_no AS 'pi_tel_no',
+          pi.address AS 'pi_address',
+          pi.state_health_insurance AS 'pi_state_health_insurance',
+          pi.state_health_insurance_remark AS 'pi_state_health_insurance_remark',
+          pi.disability AS 'pi_disability',
+          pi.disability_remark AS 'pi_disability_remark',
+          h.height AS 'height',
+          h.weight AS 'weight',
+          h.bmi AS 'bmi',
+          h.temp AS 'temperature',
+          h.spO2 AS 'spO2',
+          h.pulse AS 'pulse',
+          ht.case_of_htn AS 'case_of_htn',
+          ht.action_high_bp AS 'action_high_bp',
+          ht.referral_center AS 'referral_center_htn',
+          ht.upper_bp AS 'upper_bp',
+          ht.lower_bp AS 'lower_bp',
+          dm.case_of_dm AS 'case_of_dm',
+          dm.action_high_bs AS 'action_high_bs',
+          dm.referral_center AS 'referral_center_dm',
+          dm.fasting_blood_sugar AS 'fasting_blood_sugar',
+          dm.post_prandial_blood_sugar AS 'post_prandial_blood_sugar',
+          dm.random_blood_sugar AS 'random_blood_sugar',
+          ra.age AS 'age',
+          ra.tobacco_use AS 'tobacco_use',
+          ra.alcohol_use AS 'alcohol_use',
+          ra.waist_female AS 'waist_female',
+          ra.waist_male AS 'waist_male',
+          ra.physical_activity AS 'physical_activity',
+          ra.family_diabetes_history AS 'family_diabetes_history',
+          ra.risk_score AS 'risk_score',
+          oc.known_case AS 'oc_known_case',
+          oc.persistent_ulcer AS 'persistent_ulcer',
+          oc.persistent_patch AS 'persistent_patch',
+          oc.difficulty_chewing AS 'difficulty_chewing',
+          oc.difficulty_opening_mouth AS 'difficulty_opening_mouth',
+          oc.growth_in_mouth AS 'growth_in_mouth',
+          oc.swelling_in_neck AS 'swelling_in_neck',
+          oc.suspected_oral_cancer AS 'suspected_oral_cancer',
+          bc.known_case AS 'bc_known_case',
+          bc.lump_in_breast AS 'lump_in_breast',
+          bc.blood_stained_discharge AS 'blood_stained_discharge',
+          bc.change_in_shape AS 'change_in_shape',
+          bc.constant_pain_or_swelling AS 'constant_pain_or_swelling',
+          bc.redness_or_ulcer AS 'redness_or_ulcer',
+          bc.suspected_breast_cancer AS 'suspected_breast_cancer',
+          cc.known_case AS 'cc_known_case',
+          cc.bleeding_between_periods AS 'bleeding_between_periods',
+          cc.bleeding_after_menopause AS 'bleeding_after_menopause',
+          cc.bleeding_after_intercourse AS 'bleeding_after_intercourse',
+          cc.foul_smelling_discharge AS 'foul_smelling_discharge',
+          cc.via_appointment_date AS 'via_appointment_date',
+          cc.via_result AS 'via_result',
+          cvd.known_case AS 'cvd_known_case',
+          cvd.heart_sound AS 'heart_sound',
+          cvd.symptom AS 'symptom',
+          cvd.cvd_date AS 'cvd_date',
+          cvd.suspected_cvd AS 'suspected_cvd',
+          cvd.teleconsultation AS 'cvd_teleconsultation',
+          cvd.referral AS 'cvd_referral',
+          cvd.referral_centre AS 'cvd_referral_centre',
+          ps.history_of_stroke AS 'history_of_stroke',
+          ps.stroke_date AS 'stroke_date',
+          ps.present_condition AS 'present_condition',
+          ps.stroke_sign_action AS 'stroke_sign_action',
+          ps.referral_center_name AS 'referral_center_name',
+          ckd.knownCKD AS 'known_ckd',
+          ckd.historyCKDStone AS 'history_ckd_stone',
+          ckd.ageAbove50 AS 'age_above_50',
+          ckd.hypertensionPatient AS 'hypertension_patient',
+          ckd.diabetesPatient AS 'diabetes_patient',
+          ckd.anemiaPatient AS 'anemia_patient',
+          ckd.historyOfStroke AS 'history_of_stroke_ckd',
+          ckd.swellingFaceLeg AS 'swelling_face_leg',
+          ckd.historyNSAIDS AS 'history_nsaids',
+          ckd.ckdRiskScore AS 'ckd_risk_score',
+          ckd.riskaAssessment AS 'risk_assessment',
+          ct.known_case_crd AS 'known_case_crd',
+          ct.crd_specify AS 'crd_specify',
+          ct.occupational_exposure AS 'occupational_exposure',
+          ct.cooking_fuel_type AS 'cooking_fuel_type',
+          ct.chest_sound AS 'chest_sound',
+          ct.chest_sound_action AS 'chest_sound_action',
+          ct.referral_center_name AS 'referral_center_name_ct',
+          ct.copd_confirmed AS 'copd_confirmed',
+          ct.copd_confirmation_date AS 'copd_confirmation_date',
+          ct.shortness_of_breath AS 'shortness_of_breath',
+          ct.coughing_more_than_2_weeks AS 'coughing_more_than_2_weeks',
+          ct.blood_in_sputum AS 'blood_in_sputum',
+          ct.fever_more_than_2_weeks AS 'fever_more_than_2_weeks',
+          ct.night_sweats AS 'night_sweats',
+          ct.taking_anti_tb_drugs AS 'taking_anti_tb_drugs',
+          ct.family_tb_history AS 'family_tb_history',
+          ct.history_of_tb AS 'history_of_tb',
+          ca.cloudy_blurred_vision AS 'cloudy_blurred_vision',
+          ca.pain_or_redness AS 'pain_or_redness',
+          ca.cataract_assessment_result AS 'cataract_assessment_result',
+          hi.difficulty_hearing AS 'difficulty_hearing',
+          lp.hypopigmented_patch AS 'hypopigmented_patch',
+          lp.recurrent_ulceration AS 'recurrent_ulceration',
+          lp.clawing_of_fingers AS 'clawing_of_fingers',
+          lp.inability_to_close_eyelid AS 'inability_to_close_eyelid',
+          lp.difficulty_holding_objects AS 'difficulty_holding_objects',
+          el.unsteady_walking AS 'unsteady_walking',
+          el.physical_disability AS 'physical_disability',
+          el.help_from_others AS 'help_from_others',
+          el.forget_names AS 'forget_names',
+          mh.little_interest_or_pleasure AS 'little_interest_or_pleasure',
+          mh.feeling_down_or_depressed AS 'feeling_down_or_depressed',
+          mh.mental_health_score AS 'mental_health_score',
+          mh.mental_health_problem AS 'mental_health_problem',
+          mh.history_of_fits AS 'history_of_fits',
+          mh.other_mental_disorder AS 'other_mental_disorder',
+          mh.brief_intervention_given AS 'brief_intervention_given',
+          mh.intervention_type AS 'intervention_type',
+          aat.major_ncd_detected AS 'major_ncd_detected',
+          aat.any_other_disease_detected AS 'any_other_disease_detected',
+          aat.known_case_dm_htn AS 'known_case_dm_htn',
+          aat.teleconsultation AS 'teleconsultation',
+          aat.prescription_given AS 'prescription_given',
+          aat.other_advices AS 'other_advices',
+          aat.remarks AS 'remarks',
+          ab.abhaid_status AS 'abha_id_status',
+          family_members.date AS 'screening_date',
+          district_info.health_facility AS 'health_facility'
+        FROM family_members
+        JOIN Users ON Users.id = family_members.fc_id AND Users.role = 'Field Coordinator'
+        LEFT JOIN (SELECT dif1.user_id, dif1.district, dif1.village, dif1.health_facility
+        FROM
+          district_info_fc dif1
+        INNER JOIN (
+          SELECT user_id, MAX(id) AS max_id
+          FROM
+            district_info_fc
+          GROUP BY
+            user_id
+          ) dif2 ON dif1.user_id = dif2.user_id AND dif1.id = dif2.max_id
+        ) AS district_info ON district_info.user_id = Users.id
+        LEFT JOIN master_data ON master_data.id = family_members.master_data_id
+        LEFT JOIN personal_info AS pi ON pi.id = master_data.personal_info_id
+        LEFT JOIN health AS h ON h.id = master_data.health_id
+        LEFT JOIN htn AS ht ON ht.id = master_data.htn_id
+        LEFT JOIN DM AS dm ON dm.id = master_data.dm_id
+        LEFT JOIN risk_assessment AS ra ON ra.id = master_data.risk_assessment_id
+        LEFT JOIN oralcancer AS oc ON oc.id = master_data.oral_cancer_id
+        LEFT JOIN breastcancer AS bc ON bc.id = master_data.breast_cancer_id
+        LEFT JOIN cervicalcancer AS cc ON cc.id = master_data.cervical_cancer_id
+        LEFT JOIN cvd AS cvd ON cvd.id = master_data.CVD_id
+        LEFT JOIN poststroke AS ps ON ps.id = master_data.post_stroke_id
+        LEFT JOIN ckd_assessment AS ckd ON ckd.id = master_data.CKD_id
+        LEFT JOIN copdtb AS ct ON ct.id = master_data.COPD_TB
+        LEFT JOIN cataract AS ca ON ca.id = master_data.cataract_id
+        LEFT JOIN hearingissue AS hi ON hi.id = master_data.hearing_id
+        LEFT JOIN leprosy AS lp ON lp.id = master_data.leprosy_id
+        LEFT JOIN elderly AS el ON el.id = master_data.elderly_id
+        LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
+        LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
+        LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
+        WHERE family_members.date BETWEEN ? AND ? `;
 
     let totalQuery = `
     SELECT 
-    COUNT(*) AS total_rows
-    FROM family_members
-    LEFT JOIN Users ON Users.id = family_members.fc_id
-    LEFT JOIN district_info_fc dif ON dif.id = family_members.di_id
-    LEFT JOIN master_data ON master_data.id = family_members.master_data_id
-    LEFT JOIN personal_info AS pi ON pi.id = master_data.personal_info_id
-    LEFT JOIN health AS h ON h.id = master_data.health_id
-    LEFT JOIN htn AS ht ON ht.id = master_data.htn_id
-    LEFT JOIN DM AS dm ON dm.id = master_data.dm_id
-    LEFT JOIN risk_assessment AS ra ON ra.id = master_data.risk_assessment_id
-    LEFT JOIN oralcancer AS oc ON oc.id = master_data.oral_cancer_id
-    LEFT JOIN breastcancer AS bc ON bc.id = master_data.breast_cancer_id
-    LEFT JOIN cervicalcancer AS cc ON cc.id = master_data.cervical_cancer_id
-    LEFT JOIN cvd AS cvd ON cvd.id = master_data.CVD_id
-    LEFT JOIN poststroke AS ps ON ps.id = master_data.post_stroke_id
-    LEFT JOIN ckd_assessment AS ckd ON ckd.id = master_data.CKD_id
-    LEFT JOIN copdtb AS ct ON ct.id = master_data.COPD_TB
-    LEFT JOIN cataract AS ca ON ca.id = master_data.cataract_id
-    LEFT JOIN hearingissue AS hi ON hi.id = master_data.hearing_id
-    LEFT JOIN leprosy AS lp ON lp.id = master_data.leprosy_id
-    LEFT JOIN elderly AS el ON el.id = master_data.elderly_id
-    LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
-    LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
-    LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
-    LEFT JOIN family_members AS head_members ON head_members.id = family_members.head_id
-    WHERE family_members.date BETWEEN ? AND ? `;
+          COUNT(*) AS total_rows
+        FROM family_members
+        JOIN Users ON Users.id = family_members.fc_id AND Users.role = 'Field Coordinator'
+        LEFT JOIN (SELECT dif1.user_id, dif1.district, dif1.village, dif1.health_facility
+        FROM
+          district_info_fc dif1
+        INNER JOIN (
+          SELECT user_id, MAX(id) AS max_id
+          FROM
+            district_info_fc
+          GROUP BY
+            user_id
+          ) dif2 ON dif1.user_id = dif2.user_id AND dif1.id = dif2.max_id
+        ) AS district_info ON district_info.user_id = Users.id
+        LEFT JOIN master_data ON master_data.id = family_members.master_data_id
+        LEFT JOIN personal_info AS pi ON pi.id = master_data.personal_info_id
+        LEFT JOIN health AS h ON h.id = master_data.health_id
+        LEFT JOIN htn AS ht ON ht.id = master_data.htn_id
+        LEFT JOIN DM AS dm ON dm.id = master_data.dm_id
+        LEFT JOIN risk_assessment AS ra ON ra.id = master_data.risk_assessment_id
+        LEFT JOIN oralcancer AS oc ON oc.id = master_data.oral_cancer_id
+        LEFT JOIN breastcancer AS bc ON bc.id = master_data.breast_cancer_id
+        LEFT JOIN cervicalcancer AS cc ON cc.id = master_data.cervical_cancer_id
+        LEFT JOIN cvd AS cvd ON cvd.id = master_data.CVD_id
+        LEFT JOIN poststroke AS ps ON ps.id = master_data.post_stroke_id
+        LEFT JOIN ckd_assessment AS ckd ON ckd.id = master_data.CKD_id
+        LEFT JOIN copdtb AS ct ON ct.id = master_data.COPD_TB
+        LEFT JOIN cataract AS ca ON ca.id = master_data.cataract_id
+        LEFT JOIN hearingissue AS hi ON hi.id = master_data.hearing_id
+        LEFT JOIN leprosy AS lp ON lp.id = master_data.leprosy_id
+        LEFT JOIN elderly AS el ON el.id = master_data.elderly_id
+        LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
+        LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
+        LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
+        WHERE family_members.date BETWEEN ? AND ? `;
 
     const params = [from_date, to_date];
 
@@ -3738,20 +3781,20 @@ app.get("/api/get-master-list", async (req, res) => {
     }
 
     if (village) {
-      query += "AND dif.village = ? ";
-      totalQuery += "AND dif.village = ? ";
+      query += "AND district_info.village = ? ";
+      totalQuery += "AND district_info.village = ? ";
       params.push(village);
     }
 
     if (district) {
-      query += "AND dif.district LIKE ? ";
-      totalQuery += "AND dif.district LIKE ? ";
+      query += "AND district_info.district LIKE ? ";
+      totalQuery += "AND district_info.district LIKE ? ";
       params.push(`%${district}%`,);
     }
 
     if (health_facility) {
-      query += "AND dif.health_facility LIKE ? ";
-      totalQuery += "AND dif.health_facility LIKE ? ";
+      query += "AND district_info.health_facility LIKE ? ";
+      totalQuery += "AND district_info.health_facility LIKE ? ";
       params.push(`%${health_facility}%`,);
     }
 
@@ -3791,9 +3834,9 @@ app.get("/api/get-master-list", async (req, res) => {
 
     if (search_term) {
       query +=
-        "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.village LIKE ?) ";
+        "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.district LIKE ? OR district_info.village LIKE ?) ";
       totalQuery +=
-        "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.village LIKE ?) ";
+        "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.district LIKE ? OR district_info.village LIKE ?) ";
       params.push(
         `%${search_term}%`,
         `%${search_term}%`,
@@ -3856,16 +3899,12 @@ app.get("/api/get-screening-report", async (req, res) => {
   }
   try {
 
-    let query = `
-    SELECT 
-    u.name AS 'field_coordinator_name', 
-    dif.district, 
-    dif.village,
+    let query = `SELECT u.name AS 'field_coordinator_name', dif.district, dif.village, 
     dif.health_facility,
-    COUNT(fm.id) AS 'Count'
-    FROM Users u  
+    COUNT(fm.id) AS 'screen_count'
+    FROM Users u 
+    LEFT JOIN district_info_fc dif ON u.district_info_id = dif.id 
     LEFT JOIN family_members fm ON fm.fc_id = u.id
-    LEFT JOIN district_info_fc dif ON fm.di_id = dif.id
     WHERE fm.date BETWEEN ? AND ?
     AND fm.status = 1 `;
 
@@ -3948,47 +3987,49 @@ app.get("/api/export-master-list", async (req, res) => {
   if (!from_date || !to_date) {
     return res
       .status(500)
-      .json({
-        success: false,
-        message: "From Date and To Date are required"
-      });
+      .json({ success: false, message: "From Date and To Date are required" });
   }
   try {
 
-    let query = `
-      SELECT 
-      ROW_NUMBER() OVER (ORDER BY dif.district) AS 'Sr No',
-      dif.district AS 'District Name',
-      dif.health_facility AS 'Health Facility Name',
-      dif.village AS 'Village Name',
-      dif.mo_mpw_cho_anu_name AS 'Name of MO/MPW/CHO/ANU',
-      dif.asha_name AS 'Name of ASHA',
-      dif.midori_staff_name AS 'Midori Staff Name',
+    let query = `SELECT
+      ROW_NUMBER() OVER (ORDER BY district_info.district) AS 'Sr No',
+      district_info.district AS 'District',
+      district_info.health_facility AS 'Health Facility',
+      district_info.village AS 'Village',
+      Users.name AS 'Field Coordinator Name',
+      district_info.asha_name AS 'ASHA Name',
+      district_info.midori_staff_name AS 'Midori Staff Name',
       family_members.date AS 'Screening Date',
       head_members.name AS 'Head of Family',
       pi.name AS 'Patient Name',
+      pi.tel_no AS 'Patient Tel No',
       pi.identifier AS 'Patient Identifier',
       pi.card_number AS 'Identification Number',
       pi.dob AS 'Date of Birth',
-      TIMESTAMPDIFF(YEAR, pi.dob, CURDATE()) AS 'Age',
       pi.sex AS 'Sex',
-      pi.tel_no AS 'Telephone No.',
       pi.address AS 'Address',
+      dm.case_of_dm AS 'Case of DM',
+      dm.fasting_blood_sugar AS 'Fasting Blood Sugar',
+      dm.post_prandial_blood_sugar AS 'Post Prandial Blood Sugar',
+      dm.random_blood_sugar AS 'Random Blood Sugar',
+      ra.age AS 'Age',
       pi.state_health_insurance AS 'State Health Insurance',
+      pi.state_health_insurance_remark AS 'State Health Insurance Remark',
       pi.disability AS 'Disability',
-      h.height AS 'Height in cm',
-      h.weight AS 'Weight in cm',
+      pi.disability_remark AS 'Disability Remark',
+      h.height AS 'Height',
+      h.weight AS 'Weight',
       h.bmi AS 'BMI',
-      h.temp AS 'Temperature in F',
-      h.spO2 AS 'SPO2 (%)',
-      ht.case_of_htn AS 'Known case of HTN',
-      CONCAT(ht.upper_bp, '/', ht.lower_bp) AS 'BP (mm/Hg)',
+      h.temp AS 'Temperature',
+      h.spO2 AS 'SPO2',
+      h.pulse AS 'Pulse',
+      ht.case_of_htn AS 'Case of HTN',
       ht.action_high_bp AS 'Action High BP',
       ht.referral_center AS 'Referral Center HTN',
-      dm.case_of_dm AS 'Known Case of DM',
-      dm.random_blood_sugar AS 'Random Blood Sugar',
-      dm.referral_center AS 'Blood Sugar Referral Center',
-      ra.age AS 'Age Range',
+      ht.upper_bp AS 'Upper BP',
+      ht.lower_bp AS 'Lower BP',
+      dm.action_high_bs AS 'Action High BS',
+      dm.referral_center AS 'Referral Center DM',
       ra.tobacco_use AS 'Tobacco Use',
       ra.alcohol_use AS 'Alcohol Use',
       ra.waist_female AS 'Female Waist',
@@ -3996,52 +4037,65 @@ app.get("/api/export-master-list", async (req, res) => {
       ra.physical_activity AS 'Physical Activity',
       ra.family_diabetes_history AS 'Family Diabetes History',
       ra.risk_score AS 'Risk Score',
-      oc.known_case AS 'Oral Cancer Known Case',
+      oc.known_case AS 'OC Known Case',
       oc.difficulty_opening_mouth AS 'Difficulty Opening Mouth',
       oc.persistent_ulcer AS 'Persistent Ulcer',
       oc.growth_in_mouth AS 'Growth in Mouth',
       oc.persistent_patch AS 'Persistent Patch',
       oc.difficulty_chewing AS 'Difficulty Chewing',
+      oc.swelling_in_neck AS 'Swelling in Neck',
       oc.suspected_oral_cancer AS 'Suspected Oral Cancer',
-      bc.known_case AS 'Breast Cancer Known Case',
+      bc.known_case AS 'BC Known Case',
       bc.lump_in_breast AS 'Lump in Breast',
       bc.blood_stained_discharge AS 'Blood Stained Discharge',
-      bc.change_in_shape AS 'Change in Shape and size of Breast',
+      bc.change_in_shape AS 'Change in Shape',
       bc.constant_pain_or_swelling AS 'Constant Pain or Swelling',
       bc.redness_or_ulcer AS 'Redness or Ulcer',
       bc.suspected_breast_cancer AS 'Suspected Breast Cancer',
-      cc.known_case AS 'Cervical Cancer Known Case',
+      cc.known_case AS 'CC Known Case',
       cc.bleeding_between_periods AS 'Bleeding Between Periods',
       cc.bleeding_after_menopause AS 'Bleeding After Menopause',
       cc.bleeding_after_intercourse AS 'Bleeding After Intercourse',
       cc.foul_smelling_discharge AS 'Foul Smelling Discharge',
-      cvd.known_case AS 'Heart Disease Known Case',
+      cc.via_appointment_date AS 'VIA Appointment Date',
+      cc.via_result AS 'VIA Result',
+      cvd.known_case AS 'CVD Known Case',
       cvd.heart_sound AS 'Heart Sound',
-      cvd.referral AS 'CVD Referral',
+      cvd.symptom AS 'Symptom',
       cvd.cvd_date AS 'CVD Date',
       cvd.suspected_cvd AS 'Suspected CVD',
+      cvd.teleconsultation AS 'Teleconsultation',
+      cvd.referral AS 'Referral',
+      cvd.referral_centre AS 'Referral Centre',
       ps.history_of_stroke AS 'History of Stroke',
+      ps.stroke_date AS 'Stroke Date',
       ps.present_condition AS 'Present Condition',
-      ps.referral_center_name AS 'PS Referral Center Name',
-      ckd.knownCKD AS 'Known Case of CKD',
-      ckd.historyCKDStone AS 'History of CKD Stone',
+      ps.stroke_sign_action AS 'Stroke Sign Action',
+      ps.referral_center_name AS 'Referral Center Name',
+      ckd.knownCKD AS 'Known CKD',
+      ckd.historyCKDStone AS 'History CKD Stone',
       ckd.ageAbove50 AS 'Age Above 50',
       ckd.hypertensionPatient AS 'Hypertension Patient',
       ckd.diabetesPatient AS 'Diabetes Patient',
       ckd.anemiaPatient AS 'Anemia Patient',
       ckd.historyOfStroke AS 'History of Stroke CKD',
-      ckd.swellingFaceLeg AS 'Swelling Face and Leg',
-      ckd.historyNSAIDS AS 'History of NSAIDS',
+      ckd.swellingFaceLeg AS 'Swelling Face Leg',
+      ckd.historyNSAIDS AS 'History NSAIDS',
       ckd.ckdRiskScore AS 'CKD Risk Score',
-      ct.known_case_crd AS 'Known Case of CRD',
+      ckd.riskaAssessment AS 'Risk Assessment',
+      ct.known_case_crd AS 'Known Case CRD',
+      ct.crd_specify AS 'CRD Specify',
       ct.occupational_exposure AS 'Occupational Exposure',
       ct.cooking_fuel_type AS 'Cooking Fuel Type',
       ct.chest_sound AS 'Chest Sound',
       ct.chest_sound_action AS 'Chest Sound Action',
+      ct.referral_center_name AS 'Referral Center Name CT',
+      ct.copd_confirmed AS 'COPD Confirmed',
+      ct.copd_confirmation_date AS 'COPD Confirmation Date',
       ct.shortness_of_breath AS 'Shortness of Breath',
       ct.coughing_more_than_2_weeks AS 'Coughing More Than 2 Weeks',
       ct.blood_in_sputum AS 'Blood in Sputum',
-      ct.fever_more_than_2_weeks AS 'Fever for more Than 2 Weeks',
+      ct.fever_more_than_2_weeks AS 'Fever More Than 2 Weeks',
       ct.night_sweats AS 'Night Sweats',
       ct.taking_anti_tb_drugs AS 'Taking Anti TB Drugs',
       ct.family_tb_history AS 'Family TB History',
@@ -4049,7 +4103,7 @@ app.get("/api/export-master-list", async (req, res) => {
       ca.cloudy_blurred_vision AS 'Cloudy Blurred Vision',
       ca.pain_or_redness AS 'Pain or Redness',
       ca.cataract_assessment_result AS 'Cataract Assessment Result',
-      hi.difficulty_hearing AS 'Difficulty in Hearing',
+      hi.difficulty_hearing AS 'Difficulty Hearing',
       lp.hypopigmented_patch AS 'Hypopigmented Patch',
       lp.recurrent_ulceration AS 'Recurrent Ulceration',
       lp.clawing_of_fingers AS 'Clawing of Fingers',
@@ -4061,44 +4115,55 @@ app.get("/api/export-master-list", async (req, res) => {
       el.forget_names AS 'Forget Names',
       mh.little_interest_or_pleasure AS 'Little Interest or Pleasure',
       mh.feeling_down_or_depressed AS 'Feeling Down or Depressed',
-      mh.mental_health_problem AS 'Mental Health Problem',
       mh.mental_health_score AS 'Mental Health Score',
+      mh.mental_health_problem AS 'Mental Health Problem',
       mh.history_of_fits AS 'History of Fits',
       mh.other_mental_disorder AS 'Other Mental Disorder',
       mh.brief_intervention_given AS 'Brief Intervention Given',
+      mh.intervention_type AS 'Intervention Type',
       aat.major_ncd_detected AS 'Major NCD Detected',
       aat.any_other_disease_detected AS 'Any Other Disease Detected',
-      aat.known_case_dm_htn AS 'Known Case of DM with HTN',
+      aat.known_case_dm_htn AS 'Known Case DM HTN',
       aat.teleconsultation AS 'Teleconsultation',
       aat.prescription_given AS 'Prescription Given',
       aat.other_advices AS 'Other Advices',
       aat.remarks AS 'Remarks',
-      ab.abhaid_status AS 'ABHA ID Status'
-      FROM family_members
-      LEFT JOIN Users ON Users.id = family_members.fc_id
-      LEFT JOIN district_info_fc dif ON dif.id = family_members.di_id
-      LEFT JOIN master_data ON master_data.id = family_members.master_data_id
-      LEFT JOIN personal_info AS pi ON pi.id = master_data.personal_info_id
-      LEFT JOIN health AS h ON h.id = master_data.health_id
-      LEFT JOIN htn AS ht ON ht.id = master_data.htn_id
-      LEFT JOIN DM AS dm ON dm.id = master_data.dm_id
-      LEFT JOIN risk_assessment AS ra ON ra.id = master_data.risk_assessment_id
-      LEFT JOIN oralcancer AS oc ON oc.id = master_data.oral_cancer_id
-      LEFT JOIN breastcancer AS bc ON bc.id = master_data.breast_cancer_id
-      LEFT JOIN cervicalcancer AS cc ON cc.id = master_data.cervical_cancer_id
-      LEFT JOIN cvd AS cvd ON cvd.id = master_data.CVD_id
-      LEFT JOIN poststroke AS ps ON ps.id = master_data.post_stroke_id
-      LEFT JOIN ckd_assessment AS ckd ON ckd.id = master_data.CKD_id
-      LEFT JOIN copdtb AS ct ON ct.id = master_data.COPD_TB
-      LEFT JOIN cataract AS ca ON ca.id = master_data.cataract_id
-      LEFT JOIN hearingissue AS hi ON hi.id = master_data.hearing_id
-      LEFT JOIN leprosy AS lp ON lp.id = master_data.leprosy_id
-      LEFT JOIN elderly AS el ON el.id = master_data.elderly_id
-      LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
-      LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
-      LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
-      LEFT JOIN family_members AS head_members ON head_members.id = family_members.head_id
-      WHERE family_members.date BETWEEN ? AND ? `;
+      ab.abhaid_status AS 'ABHA ID Status' 
+    FROM family_members
+    JOIN Users ON Users.id = family_members.fc_id AND Users.role = 'Field Coordinator'
+    LEFT JOIN (SELECT dif1.user_id, dif1.district, dif1.village, dif1.health_facility, dif1.asha_name, dif1.midori_staff_name
+    FROM
+      district_info_fc dif1
+    INNER JOIN (
+      SELECT user_id, MAX(id) AS max_id
+      FROM
+        district_info_fc
+      GROUP BY
+        user_id
+      ) dif2 ON dif1.user_id = dif2.user_id AND dif1.id = dif2.max_id
+    ) AS district_info ON district_info.user_id = Users.id
+    LEFT JOIN master_data ON master_data.id = family_members.master_data_id
+    LEFT JOIN personal_info AS pi ON pi.id = master_data.personal_info_id
+    LEFT JOIN health AS h ON h.id = master_data.health_id
+    LEFT JOIN htn AS ht ON ht.id = master_data.htn_id
+    LEFT JOIN DM AS dm ON dm.id = master_data.dm_id
+    LEFT JOIN risk_assessment AS ra ON ra.id = master_data.risk_assessment_id
+    LEFT JOIN oralcancer AS oc ON oc.id = master_data.oral_cancer_id
+    LEFT JOIN breastcancer AS bc ON bc.id = master_data.breast_cancer_id
+    LEFT JOIN cervicalcancer AS cc ON cc.id = master_data.cervical_cancer_id
+    LEFT JOIN cvd AS cvd ON cvd.id = master_data.CVD_id
+    LEFT JOIN poststroke AS ps ON ps.id = master_data.post_stroke_id
+    LEFT JOIN ckd_assessment AS ckd ON ckd.id = master_data.CKD_id
+    LEFT JOIN copdtb AS ct ON ct.id = master_data.COPD_TB
+    LEFT JOIN cataract AS ca ON ca.id = master_data.cataract_id
+    LEFT JOIN hearingissue AS hi ON hi.id = master_data.hearing_id
+    LEFT JOIN leprosy AS lp ON lp.id = master_data.leprosy_id
+    LEFT JOIN elderly AS el ON el.id = master_data.elderly_id
+    LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
+    LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
+    LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
+    LEFT JOIN family_members AS head_members ON head_members.id = family_members.head_id
+    WHERE family_members.date BETWEEN ? AND ? `;
 
     const params = [from_date, to_date];
 
@@ -4168,17 +4233,17 @@ app.get("/api/export-master-list", async (req, res) => {
     }
 
     if (village) {
-      query += "AND dif.village = ? ";
+      query += "AND district_info.village = ? ";
       params.push(village);
     }
 
     if (district) {
-      query += "AND dif.district LIKE ? ";
+      query += "AND district_info.district LIKE ? ";
       params.push(`%${district}%`,);
     }
 
     if (health_facility) {
-      query += "AND dif.health_facility LIKE ? ";
+      query += "AND district_info.health_facility LIKE ? ";
       params.push(`%${health_facility}%`,);
     }
 
@@ -4212,7 +4277,7 @@ app.get("/api/export-master-list", async (req, res) => {
 
     if (search_term) {
       query +=
-        "AND (family_members.name LIKE ? OR pi.card_number LIKE ?) ";
+        "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.district LIKE ? OR district_info.village LIKE ?) ";
       params.push(
         `%${search_term}%`,
         `%${search_term}%`,
@@ -4239,730 +4304,6 @@ app.get("/api/export-master-list", async (req, res) => {
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-// Created by Tanmay Pradhan - 08 Nov 2024
-app.put("/api/update-master-list/:fm_id", async (req, res) => {
-  const { fm_id } = req.params;
-  const {
-    abhaid_status,
-    major_ncd_detected,
-    any_other_disease_detected,
-    known_case_dm_htn,
-    aaat_teleconsultation,
-    prescription_given,
-    other_advices,
-    remarks,
-    bc_known_case,
-    lump_in_breast,
-    blood_stained_discharge,
-    change_in_shape,
-    constant_pain_or_swelling,
-    redness_or_ulcer,
-    suspected_breast_cancer,
-    cloudy_blurred_vision,
-    pain_or_redness,
-    cataract_assessment_result,
-    cc_known_case,
-    bleeding_between_periods,
-    bleeding_after_menopause,
-    bleeding_after_intercourse,
-    foul_smelling_discharge,
-    via_appointment_date,
-    via_result,
-    knownCKD,
-    historyCKDStone,
-    ageAbove50,
-    hypertensionPatient,
-    diabetesPatient,
-    anemiaPatient,
-    historyOfStroke,
-    swellingFaceLeg,
-    historyNSAIDS,
-    ckdRiskScore,
-    riskaAssessment,
-    known_case_crd,
-    crd_specify,
-    occupational_exposure,
-    cooking_fuel_type,
-    chest_sound,
-    chest_sound_action,
-    referral_center_name,
-    copd_confirmed,
-    copd_confirmation_date,
-    shortness_of_breath,
-    coughing_more_than_2_weeks,
-    blood_in_sputum,
-    fever_more_than_2_weeks,
-    night_sweats,
-    taking_anti_tb_drugs,
-    family_tb_history,
-    history_of_tb,
-    cvd_known_case,
-    heart_sound,
-    symptom,
-    cvd_date,
-    suspected_cvd,
-    cvd_teleconsultation,
-    referral,
-    referral_centre,
-    case_of_dm,
-    action_high_bs,
-    dm_referral_center,
-    fasting_blood_sugar,
-    post_prandial_blood_sugar,
-    random_blood_sugar,
-    unsteady_walking,
-    physical_disability,
-    help_from_others,
-    forget_names,
-    fc_id,
-    fm_name,
-    Aadhar,
-    head_id,
-    screening_status,
-    screening_date,
-    height,
-    weight,
-    bmi,
-    temp,
-    spO2,
-    pulse,
-    difficulty_hearing,
-    case_of_htn,
-    action_high_bp,
-    htn_referral_center,
-    upper_bp,
-    lower_bp,
-    hypopigmented_patch,
-    recurrent_ulceration,
-    clawing_of_fingers,
-    inability_to_close_eyelid,
-    difficulty_holding_objects,
-    little_interest_or_pleasure,
-    feeling_down_or_depressed,
-    mental_health_score,
-    mental_health_problem,
-    history_of_fits,
-    other_mental_disorder,
-    brief_intervention_given,
-    intervention_type,
-    oc_known_case,
-    persistent_ulcer,
-    persistent_patch,
-    difficulty_chewing,
-    difficulty_opening_mouth,
-    growth_in_mouth,
-    swelling_in_neck,
-    suspected_oral_cancer,
-    identifier,
-    card_number,
-    dob,
-    sex,
-    tel_no,
-    address,
-    state_health_insurance,
-    state_health_insurance_remark,
-    disability,
-    disability_remark,
-    history_of_stroke,
-    stroke_date,
-    present_condition,
-    stroke_sign_action,
-    ps_referral_center_name,
-    age,
-    tobacco_use,
-    alcohol_use,
-    waist_female,
-    waist_male,
-    physical_activity,
-    family_diabetes_history,
-    risk_score,
-    district,
-    village,
-    health_facility,
-    mo_mpw_cho_anu_name,
-    asha_name,
-    midori_staff_name,
-  } = req.body;
-
-  if (!fm_id) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "FM ID is required"
-      });
-  }
-  try {
-
-    const abhaidQuery = `
-    UPDATE abhaid 
-    JOIN master_data md ON md.AHBA_id = abhaid.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    abhaid.abhaid_status = ?,
-    abhaid.updated_at = NOW()
-    WHERE fm.id = ?;`;
-
-    const abhaidParams = [
-      abhaid_status,
-      fm_id,
-    ];
-
-    const aaatQuery = `
-    UPDATE assessment_and_action_taken AS aaat
-    JOIN master_data md ON md.assesmentandaction_id = aaat.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    aaat.major_ncd_detected = ?,
-    aaat.any_other_disease_detected = ?,
-    aaat.known_case_dm_htn = ?,
-    aaat.teleconsultation = ?,
-    aaat.prescription_given = ?,
-    aaat.other_advices = ?, 
-    aaat.remarks = ?,
-    aaat.updated_at = NOW()
-    WHERE fm.id = ?;`;
-
-    const aaatParams = [
-      major_ncd_detected,
-      any_other_disease_detected,
-      known_case_dm_htn,
-      aaat_teleconsultation,
-      prescription_given,
-      other_advices,
-      remarks,
-      fm_id,
-    ];
-
-    const bcQuery = `
-    UPDATE breastcancer AS bc
-    JOIN master_data md ON md.breast_cancer_id = bc.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    bc.known_case = ?,
-    bc.lump_in_breast = ?,
-    bc.blood_stained_discharge = ?,
-    bc.change_in_shape = ?,
-    bc.constant_pain_or_swelling = ?,
-    bc.redness_or_ulcer = ?,
-    bc.suspected_breast_cancer = ?,
-    bc.updated_at = NOW() 
-    WHERE fm.id = ?;`;
-
-    const bcParams = [
-      bc_known_case,
-      lump_in_breast,
-      blood_stained_discharge,
-      change_in_shape,
-      constant_pain_or_swelling,
-      redness_or_ulcer,
-      suspected_breast_cancer,
-      fm_id,
-    ];
-
-    const cQuery = `
-    UPDATE cataract AS c 
-    JOIN master_data md ON md.cataract_id = c.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    c.cloudy_blurred_vision = ?,
-    c.pain_or_redness = ?,
-    c.cataract_assessment_result = ?,
-    c.updated_at = NOW()
-    WHERE fm.id = ?;`;
-
-    const cParams = [
-      cloudy_blurred_vision,
-      pain_or_redness,
-      cataract_assessment_result,
-      fm_id,
-    ];
-
-    const ccQuery = `
-    UPDATE cervicalcancer AS cc
-    JOIN master_data md ON md.cervical_cancer_id = cc.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    cc.known_case = ?,
-    cc.bleeding_between_periods = ?,
-    cc.bleeding_after_menopause = ?,
-    cc.bleeding_after_intercourse = ?,
-    cc.foul_smelling_discharge = ?,
-    cc.via_appointment_date = ?,
-    cc.via_result = ?,
-    cc.updated_at = NOW()
-    WHERE fm.id = ?;`;
-
-    const ccParams = [
-      cc_known_case,
-      bleeding_between_periods,
-      bleeding_after_menopause,
-      bleeding_after_intercourse,
-      foul_smelling_discharge,
-      via_appointment_date,
-      via_result,
-      fm_id,
-    ];
-
-    const ckdQuery = `
-    UPDATE ckd_assessment AS ckd
-    JOIN master_data md ON md.CKD_id = ckd.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    ckd.knownCKD = ?,
-    ckd.historyCKDStone = ?,
-    ckd.ageAbove50 = ?,
-    ckd.hypertensionPatient = ?,
-    ckd.diabetesPatient = ?, 
-    ckd.anemiaPatient = ?,
-    ckd.historyOfStroke = ?, 
-    ckd.swellingFaceLeg = ?,
-    ckd.historyNSAIDS = ?,
-    ckd.ckdRiskScore = ?, 
-    ckd.riskaAssessment = ?,
-    ckd.updated_at = NOW()
-    WHERE fm.id = ?;`;
-
-    const ckdParams = [
-      knownCKD,
-      historyCKDStone,
-      ageAbove50,
-      hypertensionPatient,
-      diabetesPatient,
-      anemiaPatient,
-      historyOfStroke,
-      swellingFaceLeg,
-      historyNSAIDS,
-      ckdRiskScore,
-      riskaAssessment,
-      fm_id,
-    ];
-
-    const copdtbQuery = `
-    UPDATE copdtb 
-    JOIN master_data md ON md.COPD_TB = copdtb.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    copdtb.known_case_crd = ?,
-    copdtb.crd_specify = ?,
-    copdtb.occupational_exposure = ?,
-    copdtb.cooking_fuel_type = ?,
-    copdtb.chest_sound = ?,
-    copdtb.chest_sound_action = ?,
-    copdtb.referral_center_name = ?,
-    copdtb.copd_confirmed = ?,
-    copdtb.copd_confirmation_date = ?,
-    copdtb.shortness_of_breath = ?,
-    copdtb.coughing_more_than_2_weeks = ?,
-    copdtb.blood_in_sputum = ?,
-    copdtb.fever_more_than_2_weeks = ?,
-    copdtb.night_sweats = ?,
-    copdtb.taking_anti_tb_drugs = ?,
-    copdtb.family_tb_history = ?,
-    copdtb.history_of_tb = ?,
-    copdtb.updated_at = NOW() 
-    WHERE fm.id = ?;`;
-
-    const copdtbParams = [
-      known_case_crd,
-      crd_specify,
-      occupational_exposure,
-      cooking_fuel_type,
-      chest_sound,
-      chest_sound_action,
-      referral_center_name,
-      copd_confirmed,
-      copd_confirmation_date,
-      shortness_of_breath,
-      coughing_more_than_2_weeks,
-      blood_in_sputum,
-      fever_more_than_2_weeks,
-      night_sweats,
-      taking_anti_tb_drugs,
-      family_tb_history,
-      history_of_tb,
-      fm_id,
-    ];
-
-    const cvdQuery = `
-    UPDATE cvd 
-    JOIN master_data md ON md.CVD_id = cvd.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    cvd.known_case = ?,
-    cvd.heart_sound = ?, 
-    cvd.symptom = ?,
-    cvd.cvd_date = ?,
-    cvd.suspected_cvd = ?,
-    cvd.updated_at = NOW(), 
-    cvd.teleconsultation = ?,
-    cvd.referral = ?,
-    cvd.referral_centre = ?
-    WHERE fm.id = ?;`;
-
-    const cvdParams = [
-      cvd_known_case,
-      heart_sound,
-      symptom,
-      cvd_date,
-      suspected_cvd,
-      cvd_teleconsultation,
-      referral,
-      referral_centre,
-      fm_id,
-    ];
-
-    const dmQuery = `
-    UPDATE DM AS dm
-    JOIN master_data md ON md.dm_id = dm.id
-    JOIN family_members fm ON md.id = fm.master_data_id 
-    SET 
-    dm.case_of_dm = ?,
-    dm.action_high_bs = ?, 
-    dm.referral_center = ?,
-    dm.updated_at = NOW(),
-    dm.fasting_blood_sugar = ?,
-    dm.post_prandial_blood_sugar = ?,
-    dm.random_blood_sugar = ? 
-    WHERE fm.id = ?;`;
-
-    const dmParams = [
-      case_of_dm,
-      action_high_bs,
-      dm_referral_center,
-      fasting_blood_sugar,
-      post_prandial_blood_sugar,
-      random_blood_sugar,
-      fm_id,
-    ];
-
-    const elderlyQuery = `
-    UPDATE elderly 
-    JOIN master_data md ON md.elderly_id = elderly.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    elderly.unsteady_walking = ?,
-    elderly.physical_disability = ?,
-    elderly.help_from_others = ?,
-    elderly.forget_names = ?,
-    elderly.updated_at = NOW()
-    WHERE fm.id = ?;`;
-
-    const elderlyParams = [
-      unsteady_walking,
-      physical_disability,
-      help_from_others,
-      forget_names,
-      fm_id,
-    ];
-
-    const familyMembersQuery = `
-    UPDATE family_members AS fm
-    SET 
-    fm.fc_id = ?, 
-    fm.name = ?, 
-    fm.Aadhar = ?, 
-    fm.head_id = ?, 
-    fm.status = ?, 
-    fm.date = ? 
-    WHERE fm.id = ?;`;
-
-    const familyMembersParams = [
-      fc_id,
-      fm_name,
-      Aadhar,
-      head_id,
-      screening_status,
-      screening_date,
-      fm_id,
-    ];
-
-    const healthQuery = `
-    UPDATE health h
-    JOIN master_data md ON md.health_id = h.id 
-    JOIN family_members fm ON md.id = fm.master_data_id 
-    SET
-    h.height = ?, 
-    h.weight = ?, 
-    h.bmi = ?,
-    h.temp = ?,
-    h.spO2 = ?,
-    h.updated_at = NOW(), 
-    h.pulse = ?
-    WHERE fm.id = 0;`;
-
-    const healthParams = [
-      height,
-      weight,
-      bmi,
-      temp,
-      spO2,
-      pulse,
-      fm_id,
-    ];
-
-    const hearingIssueQuery = `
-    UPDATE hearingissue AS hi
-    JOIN master_data md ON md.hearing_id = hi.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    hi.difficulty_hearing = ?,
-    hi.updated_at = NOW()
-    WHERE fm.id = 0;`;
-
-    const hearingIssueParams = [
-      difficulty_hearing,
-      fm_id,
-    ];
-
-    const htnQuery = `
-    UPDATE htn
-    JOIN master_data md ON md.htn_id = htn.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    htn.case_of_htn = ?, 
-    htn.action_high_bp = ?, 
-    htn.referral_center = ?,
-    htn.updated_at = NOW(), 
-    htn.upper_bp = ?, 
-    htn.lower_bp = ? 
-    WHERE fm.id = ?;`;
-
-    const htnParams = [
-      case_of_htn,
-      action_high_bp,
-      htn_referral_center,
-      upper_bp,
-      lower_bp,
-      fm_id,
-    ];
-
-    const leprosyQuery = `
-    UPDATE leprosy
-    JOIN master_data md ON md.leprosy_id = leprosy.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    leprosy.hypopigmented_patch = ?,
-    leprosy.recurrent_ulceration = ?,
-    leprosy.clawing_of_fingers = ?,
-    leprosy.inability_to_close_eyelid = ?,
-    leprosy.difficulty_holding_objects = ?,
-    leprosy.updated_at = NOW()
-    WHERE fm.id = ?;`;
-
-    const leprosyParams = [
-      hypopigmented_patch,
-      recurrent_ulceration,
-      clawing_of_fingers,
-      inability_to_close_eyelid,
-      difficulty_holding_objects,
-      fm_id,
-    ];
-
-    const mentalhealthQuery = `
-    UPDATE mentalhealth 
-    JOIN master_data md ON md.elderly_id = mentalhealth.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    mentalhealth.little_interest_or_pleasure = ?,
-    mentalhealth.feeling_down_or_depressed = ?,
-    mentalhealth.mental_health_score = ?,
-    mentalhealth.mental_health_problem = ?,
-    mentalhealth.history_of_fits = ?,
-    mentalhealth.other_mental_disorder = ?,
-    mentalhealth.brief_intervention_given = ?,
-    mentalhealth.intervention_type = ?,
-    mentalhealth.updated_at = NOW()
-    WHERE fm.id = ?;`;
-
-    const mentalHealthParams = [
-      little_interest_or_pleasure,
-      feeling_down_or_depressed,
-      mental_health_score,
-      mental_health_problem,
-      history_of_fits,
-      other_mental_disorder,
-      brief_intervention_given,
-      intervention_type,
-      fm_id,
-    ];
-
-    const oralCancerQuery = `
-    UPDATE oralcancer AS oc
-    JOIN master_data md ON md.oral_cancer_id = oc.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    oc.known_case = ?, 
-    oc.persistent_ulcer = ?,
-    oc.persistent_patch = ?,
-    oc.difficulty_chewing = ?,
-    oc.difficulty_opening_mouth = ?,
-    oc.growth_in_mouth = ?,
-    oc.swelling_in_neck = ?,
-    oc.suspected_oral_cancer = ?,
-    oc.updated_at = NOW() 
-    WHERE fm.id = ?;`;
-
-    const oralCancerParams = [
-      oc_known_case,
-      persistent_ulcer,
-      persistent_patch,
-      difficulty_chewing,
-      difficulty_opening_mouth,
-      growth_in_mouth,
-      swelling_in_neck,
-      suspected_oral_cancer,
-      fm_id,
-    ];
-
-    const personalInfoQuery = `
-    UPDATE personal_info pi
-    JOIN master_data md ON md.personal_info_id = pi.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    pi.name = ?,
-    pi.identifier = ?,
-    pi.card_number = ?,
-    pi.dob = ?,
-    pi.sex = ?,
-    pi.tel_no = ?,
-    pi.address = ?,
-    pi.state_health_insurance = ?,
-    pi.state_health_insurance_remark = ?,
-    pi.disability = ?,
-    pi.disability_remark = ?,
-    pi.updated_at = NOW()
-    WHERE fm.id = ?;`;
-
-    const personalInfoParams = [
-      fm_name,
-      identifier,
-      card_number,
-      dob,
-      sex,
-      tel_no,
-      address,
-      state_health_insurance,
-      state_health_insurance_remark,
-      disability,
-      disability_remark,
-      fm_id,
-    ];
-
-    const postStrokeQuery = `
-    UPDATE poststroke AS ps
-    JOIN master_data md ON md.post_stroke_id = ps.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    ps.history_of_stroke = ?,
-    ps.stroke_date = ?,
-    ps.present_condition = ?,
-    ps.stroke_sign_action = ?,
-    ps.referral_center_name = ?,
-    ps.updated_at = NOW()
-    WHERE fm.id = ?;`;
-
-    const postStrokeParams = [
-      history_of_stroke,
-      stroke_date,
-      present_condition,
-      stroke_sign_action,
-      ps_referral_center_name,
-      fm_id,
-    ];
-
-    const raQuery = `
-    UPDATE risk_assessment AS ra
-    JOIN master_data md ON md.risk_assessment_id = ra.id
-    JOIN family_members fm ON md.id = fm.master_data_id
-    SET 
-    ra.age = ?,
-    ra.tobacco_use = ?,
-    ra.alcohol_use = ?,
-    ra.waist_female = ?,
-    ra.waist_male = ?,
-    ra.physical_activity = ?,
-    ra.family_diabetes_history = ?,
-    ra.risk_score = ?,
-    ra.updated_at = NOW() 
-    WHERE fm.id = ?;`;
-
-    const raParams = [
-      age,
-      tobacco_use,
-      alcohol_use,
-      waist_female,
-      waist_male,
-      physical_activity,
-      family_diabetes_history,
-      risk_score,
-      fm_id,
-    ];
-
-    const districtQuery = `
-    UPDATE district_info_fc AS dif
-    JOIN family_members fm ON dif.id = fm.di_id
-    SET 
-    dif.district = ?, 
-    dif.village = ?,
-    dif.health_facility = ?,
-    dif.mo_mpw_cho_anu_name = ?,
-    dif.asha_name = ?,
-    dif.midori_staff_name = ?
-    WHERE fm.id = ?;`;
-
-    const districtParams = [
-      district,
-      village,
-      health_facility,
-      mo_mpw_cho_anu_name,
-      asha_name,
-      midori_staff_name,
-      fm_id,
-    ];
-    // ---------------------------------------------------------------------------------------
-
-    await db.promise().beginTransaction();
-
-    await db.promise().query(abhaidQuery, abhaidParams);
-    await db.promise().query(aaatQuery, aaatParams);
-    await db.promise().query(bcQuery, bcParams);
-    await db.promise().query(cQuery, cParams);
-    await db.promise().query(ccQuery, ccParams);
-    await db.promise().query(ckdQuery, ckdParams);
-    await db.promise().query(copdtbQuery, copdtbParams);
-    await db.promise().query(cvdQuery, cvdParams);
-    await db.promise().query(dmQuery, dmParams);
-    await db.promise().query(elderlyQuery, elderlyParams);
-    await db.promise().query(familyMembersQuery, familyMembersParams);
-    await db.promise().query(healthQuery, healthParams);
-    await db.promise().query(hearingIssueQuery, hearingIssueParams);
-    await db.promise().query(htnQuery, htnParams);
-    await db.promise().query(leprosyQuery, leprosyParams);
-    await db.promise().query(mentalhealthQuery, mentalHealthParams);
-    await db.promise().query(oralCancerQuery, oralCancerParams);
-    await db.promise().query(personalInfoQuery, personalInfoParams);
-    await db.promise().query(postStrokeQuery, postStrokeParams);
-    await db.promise().query(raQuery, raParams);
-    await db.promise().query(districtQuery, districtParams);
-
-    await db.promise().commit();
-
-    res.status(200).json({
-      success: true,
-      message: "Updated!",
-    });
-
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-
-    });
   }
 });
 
