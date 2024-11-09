@@ -80,7 +80,7 @@ const Users = () => {
             <FamilyMembers
                 data={allData}
                 selectedItem={selectedItem}
-                onChange={(mem) => setSelectedItem(selectedItem?.family_members_name == mem?.family_members_name ? null : mem)}
+                onChange={(mem) => setSelectedItem(selectedItem?.fm_id == mem?.fm_id ? null : mem)}
                 showEditAction={showEditAction}
             />
             <div className='custom-pagination'>
@@ -93,6 +93,7 @@ const Users = () => {
                 visible={showMemModal}
                 onDismiss={() => setShowMemModal(false)}
                 data={selectedItem}
+                onDone={fetchMasterList}
             />
         </div>
     )
