@@ -26,6 +26,9 @@ const AddVillage = ({ visible, onDismiss }) => {
             transform: 'translate(-50%, -50%)',
             width: '30%'
         },
+        overlay: {
+            backgroundColor: 'rgba(0,0,0,0.8)'
+        }
     };
 
     const handleSubmit = async (evt) => {

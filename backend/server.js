@@ -12,6 +12,7 @@ app.use(express.json()); // Added to parse JSON bodies
 app.use(bodyParser.json());
 
 // MySQL database connection
+// REMOTE
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -19,6 +20,7 @@ const db = mysql.createConnection({
   database: "manipur",
 });
 
+// LOCAL
 // const db = mysql.createConnection({
 //   host: "localhost",
 //   user: "root",
@@ -231,7 +233,7 @@ app.post("/api/family-members-head", async (req, res) => {
     // Insert into personal_info table
     const [personalInfoResult] = await db
       .promise()
-      .query(`INSERT INTO personal_info (name) VALUES (?)`, [name]);
+      .query(`INSERT INTO personal_info (name) VALUES (?), [name]`);
     const personal_info_id = personalInfoResult.insertId;
 
     // Insert the new family member into family_members table, including di_id
@@ -246,7 +248,7 @@ app.post("/api/family-members-head", async (req, res) => {
     const [masterDataResult] = await db
       .promise()
       .query(
-        `INSERT INTO master_data (fm_id, personal_info_id) VALUES (?, ?)`,
+        `INSERT INTO master_data (fm_id, personal_info_id) VALUES (?, ?);`,
         [fm_id, personal_info_id]
       );
     const master_data_id = masterDataResult.insertId;
@@ -254,7 +256,7 @@ app.post("/api/family-members-head", async (req, res) => {
     // Update family_members with master_data_id
     await db
       .promise()
-      .query(`UPDATE family_members SET master_data_id = ? WHERE id = ?`, [
+      .query(`UPDATE family_members SET master_data_id = ? WHERE id = ?;`, [
         master_data_id,
         fm_id,
       ]);
@@ -3435,9 +3437,7 @@ app.get("/api/get-master-list", async (req, res) => {
     search_term,
   } = req.query;
 
-  console.log("Query Parameters:", req.query);
-
-  if (!skip_count || !page_limit) {
+  if (!skip_count || !page_limit || !from_date || !to_date) {
     return res
       .status(500)
       .json({ success: false, message: "Skip Count and Page Limit required" });
@@ -3524,7 +3524,7 @@ app.get("/api/get-master-list", async (req, res) => {
         aat.other_advices AS 'Other Advices',aat.remarks AS 'Remarks',ab.abhaid_status AS 'ABHA ID Status'
         FROM family_members
         JOIN Users ON Users.id = family_members.fc_id AND Users.role = 'Field Coordinator'
-        LEFT JOIN (SELECT dif1.user_id, dif1.district, dif1.village
+        LEFT JOIN (SELECT dif1.user_id, dif1.district, dif1.village, dif1.health_facility
         FROM
           district_info_fc dif1
         INNER JOIN (
@@ -3555,79 +3555,132 @@ app.get("/api/get-master-list", async (req, res) => {
         LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
         LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
         LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
-        WHERE family_members.date BETWEEN ? AND ?`;
+        WHERE family_members.date BETWEEN ? AND ? `;
+
+    let totalQuery = `
+    SELECT 
+          COUNT(*) AS total_rows
+        FROM family_members
+        JOIN Users ON Users.id = family_members.fc_id AND Users.role = 'Field Coordinator'
+        LEFT JOIN (SELECT dif1.user_id, dif1.district, dif1.village, dif1.health_facility
+        FROM
+          district_info_fc dif1
+        INNER JOIN (
+          SELECT user_id, MAX(id) AS max_id
+          FROM
+            district_info_fc
+          GROUP BY
+            user_id
+          ) dif2 ON dif1.user_id = dif2.user_id AND dif1.id = dif2.max_id
+        ) AS district_info ON district_info.user_id = Users.id
+        LEFT JOIN master_data ON master_data.id = family_members.master_data_id
+        LEFT JOIN personal_info AS pi ON pi.id = master_data.personal_info_id
+        LEFT JOIN health AS h ON h.id = master_data.health_id
+        LEFT JOIN htn AS ht ON ht.id = master_data.htn_id
+        LEFT JOIN DM AS dm ON dm.id = master_data.dm_id
+        LEFT JOIN risk_assessment AS ra ON ra.id = master_data.risk_assessment_id
+        LEFT JOIN oralcancer AS oc ON oc.id = master_data.oral_cancer_id
+        LEFT JOIN breastcancer AS bc ON bc.id = master_data.breast_cancer_id
+        LEFT JOIN cervicalcancer AS cc ON cc.id = master_data.cervical_cancer_id
+        LEFT JOIN cvd AS cvd ON cvd.id = master_data.CVD_id
+        LEFT JOIN poststroke AS ps ON ps.id = master_data.post_stroke_id
+        LEFT JOIN ckd_assessment AS ckd ON ckd.id = master_data.CKD_id
+        LEFT JOIN copdtb AS ct ON ct.id = master_data.COPD_TB
+        LEFT JOIN cataract AS ca ON ca.id = master_data.cataract_id
+        LEFT JOIN hearingissue AS hi ON hi.id = master_data.hearing_id
+        LEFT JOIN leprosy AS lp ON lp.id = master_data.leprosy_id
+        LEFT JOIN elderly AS el ON el.id = master_data.elderly_id
+        LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
+        LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
+        LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
+        WHERE family_members.date BETWEEN ? AND ? `;
 
     const params = [from_date, to_date];
 
     if (status) {
       query += "AND family_members.status = ? ";
+      totalQuery += "AND family_members.status = ? ";
       params.push(status);
     }
 
     if (risk_score) {
       query += "AND ra.risk_score = ? ";
+      totalQuery += "AND ra.risk_score = ? ";
       params.push(risk_score);
     }
 
     if (case_of_htn) {
       query += "AND ht.case_of_htn = ? ";
+      totalQuery += "AND ht.case_of_htn = ? ";
       params.push(case_of_htn);
     }
 
     if (case_of_dm) {
       query += "AND dm.case_of_dm = ? ";
+      totalQuery += "AND dm.case_of_dm = ? ";
       params.push(case_of_dm);
     }
 
     if (suspected_oral_cancer) {
       query += "AND oc.suspected_oral_cancer = ? ";
+      totalQuery += "AND oc.suspected_oral_cancer = ? ";
       params.push(suspected_oral_cancer);
     }
 
     if (suspected_breast_cancer) {
       query += "AND bc.suspected_breast_cancer = ? ";
+      totalQuery += "AND bc.suspected_breast_cancer = ? ";
       params.push(suspected_breast_cancer);
     }
 
     if (cervical_cancer) {
       query += "AND cc.known_case = ? ";
+      totalQuery += "AND cc.known_case = ? ";
       params.push(cervical_cancer);
     }
 
     if (known_cvd) {
       query += "AND cvd.known_case = ? ";
+      totalQuery += "AND cvd.known_case = ? ";
       params.push(known_cvd);
     }
 
     if (history_of_stroke) {
       query += "AND ps.history_of_stroke = ? ";
+      totalQuery += "AND ps.history_of_stroke = ? ";
       params.push(history_of_stroke);
     }
 
     if (known_ckd) {
       query += "AND ckd.knownCKD = ? ";
+      totalQuery += "AND ckd.knownCKD = ? ";
       params.push(known_ckd);
     }
 
     if (cataract_assessment_result) {
       query += "AND ca.cataract_assessment_result = ? ";
+      totalQuery += "AND ca.cataract_assessment_result = ? ";
       params.push(cataract_assessment_result);
     }
 
     if (difficulty_hearing) {
       query += "AND hi.difficulty_hearing = ? ";
+      totalQuery += "AND hi.difficulty_hearing = ? ";
       params.push(difficulty_hearing);
     }
 
     if (abhaid_status) {
       query += "AND ab.abhaid_status = ? ";
+      totalQuery += "AND ab.abhaid_status = ? ";
       params.push(abhaid_status);
     }
 
     if (search_term) {
       query +=
         "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.district LIKE ? OR district_info.village LIKE ?) ";
-      queryParams.push(
+      totalQuery +=
+        "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.district LIKE ? OR district_info.village LIKE ?) ";
+      params.push(
         `%${search_term}%`,
         `%${search_term}%`,
         `%${search_term}%`,
@@ -3643,6 +3696,9 @@ app.get("/api/get-master-list", async (req, res) => {
     if (result.length > 0) {
       res.status(200).json({
         success: true,
+        total_count: totalResult[0].total_rows,
+        skip_count: parseInt(skip_count),
+        page_limit: parseInt(page_limit),
         data: result,
       });
     } else {

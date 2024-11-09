@@ -14,6 +14,7 @@ import FamilyDetails from '../components/FamilyDetails/FamilyDetails'
 import FormPage from '../components/FormPage/FormPage'
 import ReviewPage from "../components/Review/Review";
 import { Route, Routes } from 'react-router-dom'
+import ScreeningCount from '../components/userManagement/ScreeningCount'
 
 const RouteStack = () => {
     return (
@@ -51,6 +52,16 @@ const RouteStack = () => {
                     element={
                         <AppLayout hideFamily>
                             <Users />
+                        </AppLayout>
+                    }
+                />
+
+                {/* Screening Routes */}
+                <Route
+                    path="/screening-count"
+                    element={
+                        <AppLayout hideFamily>
+                            <ScreeningCount />
                         </AppLayout>
                     }
                 />

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const SelectAll = ({ label, onChange }) => {
+const SelectAll = ({ label, onChange, hideLabel = false }) => {
     const [selectAllChecked, setSelectAllChecked] = useState(false);
     return (
         <div className='select-all-checkbox'>
@@ -14,7 +14,7 @@ const SelectAll = ({ label, onChange }) => {
                     onChange(isChecked)
                 }}
             />
-            <label htmlFor="select_all">{label || 'Select All'}</label>
+            {!hideLabel && <label htmlFor="select_all">{label || 'Select All'}</label>}
         </div>
     )
 }
