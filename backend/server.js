@@ -234,8 +234,6 @@ app.post("/api/family-members-head", async (req, res) => {
     //   .query(`SELECT id FROM district_info_fc WHERE user_id = ?, [fc_id]`);
     // const di_id = diResult.length > 0 ? diResult[0].id : null;
 
-    const di_id = null;
-
     // Insert into personal_info table
     const [personalInfoResult] = await db
       .promise()
@@ -246,7 +244,7 @@ app.post("/api/family-members-head", async (req, res) => {
     const [familyResult] = await db.promise().query(
       `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, di_id, status, date)
        VALUES (?, ?, ?, 0, NULL, ?, 0, NOW())`,
-      [fc_id, name, aadhar, di_id]
+      [fc_id, name, aadhar, null]
     );
     const fm_id = familyResult.insertId;
 
