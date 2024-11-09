@@ -4,7 +4,8 @@ import Filters from './Filters';
 import defaultInstance from '../../axiosHelper';
 import { API_ENDPOINTS } from '../../utils/apiEndPoints';
 import FamilyMembers from './FamilyMembers';
-import { getFilterQuery } from '../../utils/helper';
+import { getFilterQuery, ROLE_TYPE } from '../../utils/helper';
+import UpdateMem from './UpdateMem';
 
 const Users = () => {
 
@@ -16,6 +17,8 @@ const Users = () => {
 
     const [allData, setAllData] = useState([]);
     const [totalCount, setTotalCount] = useState(0);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [showMemModal, setShowMemModal] = useState(false);
 
     const fetchMasterList = async () => {
         const response = await defaultInstance.get(API_ENDPOINTS.USER_MASTER_LIST, { params: queryParams });
@@ -62,6 +65,8 @@ const Users = () => {
         fetchMasterList();
     }, [JSON.stringify(queryParams)]);
 
+    const showEditAction = queryParams?.role_type === ROLE_TYPE.ZONAL_MANAGER ? true : false
+
     return (
         <div className="role-container">
             <Filters
@@ -69,14 +74,26 @@ const Users = () => {
                 totalCount={totalCount}
                 viewingCount={Number(queryParams?.skip_count) + 50}
                 onExport={onExport}
+                onEdit={() => setShowMemModal(true)}
+                selectedItem={selectedItem}
             />
-            <FamilyMembers data={allData} />
+            <FamilyMembers
+                data={allData}
+                selectedItem={selectedItem}
+                onChange={(mem) => setSelectedItem(selectedItem?.family_members_name == mem?.family_members_name ? null : mem)}
+                showEditAction={showEditAction}
+            />
             <div className='custom-pagination'>
-                <div class="option-container">
-                    <div onClick={() => handlePaginate('P')} class="option">Previous</div>
-                    <div onClick={() => handlePaginate('N')} class="option">Next</div>
+                <div className="option-container">
+                    <div onClick={() => handlePaginate('P')} className="option">Previous</div>
+                    <div onClick={() => handlePaginate('N')} className="option">Next</div>
                 </div>
             </div>
+            <UpdateMem
+                visible={showMemModal}
+                onDismiss={() => setShowMemModal(false)}
+                data={selectedItem}
+            />
         </div>
     )
 }

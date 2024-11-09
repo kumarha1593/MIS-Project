@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const SearchableDropdown = ({ label, options, onSelect, placeholder, style = {}, value }) => {
+const SearchableDropdown = ({ label, options, onSelect, placeholder, style = {}, value, labelStyle = {}, inputStyle = {} }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isOpen, setIsOpen] = useState(false);
 
@@ -27,7 +27,7 @@ const SearchableDropdown = ({ label, options, onSelect, placeholder, style = {},
 
     return (
         <div style={style} className="dropdown-container">
-            {label && <label className="dropdown-label">{label}</label>}
+            {label && <label style={labelStyle} className="dropdown-label">{label}</label>}
             <input
                 type="text"
                 className="dropdown-input"
@@ -35,6 +35,7 @@ const SearchableDropdown = ({ label, options, onSelect, placeholder, style = {},
                 value={searchTerm}
                 onChange={handleSearchChange}
                 onClick={() => setIsOpen(!isOpen)}
+                style={inputStyle}
             />
             {isOpen && (
                 <ul className="dropdown-menu">

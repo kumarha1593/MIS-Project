@@ -9,11 +9,13 @@ const SelectInput = ({
     onChange,
     required = false,
     error,
-    placeholder
+    placeholder,
+    style = {},
+    hideLabel = false,
 }) => {
 
     return (
-        <div className='form-group'>
+        <div style={style} className='form-group'>
             <label htmlFor={name}>{label}</label>
             <select
                 id={name}
@@ -23,9 +25,9 @@ const SelectInput = ({
                 required={required}
                 className={error ? 'input-error' : ''}
             >
-                <option value="">Select {label || placeholder}</option>
-                {options.map((option) => (
-                    <option key={option.value} value={option.value}>
+                {!hideLabel ? <option value="">Select {label || placeholder}</option> : null}
+                {options.map((option, idx) => (
+                    <option key={idx} value={option.value}>
                         {option.label}
                     </option>
                 ))}
