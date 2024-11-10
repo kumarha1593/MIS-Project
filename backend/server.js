@@ -6,6 +6,10 @@ const moment = require("moment");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const fs = require('fs');
+const jsonexport = require('jsonexport');
+const path = require('path');
+
 // Middleware
 app.use(cors()); // Use CORS middleware
 app.use(express.json()); // Added to parse JSON bodies
@@ -3851,7 +3855,7 @@ app.get("/api/get-screening-report", async (req, res) => {
     dif.district, 
     dif.village,
     dif.health_facility,
-    COUNT(fm.id) AS 'Count'
+    COUNT(fm.id) AS 'screen_count'
     FROM Users u  
     LEFT JOIN family_members fm ON fm.fc_id = u.id
     LEFT JOIN district_info_fc dif ON fm.di_id = dif.id
