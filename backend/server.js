@@ -378,7 +378,7 @@ app.post("/api/family-members", async (req, res) => {
     // Fetch di_id based on fc_id from district_info_fc
     const [diResult] = await db
       .promise()
-      .query(`SELECT id FROM district_info_fc WHERE user_id = ?`, [fc_id]);
+      .query(`SELECT id FROM district_info_fc WHERE user_id = ? ORDER BY id DESC`, [fc_id]);
     const di_id = diResult.length > 0 ? diResult[0].id : null;
 
     // Insert into personal_info table
