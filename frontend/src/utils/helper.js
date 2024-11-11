@@ -213,6 +213,14 @@ export const sex = [
     { label: 'Other', value: 'O' },
 ]
 
+export const mentalHealthProblem = [
+    { label: 'Select', value: "" },
+    { label: 'Depression', value: 'Depression' },
+    { label: 'Alcohol dependence', value: 'Alcohol dependence' },
+    { label: 'Common Mental Health', value: 'Common Mental Health' },
+    { label: 'No', value: 'No' },
+]
+
 export const age = [
     { label: 'Select', value: "" },
     { label: '18-29 Years', value: '18-29 years' },
@@ -230,9 +238,9 @@ export const tobaccoUse = [
 
 export const waistCircumference = [
     { label: 'Select', value: "" },
-    { label: '80 cm or less', value: '80 cm or less' },
-    { label: '81-90 cm', value: '81-90 cm' },
-    { label: 'More than 90 cm', value: 'More than 90 cm' },
+    { label: '90 cm or less', value: '90 cm or less' },
+    { label: '91-100 cm', value: '91-100 cm' },
+    { label: 'More than 100 cm', value: 'More than 100 cm' },
 ]
 
 export const physicalActivity = [
@@ -256,6 +264,13 @@ export const htnOptions = [
     { label: 'No', value: 'No' },
 ]
 
+export const knowCkdOptions = [
+    { label: 'Select', value: "" },
+    { label: 'Yes, on treatment', value: 'Yes, on treatment' },
+    { label: 'Yes, not on treatment', value: 'Yes, not on treatment' },
+    { label: 'No', value: 'No' },
+]
+
 export const heartSound = [
     { label: 'Select', value: "" },
     { label: 'Normal', value: 'Normal' },
@@ -264,8 +279,8 @@ export const heartSound = [
 
 export const cataract = [
     { label: 'Select', value: "" },
-    { label: 'Suspected', value: 'suspected' },
-    { label: 'Not Suspected', value: 'not suspected' },
+    { label: 'Suspected', value: 'Suspected' },
+    { label: 'Not Suspected', value: 'Not Suspected' },
 ]
 
 export const identifier = [
@@ -414,15 +429,15 @@ export const allParameters = [
 ];
 
 export const inputFields = [
-    { label: "Name", key: "family_members_name", type: 'text', required: false, options: [] },
-    { label: "Identifier", key: "identifier", type: 'select', options: identifier, required: false },
-    { label: "Card Number", key: "card_number", type: 'number', required: false, options: [] },
-    { label: "Date of Birth", key: "dob", type: 'date', required: false, options: [] },
-    { label: "Sex", key: "sex", type: 'select', options: sex, required: false },
-    { label: "Phone Number", key: "tel_no", type: 'number', required: false, options: [] },
-    { label: "Address", key: "address", type: 'text', required: false, options: [] },
-    { label: "Health Insurance (State/Government/Private)", key: "state_health_insurance", type: 'select', options: yesNoOptions, required: false },
-    { label: "Disability", key: "disability", type: 'select', options: yesNoOptions, required: false },
+    { label: "Name", key: "pi_name", type: 'text', required: false, options: [] },
+    { label: "Identifier", key: "pi_identifier", type: 'select', options: identifier, required: false },
+    { label: "Card Number", key: "pi_card_number", type: 'number', required: false, options: [] },
+    { label: "Date of Birth", key: "pi_dob", type: 'date', required: false, options: [] },
+    { label: "Sex", key: "pi_sex", type: 'select', options: sex, required: false },
+    { label: "Phone Number", key: "pi_tel_no", type: 'number', required: false, options: [] },
+    { label: "Address", key: "pi_address", type: 'text', required: false, options: [] },
+    { label: "Health Insurance (State/Government/Private)", key: "pi_state_health_insurance", type: 'select', options: yesNoOptions, required: false },
+    { label: "Disability", key: "pi_disability", type: 'select', options: yesNoOptions, required: false },
     { label: "Height (cm) *", key: "height", type: 'text', required: true, options: [] },
     { label: "Weight (kg) *", key: "weight", type: 'text', required: true, options: [] },
     { label: "BMI *", key: "bmi", type: 'text', required: true, options: [] },
@@ -466,7 +481,7 @@ export const inputFields = [
     { label: "CVD Date *", key: "cvd_date", type: 'date', required: true, options: [] },
     { label: "Suspected CVD *", key: "suspected_cvd", type: 'select', required: true, options: yesNoOptions },
     { label: "History of Stroke *", key: "history_of_stroke", type: 'select', required: true, options: yesNoOptions },
-    { label: "Known case of CKD *", key: "known_ckd", type: 'select', required: true, options: htnOptions },
+    { label: "Known case of CKD *", key: "known_ckd", type: 'select', required: true, options: knowCkdOptions },
     { label: "History of CKD/Stone *", key: "history_ckd_stone", type: 'select', required: true, options: yesNoOptions },
     { label: "Age Above 50 *", key: "age_above_50", type: 'select', required: true, options: yesNoOptions },
     { label: "Hypertension Patient *", key: "hypertension_patient", type: 'select', required: true, options: yesNoOptions },
@@ -474,7 +489,7 @@ export const inputFields = [
     { label: "Anemia Patient *", key: "anemia_patient", type: 'select', required: true, options: yesNoOptions },
     { label: "Swelling on Face and Leg *", key: "swelling_face_leg", type: 'select', required: true, options: yesNoOptions },
     { label: "History of NSAIDS *", key: "history_nsaids", type: 'select', required: true, options: yesNoOptions },
-    { label: "Risk Assessment *", key: "risk_assessment", type: 'select', required: true, options: yesNoOptions },
+    { label: "Risk Assessment *", key: "risk_assessment", type: 'text', required: true, options: [] },
     { label: "Known case of chronic respiratory diseases (ASTHMA/COPD/OTHERS) *", key: "known_case_crd", type: 'select', required: true, options: yesNoOptions },
     { label: "Occupational Exposure *", key: "occupational_exposure", type: 'select', required: true, options: occupationalExposure },
     { label: "Type of Fuel Used for Cooking *", key: "cooking_fuel_type", type: 'select', required: true, options: typeOfFuelUsedForCooking },
@@ -506,7 +521,7 @@ export const inputFields = [
     { label: "Little interest or pleasure in doing things? *", key: "little_interest_or_pleasure", type: 'select', required: true, options: feeling },
     { label: "Feeling down, depressed, or hopeless? *", key: "feeling_down_or_depressed", type: 'select', required: true, options: feeling },
     { label: "Mental Health Score:", key: "mental_health_score", type: 'text', required: true, options: [] },
-    { label: "Mental Health problem detected through the questionnaire *", key: "mental_health_problem", type: 'select', required: true, options: yesNoOptions },
+    { label: "Mental Health problem detected through the questionnaire *", key: "mental_health_problem", type: 'select', required: true, options: mentalHealthProblem },
     { label: "History of fits *", key: "history_of_fits", type: 'select', required: true, options: yesNoOptions },
     { label: "Other mental disorder *", key: "other_mental_disorder", type: 'select', required: true, options: yesNoOptions },
     { label: "Brief intervention given? *", key: "brief_intervention_given", type: 'select', required: true, options: yesNoOptions },
@@ -522,15 +537,15 @@ export const inputFields = [
 ]
 
 export const formFields = {
-    "family_members_name": "",
-    "identifier": "",
-    "card_number": "",
-    "dob": "",
-    "sex": "",
-    "tel_no": "",
-    "address": "",
-    "state_health_insurance": "",
-    "disability": "",
+    "pi_name": "",
+    "pi_identifier": "",
+    "pi_card_number": "",
+    "pi_dob": "",
+    "pi_sex": "",
+    "pi_tel_no": "",
+    "pi_address": "",
+    "pi_state_health_insurance": "",
+    "pi_disability": "",
     "height": "",
     "weight": "",
     "bmi": "",

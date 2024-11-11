@@ -42,7 +42,7 @@ const UpdateMem = ({ visible, onDismiss, data, onDone }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        const response = await defaultInstance.put(`${API_ENDPOINTS.UPDATE_MASTER_LIST}/${data?.fm_id}/`, { data: formData });
+        const response = await defaultInstance.put(`${API_ENDPOINTS.UPDATE_MASTER_LIST}${data?.fm_id}/`, { data: formData });
         setIsLoading(false);
         if (response?.data?.success) {
             onDone();
@@ -56,12 +56,12 @@ const UpdateMem = ({ visible, onDismiss, data, onDone }) => {
     }, [visible, JSON.stringify(data)])
 
     const updateFormData = (item) => {
-        const dateFields = ['dob', 'cvd_date', 'screening_date'];
+        const dateFields = ['pi_dob', 'cvd_date', 'screening_date'];
         const smallFields = ["alcohol_use", "family_diabetes_history"];
 
         const obj = Object.keys(formData).reduce((acc, key) => {
             if (dateFields.includes(key)) {
-                acc[key] = item[key] ? moment(item[key], 'MMMM D, YYYY').format('YYYY-MM-DD') : '';
+                acc[key] = item[key] ? moment(item[key]).format('YYYY-MM-DD') : '';
             } else if (smallFields.includes(key)) {
                 acc[key] = ["0", "yes", "Yes"].includes(item[key]) ? "Yes" : ["1", "no", "No"].includes(item[key]) ? "No" : ''
             } else {

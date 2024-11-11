@@ -15,7 +15,7 @@ const FamilyMembers = ({ data, onChange, selectedItem, showEditAction }) => {
                             null
                         }
                         {allParameters?.map((parameter, paramIdx) => (
-                            <th style={{ backgroundColor: '#217cc070', minWidth: '200px' }} key={paramIdx}>{parameter?.label}</th>
+                            <th style={{ backgroundColor: '#217cc070', minWidth: parameter?.value == 'fm_id' ? undefined : '200px' }} key={paramIdx}>{parameter?.label}</th>
                         ))}
                     </tr>
                 </thead>
@@ -46,7 +46,7 @@ const FamilyMembers = ({ data, onChange, selectedItem, showEditAction }) => {
                                     details.screening_date = moment(mem?.screening_date).format('MMMM D, YYYY');
                                 }
                                 return (
-                                    <td style={{ minWidth: '200px' }} key={dataIdx}>{mem?.[item?.value] || 'Not filled'}</td>
+                                    <td style={{ minWidth: item?.value == 'fm_id' ? undefined : '200px' }} key={dataIdx}>{mem?.[item?.value] || 'Not filled'}</td>
                                 )
                             })}
                         </tr>
