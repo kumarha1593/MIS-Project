@@ -3470,7 +3470,7 @@ app.get("/api/get-master-list", async (req, res) => {
     dif.asha_name,
     dif.midori_staff_name,
     family_members.date AS 'screening_date',
-    head_members.name AS 'head_of_family',
+    IFNULL(head_members.name,family_members.name) AS 'head_of_family',
     pi.name AS 'pi_name',
     pi.tel_no AS 'pi_tel_no',
     pi.identifier AS 'pi_identifier',
