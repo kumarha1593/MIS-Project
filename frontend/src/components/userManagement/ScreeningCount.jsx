@@ -14,7 +14,6 @@ const ScreeningCount = () => {
     const [todayScreenings, setTodayScreenings] = useState(0);
     const [totalScreeningsTillDate, setTotalScreeningsTillDate] = useState(0);
 
-
     const fetchScreeningReport = async () => {
 
         const { from_date, to_date, search_term, page_limit = 400, skip_count = 0 } = queryParams || {};
@@ -34,6 +33,9 @@ const ScreeningCount = () => {
         fetchScreeningReport();
     }, [JSON.stringify(queryParams)])
 
+    const headers = ['Field Coordinator Name', 'District', 'Village', 'Health Facility', 'Screen Count']
+    const countHeaders = ['Total Screening', 'Today Screening']
+
     return (
         <div className="role-container">
             <ScreeningFilter queryParams={queryParams} />
@@ -41,8 +43,11 @@ const ScreeningCount = () => {
                 <table className="fm-item-table">
                     <thead>
                         <tr>
-                            <th style={{ backgroundColor: '#217cc070' }}>Total Screening</th>
-                            <th style={{ backgroundColor: '#217cc070' }}>Today Screening</th>
+                            {countHeaders.map((countTh, idx) => {
+                                return (
+                                    <th key={idx} style={{ backgroundColor: '#217cc070' }}>{countTh}</th>
+                                )
+                            })}
                         </tr>
                     </thead>
                     <tbody>
@@ -57,11 +62,11 @@ const ScreeningCount = () => {
                 <table className="fm-item-table">
                     <thead>
                         <tr>
-                            <th style={{ backgroundColor: '#217cc070' }}>Field Coordinator Name</th>
-                            <th style={{ backgroundColor: '#217cc070' }}>District</th>
-                            <th style={{ backgroundColor: '#217cc070' }}>Village</th>
-                            <th style={{ backgroundColor: '#217cc070' }}>Health Facility</th>
-                            <th style={{ backgroundColor: '#217cc070' }}>Screen Count</th>
+                            {headers.map((th, idx) => {
+                                return (
+                                    <th key={idx} style={{ backgroundColor: '#217cc070' }}>{th}</th>
+                                )
+                            })}
                         </tr>
                     </thead>
                     <tbody>

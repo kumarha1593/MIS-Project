@@ -276,13 +276,14 @@ export const identifier = [
 ]
 
 export const allParameters = [
-    { label: "Family Member's Name", value: "family_members_name" },
+    { label: "ID", value: "fm_id" },
     { label: "Field Coordinator Name", value: "field_coordinator_name" },
+    { label: "Head of Family Name", value: "head_of_family" },
+    { label: "Family Member's Name", value: "pi_name" },
     { label: "District", value: "district" },
     { label: "Health Facility", value: "health_facility" },
     { label: "Village", value: "village", type: 'village' },
     { label: "Screening Date", value: "screening_date", type: 'date' },
-    { label: "Name", value: "pi_name" },
     { label: "Identifier", value: "pi_identifier", },
     { label: "Card Number", value: "pi_card_number", },
     { label: "Date of Birth", value: "pi_dob", type: 'date' },
