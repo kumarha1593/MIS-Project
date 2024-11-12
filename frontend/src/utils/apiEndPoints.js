@@ -5,6 +5,7 @@ export const API_ENDPOINTS = {
   UPDATE_MASTER_LIST: `${process.env.REACT_APP_API_PREFIX}update-master-list/`,
   EXPORT_MASTER_LIST: `${process.env.REACT_APP_API_PREFIX}export-master-list/`,
   BULK_DATA: `${process.env.REACT_APP_API_PREFIX}bulk-data/`,
+  IMPORT_MASTER_LIST: `${process.env.REACT_APP_API_PREFIX}import-master-list/`,
   ASSOCIATES: `${process.env.REACT_APP_API_PREFIX}associates/`,
   FAMILY_HEAD: `${process.env.REACT_APP_API_PREFIX}family-heads/`,
   FAMILY_DETAILS: `${process.env.REACT_APP_API_PREFIX}family-details/`,
@@ -13,5 +14,6 @@ export const API_ENDPOINTS = {
   CREATE_VILLAGE: `${process.env.REACT_APP_API_PREFIX}create-village/`,
   VILLAGE_LIST: `${process.env.REACT_APP_API_PREFIX}village-list/`,
   SCREENING_REPORT: `${process.env.REACT_APP_API_PREFIX}get-screening-report/`,
+  FAMILY_MEMBER_LIST: `${process.env.REACT_APP_API_PREFIX}get-family-member-list/`,
   // Add more API endpoints as needed
 };
