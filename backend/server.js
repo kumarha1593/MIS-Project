@@ -9,6 +9,8 @@ const jwt = require("jsonwebtoken");
 const fs = require('fs');
 const jsonexport = require('jsonexport');
 const path = require('path');
+const multer = require('multer');
+const csv = require('csv-parser');
 
 // Middleware
 app.use(cors()); // Use CORS middleware
@@ -4328,7 +4330,6 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
     help_from_others,
     forget_names,
     fc_id,
-    Aadhar,
     head_id,
     screening_status,
     screening_date,
@@ -4670,7 +4671,7 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
     const familyMembersParams = [
       fc_id,
       pi_name,
-      Aadhar,
+      pi_card_number,
       head_id,
       screening_status,
       screening_date,
@@ -4955,12 +4956,301 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
 
   } catch (error) {
     console.error("Error:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Server error",
-
+    res.status(200).json({
+      success : false,
+      message : error.message,
     });
   }
+});
+
+// Configure multer for file upload
+const upload = multer({ dest: 'uploads/' });
+
+// Created by Tanmay Pradhan - 11 Nov 2024
+app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
+  const filePath = path.join(__dirname, req.file.path);
+
+  const results = [];
+  fs.createReadStream(filePath)
+    .pipe(csv())
+    .on('data', (data) => results.push(data))
+    .on('end', async () => {
+      // Prepare data for bulk insertion
+      const columns = Object.keys(results[0]); // Get all column names from the first row
+      const values = results.map(item => columns.map(col => item[col])); // Extract values for each row
+
+      fs.unlinkSync(filePath);
+
+      try {
+        for (let index = 0; index < results.length; index++) {
+          await db.promise().beginTransaction();
+          const [existsResult] = await db.promise().query(`SELECT * FROM family_members fm WHERE name = ? AND Aadhar = ?;`,
+            [
+              results[index]['Patient Name'],
+              results[index]['Identification Number']
+            ]
+          );
+  
+          if(existsResult.length > 0) {
+            await db.promise().rollback();
+            res.status(200).json({
+              success : false,
+              message : 'CSV rejected. Error inserting ' + results[index]['Patient Name'] + '. Duplicate found!',
+            });
+            return;
+          }
+
+          var headId = '0';
+          
+          if(results[index]['head_name'] && results[index]['head_identifier']) {
+            const [headResult] = await db.promise().query(`SELECT id FROM family_members fm WHERE name = ? AND Aadhar = ?;`,
+              [
+                results[index]['head_name'],
+                results[index]['head_identifier'],
+              ]
+            );
+
+            if(headResult.length > 0) {
+              headId = headResult[0].id;
+            }
+          }
+
+          console.log('Head ID: ' + headId);
+
+          // ------------------------------------------------------------------------------------------------
+          // PERSONAL INFO
+          const [personalInfoResult] = await db.promise().query(`INSERT INTO personal_info 
+            (name, identifier, card_number, dob, sex, tel_no, address, state_health_insurance, 
+            state_health_insurance_remark, disability, disability_remark, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW());`,
+          [
+            results[index]['Patient Name'],
+            results[index]['Patient Identifier'],
+            results[index]['Identification Number'],
+            results[index]['Date of Birth'],
+            results[index]['Sex'],
+            results[index]['Telephone No.'],
+            results[index]['Address'],
+            results[index]['State Health Insurance'],
+            results[index]['State Health Insurance Remark'],
+            results[index]['Disability'],
+            results[index]['Disability Remark'],
+          ]);
+
+          const personalInfoId = personalInfoResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // HEALTH
+          const [healthResult] = await db.promise().query(`INSERT INTO health 
+            (height, weight, bmi, temp, spO2, created_at, updated_at, pulse)
+            VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?);`,
+          [
+            results[index]['Height'], 
+            results[index]['Weight'], 
+            results[index]['BMI'], 
+            results[index]['Temperature'], 
+            results[index]['SPO2'],
+            results[index]['Pulse'],
+          ]);
+
+          const healthId = headResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // HTN
+          const [htnResult] = await db.promise().query(`INSERT INTO htn
+            (case_of_htn, action_high_bp, referral_center, created_at, updated_at, upper_bp, lower_bp)
+            VALUES (?, ?, ?, NOW(), NOW(), ?, ?);`,
+          [
+            results[index]['Known case of HTN'],
+            results[index]['Action High BP'],
+            results[index]['Referral Center HTN'],
+            results[index]['Upper BP'],
+            results[index]['Lower BP'],
+          ]);
+
+          const htnId = htnResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // DM
+          const [dmResult] = await db.promise().query(`INSERT INTO DM
+            (case_of_dm, action_high_bs, referral_center, created_at, updated_at, fasting_blood_sugar, 
+            post_prandial_blood_sugar, random_blood_sugar)
+            VALUES(?, ?, ?, NOW(), NOW(), ?, ?, ?);`,[
+              results[index]['Known Case of DM'],
+              results[index]['Action High BS'],
+              results[index]['Blood Sugar Referral Center'],
+              results[index]['Fasting Blood Sugar'],
+              results[index]['Post Prandial Blood Sugar'],
+              results[index]['Random Blood Sugar'],
+            ]);
+
+          const dmId = dmResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // RISK ASSESSMENT
+          const [raResult] = await db.promise().query(`INSERT INTO risk_assessment
+            (age, tobacco_use, alcohol_use, waist_female, waist_male, physical_activity, 
+            family_diabetes_history, risk_score, created_at, updated_at)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW());`,
+          [
+            results[index]['Age'],
+            results[index]['Tobacco Use'],
+            results[index]['Alcohol Use'],
+            results[index]['Female Waist'],
+            results[index]['Male Waist'],
+            results[index]['Physical Activity'],
+            results[index]['Family Diabetes History'],
+            results[index]['Risk Score'],
+          ]);
+
+          const raId = raResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // ORAL CANCER
+          const [ocResult] = await db.promise().query(`INSERT INTO oralcancer
+            (known_case, persistent_ulcer, persistent_patch, difficulty_chewing, difficulty_opening_mouth,
+             growth_in_mouth, swelling_in_neck, suspected_oral_cancer, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW());`,
+          [
+            results[index]['Oral Cancer Known Case'],
+            results[index]['Persistent Ulcer'],
+            results[index]['Persistent Patch'],
+            results[index]['Difficulty Chewing'],
+            results[index]['Difficulty Opening Mouth'],
+            results[index]['Growth in Mouth'],
+            results[index]['Swelling in Neck'],
+            results[index]['Suspected Oral Cancer'],
+          ]);
+
+          const ocId = ocResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // BREAST CANCER
+          const [bcResult] = await db.promise().query(`INSERT INTO breastcancer
+            (known_case, lump_in_breast, blood_stained_discharge, change_in_shape, constant_pain_or_swelling, 
+            redness_or_ulcer, suspected_breast_cancer, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW());`,
+          [
+            results[index]['Breast Cancer Known Case'],
+            results[index]['Lump in Breast'],
+            results[index]['Blood Stained Discharge'],
+            results[index]['Change in Shape and size of Breast'],
+            results[index]['Constant Pain or Swelling'],
+            results[index]['Redness or Ulcer'],
+            results[index]['Suspected Breast Cancer'],
+          ]);
+
+          const bcId = bcResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // CERVICAL CANCER
+          const [ccResult] = await db.promise().query(`INSERT INTO cervicalcancer
+            (known_case, bleeding_between_periods, bleeding_after_menopause, bleeding_after_intercourse, 
+            foul_smelling_discharge, via_appointment_date, via_result, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW());`,
+          [
+            results[index]['Cervical Cancer Known Case'],
+            results[index]['Bleeding Between Periods'],
+            results[index]['Bleeding After Menopause'],
+            results[index]['Bleeding After Intercourse'],
+            results[index]['Foul Smelling Discharge'],
+            null,
+            null,
+          ]);
+
+          const ccId = ccResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // CVD
+          const [cvdResult] = await db.promise().query(`INSERT INTO cvd
+            (known_case, heart_sound, symptom, cvd_date, suspected_cvd, created_at, updated_at, 
+            teleconsultation, referral, referral_centre)
+            VALUES(?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?);`,
+          [
+            results[index]['Heart Disease Known Case'], 
+            results[index]['Heart Sound'], 
+            results[index]['Symptom'], 
+            results[index]['CVD Date'], 
+            results[index]['Suspected CVD'], 
+            results[index]['CVD Teleconsultation'], 
+            results[index]['CVD Referral'], 
+            results[index]['CVD Referral Center'],
+          ]);
+
+          const cvdId = cvdResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // POST STROKE
+          const [psResult] = await db.promise().query(`INSERT INTO poststroke
+            (history_of_stroke, stroke_date, present_condition, stroke_sign_action, referral_center_name, 
+            created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, NOW(), NOW());`,
+          [
+            results[index]['History of Stroke'],
+            results[index]['Stroke Date'],
+            results[index]['Present Condition'],
+            results[index]['Stroke Sign Action'],
+            results[index]['PS Referral Center Name'],
+          ]);
+
+          const psId = psResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // CKD Assessment
+          const [ckdResult] = await db.promise().query(`INSERT INTO ckd_assessment
+            (knownCKD, historyCKDStone, ageAbove50, hypertensionPatient, diabetesPatient,
+             anemiaPatient, historyOfStroke, swellingFaceLeg, historyNSAIDS, ckdRiskScore, 
+             riskaAssessment, created_at, updated_at)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW());`,
+          [
+            results[index]['Known Case of CKD'],
+            results[index]['History of CKD Stone'],
+            results[index]['Age Above 50'],
+            results[index]['Hypertension Patient'],
+            results[index]['Diabetes Patient'],
+            results[index]['Anemia Patient'],
+            results[index]['History of Stroke CKD'],
+            results[index]['Swelling Face and Leg'],
+            results[index]['History of NSAIDS'],
+            results[index]['CKD Risk Score'],
+          ]);
+
+          const ckdId = ckdResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // COPDTB - TBC
+          // ------------------------------------------------------------------------------------------------
+
+          const [fmResult] = await db.promise().query(`INSERT INTO family_members
+            (fc_id, name, Aadhar, head_id, master_data_id, di_id, status, date)
+            VALUES (0, 0, '', '', 0, 0, 0, 0, '');`,
+          [
+            results[index]['fc_id'],
+            results[index]['Patient Name'],
+            results[index]['Identification Number'],
+            headId,
+            results[index]['Identification Number'],
+          ]);
+          // ------------------------------------------------------------------------------------------------
+        }
+        
+      } catch (error) {
+        console.error("Error inserting csv:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+      }
+
+      res.status(201).json({
+        // success : true,
+        // message : "Inserted!",
+        results : results,
+        // columns : columns,
+        // values : values,
+      });
+    })
+    .on('error', (err) => {
+      console.error('Error reading CSV file:', err);
+      res.status(500).json({ error: 'Failed to process CSV file' });
+    });
 });
 
 // Start server
