@@ -52,7 +52,7 @@ const AdminHomePage = () => {
     if (file) {
       const fd = new FormData();
       fd.append('file', file)
-      defaultInstance.post(API_ENDPOINTS.BULK_DATA, fd).then(() => {
+      defaultInstance.post(API_ENDPOINTS.IMPORT_MASTER_LIST, fd).then(() => {
         fetchUsers();
       }).catch((err) => console.log(err))
     }
