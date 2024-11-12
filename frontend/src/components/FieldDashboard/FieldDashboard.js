@@ -78,7 +78,7 @@ const FieldDashboard = () => {
       midori_staff_name
     } = editableData;
 
-    const areFieldsValid = [district, village, health_facility, mo_mpw_cho_anu_name, asha_name, midori_staff_name].every(Boolean);
+    const areFieldsValid = [district, village, health_facility, mo_mpw_cho_anu_name, asha_name].every(Boolean);
 
     if (!areFieldsValid) {
       alert('Please fill out all fields.');

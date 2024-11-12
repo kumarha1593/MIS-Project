@@ -93,7 +93,11 @@ const Users = () => {
                 visible={showMemModal}
                 onDismiss={() => setShowMemModal(false)}
                 data={selectedItem}
-                onDone={fetchMasterList}
+                onDone={() => {
+                    setShowMemModal(false);
+                    setSelectedItem(null)
+                    fetchMasterList();
+                }}
             />
         </div>
     )

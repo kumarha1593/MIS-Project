@@ -13,5 +13,6 @@ export const API_ENDPOINTS = {
   CREATE_VILLAGE: `${process.env.REACT_APP_API_PREFIX}create-village/`,
   VILLAGE_LIST: `${process.env.REACT_APP_API_PREFIX}village-list/`,
   SCREENING_REPORT: `${process.env.REACT_APP_API_PREFIX}get-screening-report/`,
+  FAMILY_MEMBER_LIST: `${process.env.REACT_APP_API_PREFIX}get-family-member-list/`,
   // Add more API endpoints as needed
 };

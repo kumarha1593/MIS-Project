@@ -534,6 +534,14 @@ export const inputFields = [
     { label: "Remarks", key: "remarks", type: 'text', required: true, options: [] },
     { label: "ABHA ID Status", key: "abha_id_status", type: 'select', required: true, options: AbhaIdStatus },
     { label: "Screening Date", key: "screening_date", type: 'date', required: true, options: [] },
+
+    { label: "Head of Family", key: "head_of_family", type: 'select', select_type: 'custom', required: true, options: [] },
+    { label: "Name of Asha", key: "asha_name", type: 'text', required: true, options: [] },
+    { label: "District", key: "district", type: 'text', required: true, options: [] },
+    { label: "Health Facility", key: "health_facility", type: 'text', required: true, options: [] },
+    { label: "Midori Staff", key: "midori_staff_name", type: 'text', required: true, options: [] },
+    { label: "Name of MO/CHO/ANM", key: "mo_mpw_cho_anu_name", type: 'text', required: true, options: [] },
+    { label: "Village", key: "village", type: 'village', required: true, options: [] },
 ]
 
 export const formFields = {
@@ -628,5 +636,14 @@ export const formFields = {
     "other_advices": "",
     "remarks": "",
     "abha_id_status": "",
-    "screening_date": ""
+    "screening_date": "",
+    "screening_status": 1,
+    "head_of_family": '',
+    "asha_name": '',
+    "district": '',
+    "health_facility": '',
+    "midori_staff_name": '',
+    "mo_mpw_cho_anu_name": '',
+    "village": '',
+    "fc_id": ''
 }

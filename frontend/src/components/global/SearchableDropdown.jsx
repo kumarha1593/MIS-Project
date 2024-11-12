@@ -32,7 +32,7 @@ const SearchableDropdown = ({ label, options, onSelect, placeholder, style = {},
                 type="text"
                 className="dropdown-input"
                 placeholder={placeholder}
-                value={searchTerm}
+                value={searchTerm || value}
                 onChange={handleSearchChange}
                 onClick={() => setIsOpen(!isOpen)}
                 style={inputStyle}
@@ -40,9 +40,9 @@ const SearchableDropdown = ({ label, options, onSelect, placeholder, style = {},
             {isOpen && (
                 <ul className="dropdown-menu">
                     {filteredOptions?.length > 0 ? (
-                        filteredOptions.map((option) => (
+                        filteredOptions.map((option, idx) => (
                             <li
-                                key={option?.value}
+                                key={idx}
                                 className="dropdown-item"
                                 onClick={() => handleSelect(option)}
                             >

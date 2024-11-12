@@ -8,10 +8,13 @@ import { MdOutlineClose } from "react-icons/md";
 import moment from 'moment';
 import defaultInstance from '../../axiosHelper';
 import { API_ENDPOINTS } from '../../utils/apiEndPoints';
+import SearchableDropdown from '../global/SearchableDropdown';
 const UpdateMem = ({ visible, onDismiss, data, onDone }) => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState(formFields);
+    const [villageOptions, setVillageOptions] = useState([])
+    const [familyMem, setFamilyMem] = useState([])
 
     const customStyles = {
         content: {
@@ -42,18 +45,12 @@ const UpdateMem = ({ visible, onDismiss, data, onDone }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        const response = await defaultInstance.put(`${API_ENDPOINTS.UPDATE_MASTER_LIST}${data?.fm_id}/`, { data: formData });
+        const response = await defaultInstance.put(`${API_ENDPOINTS.UPDATE_MASTER_LIST}${data?.fm_id}/`, { ...formData, fc_id: Number(formData?.fc_id || 0) });
         setIsLoading(false);
         if (response?.data?.success) {
             onDone();
         }
     }
-
-    useEffect(() => {
-        if (visible && data) {
-            updateFormData(data)
-        }
-    }, [visible, JSON.stringify(data)])
 
     const updateFormData = (item) => {
         const dateFields = ['pi_dob', 'cvd_date', 'screening_date'];
@@ -64,6 +61,8 @@ const UpdateMem = ({ visible, onDismiss, data, onDone }) => {
                 acc[key] = item[key] ? moment(item[key]).format('YYYY-MM-DD') : '';
             } else if (smallFields.includes(key)) {
                 acc[key] = ["0", "yes", "Yes"].includes(item[key]) ? "Yes" : ["1", "no", "No"].includes(item[key]) ? "No" : ''
+            } else if (key == "screening_status") {
+                acc[key] = 1;
             } else {
                 acc[key] = item[key] || '';
             }
@@ -71,6 +70,40 @@ const UpdateMem = ({ visible, onDismiss, data, onDone }) => {
         }, {});
         setFormData(obj);
     };
+
+    const fetchVillages = async () => {
+        const response = await defaultInstance.get(API_ENDPOINTS.VILLAGE_LIST);
+        if (response?.data?.success) {
+            const villages = response?.data?.data?.map(({ village_id, name }) => ({
+                value: village_id,
+                label: name,
+            }));
+            setVillageOptions(villages)
+        }
+    }
+
+    const fetchMem = async () => {
+        const params = {
+            fc_id: data?.fc_id || 0,
+            search_term: '',
+        }
+        const response = await defaultInstance.get(API_ENDPOINTS.FAMILY_MEMBER_LIST, { params: params });
+        if (response?.data?.success) {
+            const villages = response?.data?.data?.map(({ name }) => ({
+                value: name,
+                label: name,
+            }));
+            setFamilyMem(villages)
+        }
+    }
+
+    useEffect(() => {
+        if (visible && data) {
+            updateFormData(data);
+            fetchVillages();
+            fetchMem();
+        }
+    }, [visible, JSON.stringify(data)]);
 
     return (
         <Modal
@@ -93,37 +126,56 @@ const UpdateMem = ({ visible, onDismiss, data, onDone }) => {
                         return acc;
                     }, []).map((row, idx) => (
                         <div className="input-wrapper" key={idx}>
-                            {row?.map(({ label, key, type, options }) =>
-                                type === 'select' ? (
-                                    <SelectInput
-                                        key={key}
-                                        label={label}
-                                        name={key}
-                                        value={formData?.[key] || ''}
-                                        options={options}
-                                        onChange={updateValue}
-                                        style={{ width: '49%' }}
-                                        hideLabel
-                                    />
-                                ) :
+                            {row?.map(({ label, key, type, options, select_type }) =>
+                                type === 'select'
+                                    ?
                                     (
-                                        <TextInput
+                                        <SelectInput
                                             key={key}
                                             label={label}
                                             name={key}
                                             value={formData?.[key] || ''}
+                                            options={select_type == 'custom' ? familyMem : options}
                                             onChange={updateValue}
-                                            type={type}
                                             style={{ width: '49%' }}
+                                            hideLabel
                                         />
                                     )
+                                    :
+                                    type === 'village'
+                                        ?
+                                        (
+                                            <SearchableDropdown
+                                                options={villageOptions}
+                                                onSelect={(data) => {
+                                                    setFormData(prev => ({ ...prev, ['village']: `${data?.label} / ${data?.value}` }));
+                                                }}
+                                                placeholder="Select Village"
+                                                style={{ width: '49%' }}
+                                                value={formData?.['village'] ? String(formData?.['village']) : ''}
+                                                inputStyle={{ padding: '10px' }}
+                                                label="Village"
+                                            />
+                                        )
+                                        :
+                                        (
+                                            <TextInput
+                                                key={key}
+                                                label={label}
+                                                name={key}
+                                                value={formData?.[key] || ''}
+                                                onChange={updateValue}
+                                                type={type}
+                                                style={{ width: '49%' }}
+                                            />
+                                        )
                             )}
                         </div>
                     ))}
                 </form>
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <button
-                        disabled={isLoading}
+                        // disabled={isLoading}
                         className='common-button'
                         type='submit'
                         onClick={handleSubmit}
