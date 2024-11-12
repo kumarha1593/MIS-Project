@@ -4966,6 +4966,11 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
 // Configure multer for file upload
 const upload = multer({ dest: 'uploads/' });
 
+function convertDateFormat(dateStr) {
+  const [day, month, year] = dateStr.split('/'); // Split the date string
+  return `${year}-${month}-${day}`; // Reformat to yyyy-MM-dd
+}
+
 // Created by Tanmay Pradhan - 11 Nov 2024
 app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
   const filePath = path.join(__dirname, req.file.path);
@@ -4982,8 +4987,9 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
       fs.unlinkSync(filePath);
 
       try {
+        await db.promise().beginTransaction();
         for (let index = 0; index < results.length; index++) {
-          await db.promise().beginTransaction();
+          
           const [existsResult] = await db.promise().query(`SELECT * FROM family_members fm WHERE name = ? AND Aadhar = ?;`,
             [
               results[index]['Patient Name'],
@@ -5027,7 +5033,7 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
             results[index]['Patient Name'],
             results[index]['Patient Identifier'],
             results[index]['Identification Number'],
-            results[index]['Date of Birth'],
+            convertDateFormat(results[index]['Date of Birth']),
             results[index]['Sex'],
             results[index]['Telephone No.'],
             results[index]['Address'],
@@ -5053,7 +5059,7 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
             results[index]['Pulse'],
           ]);
 
-          const healthId = headResult.insertId;
+          const healthId = healthResult.insertId;
 
           // ------------------------------------------------------------------------------------------------
           // HTN
@@ -5062,7 +5068,7 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
             VALUES (?, ?, ?, NOW(), NOW(), ?, ?);`,
           [
             results[index]['Known case of HTN'],
-            results[index]['Action High BP'],
+            results[index]['Action High BP'] == "" ? null : results[index]['Action High BP'],
             results[index]['Referral Center HTN'],
             results[index]['Upper BP'],
             results[index]['Lower BP'],
@@ -5077,7 +5083,7 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
             post_prandial_blood_sugar, random_blood_sugar)
             VALUES(?, ?, ?, NOW(), NOW(), ?, ?, ?);`,[
               results[index]['Known Case of DM'],
-              results[index]['Action High BS'],
+              results[index]['Action High BS'] == "" ? null : results[index]['Action High BS'],
               results[index]['Blood Sugar Referral Center'],
               results[index]['Fasting Blood Sugar'],
               results[index]['Post Prandial Blood Sugar'],
@@ -5096,8 +5102,8 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
             results[index]['Age'],
             results[index]['Tobacco Use'],
             results[index]['Alcohol Use'],
-            results[index]['Female Waist'],
-            results[index]['Male Waist'],
+            results[index]['Female Waist'] == "" ? null : results[index]['Female Waist'],
+            results[index]['Male Waist'] == "" ? null : results[index]['Male Waist'],
             results[index]['Physical Activity'],
             results[index]['Family Diabetes History'],
             results[index]['Risk Score'],
@@ -5169,12 +5175,12 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
           [
             results[index]['Heart Disease Known Case'], 
             results[index]['Heart Sound'], 
-            results[index]['Symptom'], 
-            results[index]['CVD Date'], 
-            results[index]['Suspected CVD'], 
-            results[index]['CVD Teleconsultation'], 
-            results[index]['CVD Referral'], 
-            results[index]['CVD Referral Center'],
+            results[index]['Symptom'] == "" ? null : results[index]['Symptom'], 
+            results[index]['CVD Date'] == "" ? null : results[index]['CVD Date'], 
+            results[index]['Suspected CVD'] == "" ? null : results[index]['Suspected CVD'], 
+            results[index]['CVD Teleconsultation'] == "" ? null : results[index]['CVD Teleconsultation'], 
+            results[index]['CVD Referral'] == "" ? null : results[index]['CVD Referral'], 
+            results[index]['CVD Referral Center'] == "" ? null : results[index]['CVD Referral Center'],
           ]);
 
           const cvdId = cvdResult.insertId;
@@ -5187,9 +5193,9 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
             VALUES (?, ?, ?, ?, ?, NOW(), NOW());`,
           [
             results[index]['History of Stroke'],
-            results[index]['Stroke Date'],
-            results[index]['Present Condition'],
-            results[index]['Stroke Sign Action'],
+            results[index]['Stroke Date'] == "" ? null : results[index]['Stroke Date'],
+            results[index]['Present Condition'] == "" ? null : results[index]['Present Condition'],
+            results[index]['Stroke Sign Action'] == "" ? null : results[index]['Stroke Sign Action'],
             results[index]['PS Referral Center Name'],
           ]);
 
@@ -5213,44 +5219,276 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
             results[index]['Swelling Face and Leg'],
             results[index]['History of NSAIDS'],
             results[index]['CKD Risk Score'],
+            null,
           ]);
 
           const ckdId = ckdResult.insertId;
 
           // ------------------------------------------------------------------------------------------------
-          // COPDTB - TBC
-          // ------------------------------------------------------------------------------------------------
+          // COPDTB
+          const [copdtbResult] = await db.promise().query(`INSERT INTO copdtb
+            (known_case_crd, crd_specify, occupational_exposure, cooking_fuel_type, chest_sound, 
+            chest_sound_action, referral_center_name, copd_confirmed, copd_confirmation_date, 
+            shortness_of_breath, coughing_more_than_2_weeks, blood_in_sputum, fever_more_than_2_weeks, 
+            night_sweats, taking_anti_tb_drugs, family_tb_history, history_of_tb, created_at, updated_at)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW());`,
+          [
+            results[index]['Known Case of CRD'],
+            results[index]['CRD Specify'],
+            results[index]['Occupational Exposure'],
+            results[index]['Cooking Fuel Type'],
+            results[index]['Chest Sound'],
+            results[index]['Chest Sound Action'] == "" ? null : results[index]['Chest Sound Action'],
+            results[index]['CRD Referral Center'],
+            results[index]['COPD Confirmed'] == "" ? null : results[index]['COPD Confirmed'],
+            results[index]['COPD Confirm Date'] == "" ? null : convertDateFormat(results[index]['COPD Confirm Date']),
+            results[index]['Shortness of Breath'],
+            results[index]['Coughing More Than 2 Weeks'] == "" ? null : results[index]['Coughing More Than 2 Weeks'],
+            results[index]['Blood in Sputum'],
+            results[index]['Fever for more Than 2 Weeks'],
+            results[index]['Night Sweats'],
+            results[index]['Taking Anti TB Drugs'],
+            results[index]['Family TB History'],
+            results[index]['History of TB'],
+          ]);
 
+          const copdtbId = copdtbResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // CATARACT
+          const [cResult] = await db.promise().query(`INSERT INTO cataract
+            (cloudy_blurred_vision, pain_or_redness, cataract_assessment_result, created_at, updated_at)
+            VALUES(?, ?, ?, NOW(), NOW());`,
+          [
+            results[index]['Cloudy Blurred Vision'],
+            results[index]['Pain or Redness'],
+            results[index]['Cataract Assessment Result'],
+          ]);
+
+          const cId = cResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // HEARING
+          const [hearingResult] = await db.promise().query(`INSERT INTO hearingissue
+            (difficulty_hearing, created_at, updated_at)
+            VALUES(?, NOW(), NOW());`,
+          [
+            results[index]['Difficulty in Hearing'],
+          ]);
+
+          const hearingId = hearingResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // LEPROSY
+          const [leprosyResult] = await db.promise().query(`INSERT INTO leprosy
+            (hypopigmented_patch, recurrent_ulceration, clawing_of_fingers, inability_to_close_eyelid, 
+            difficulty_holding_objects, created_at, updated_at)
+            VALUES(?, ?, ?, ?, ?, NOW(), NOW());`,
+          [
+            results[index]['Hypopigmented Patch'], 
+            results[index]['Recurrent Ulceration'], 
+            results[index]['Clawing of Fingers'], 
+            results[index]['Inability to Close Eyelid'], 
+            results[index]['Difficulty Holding Objects'], 
+          ]);
+
+          const leprosyId = leprosyResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // ELDERLY
+          const [elderlyResult] = await db.promise().query(`INSERT INTO elderly
+            (unsteady_walking, physical_disability, help_from_others, forget_names, created_at, updated_at)
+            VALUES(?, ?, ?, ?, NOW(), NOW());`,
+          [
+            results[index]['Unsteady Walking'],
+            results[index]['Physical Disability'],
+            results[index]['Help from Others'],
+            results[index]['Forget Names'],
+          ]);
+
+          const elderlyId = elderlyResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // MENTAL HEALTH
+          const [mhResult] = await db.promise().query(`INSERT INTO mentalhealth
+            (little_interest_or_pleasure, feeling_down_or_depressed, mental_health_score, 
+            mental_health_problem, history_of_fits, other_mental_disorder, brief_intervention_given, 
+            intervention_type, created_at, updated_at)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW());`,
+          [
+            results[index]['Little Interest or Pleasure'],
+            results[index]['Feeling Down or Depressed'],
+            results[index]['Mental Health Score'],
+            results[index]['Mental Health Problem'],
+            results[index]['History of Fits'],
+            results[index]['Other Mental Disorder'],
+            results[index]['Brief Intervention Given'],
+            null,
+          ]);
+
+          const mhId = mhResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // AAAT
+
+          const [aaatResult] = await db.promise().query(`INSERT INTO assessment_and_action_taken
+            (major_ncd_detected, any_other_disease_detected, known_case_dm_htn, teleconsultation,
+            prescription_given, other_advices, remarks, created_at, updated_at)
+            VALUES(?, ?, ?, ?, ?, ?, ?, NOW(), NOW());`,
+          [
+            results[index]['Major NCD Detected'],
+            results[index]['Any Other Disease Detected'],
+            results[index]['Known Case of DM with HTN'],
+            results[index]['Teleconsultation'],
+            results[index]['Prescription Given'],
+            results[index]['Other Advices'],
+            results[index]['Remarks'],
+          ]);
+
+          const aaatId = aaatResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // ABHA
+
+          const [abhaResult] = await db.promise().query(`INSERT INTO abhaid
+            (abhaid_status, created_at, updated_at)
+            VALUES(?, NOW(), NOW());`,
+          [
+            results[index]['ABHA ID Status'], 
+          ]);
+
+          const abhaId = abhaResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // DISTRICT 
+          const [districtResult] = await db.promise().query(`INSERT INTO district_info_fc
+            (user_id, district, village, health_facility, mo_mpw_cho_anu_name, asha_name, midori_staff_name, date)
+            VALUES(?, ?, ?, ?, ?, ?, ?, NOW());`,
+          [
+            results[index]['fc_id'],
+            results[index]['District Name'],
+            results[index]['Village Name'],
+            results[index]['Health Facility Name'],
+            results[index]['Name of MO/MPW/CHO/ANU'],
+            results[index]['Name of ASHA'],
+            results[index]['Midori Staff Name'],
+          ]);
+
+          const districtId = districtResult.insertId;
+
+          // ------------------------------------------------------------------------------------------------
+          // FAMILY MEMBERS
           const [fmResult] = await db.promise().query(`INSERT INTO family_members
             (fc_id, name, Aadhar, head_id, master_data_id, di_id, status, date)
-            VALUES (0, 0, '', '', 0, 0, 0, 0, '');`,
+            VALUES (?, ?, ?, ?, ?, ?, ?, NOW());`,
           [
             results[index]['fc_id'],
             results[index]['Patient Name'],
             results[index]['Identification Number'],
             headId,
-            results[index]['Identification Number'],
+            70,
+            districtId,
+            1
           ]);
+
+          const fmId = fmResult.insertId;
+
           // ------------------------------------------------------------------------------------------------
+          // MASTER DATA
+          const [masterResult] = await db.promise().query(`INSERT INTO master_data
+            (fm_id, personal_info_id, health_id, htn_id, dm_id, risk_assessment_id, oral_cancer_id,
+             breast_cancer_id, cervical_cancer_id, CVD_id, post_stroke_id, CKD_id, COPD_TB, cataract_id, 
+             hearing_id, leprosy_id, elderly_id, mental_health_id, assesmentandaction_id, AHBA_id)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+          [
+            fmId,
+            personalInfoId,
+            healthId,
+            htnId,
+            dmId,
+            raId,
+            ocId,
+            bcId,
+            ccId,
+            cvdId,
+            psId,
+            ckdId,
+            copdtbId,
+            cId,
+            hearingId,
+            leprosyId,
+            elderlyId,
+            mhId,
+            aaatId,
+            abhaId,
+          ]);
+
+          const masterId = masterResult.insertId;
+
+          await db.promise().query(`UPDATE family_members
+            SET master_data_id = ?
+            WHERE id = ?;`,
+          [
+            masterId,
+            fmId,
+          ]);
         }
+        await db.promise().commit();
+        
+        res.status(201).json({
+          success : true,
+          message : "Inserted!",
+          results : results,
+        });
         
       } catch (error) {
         console.error("Error inserting csv:", error);
         res.status(500).json({ success: false, message: "Server error" });
+        return;
       }
-
-      res.status(201).json({
-        // success : true,
-        // message : "Inserted!",
-        results : results,
-        // columns : columns,
-        // values : values,
-      });
     })
     .on('error', (err) => {
       console.error('Error reading CSV file:', err);
       res.status(500).json({ error: 'Failed to process CSV file' });
     });
+});
+
+// Created by Tanmay Pradhan - 12 Nov 2024
+app.get("/api/get-family-member-list", async (req, res) => {
+  const {
+    fc_id,
+    search_term,
+  } = req.query;
+
+  if (!fc_id) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Field coordinator Id required" });
+  }
+  try {
+
+    let query = `SELECT id, fc_id, name FROM family_members fm 
+    WHERE fc_id = ? `;
+    const params = [fc_id];
+
+    if (search_term) {
+      query +=
+        "AND fm.name LIKE ? ";
+      params.push(
+        `%${search_term}%`,
+      );
+    }
+    const [result] = await db.promise().query(query, params);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+    
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 });
 
 // Start server
