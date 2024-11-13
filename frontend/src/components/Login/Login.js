@@ -29,7 +29,7 @@ const Login = () => {
           'Assistant State Coordinator': `/users?${getFilterQuery({ role_type: ROLE_TYPE.ASSISTANT_STATE_COORDINATOR })}`,
           'Zonal Manager': `/users?${getFilterQuery({ role_type: ROLE_TYPE.ZONAL_MANAGER })}`,
           'Supervisor': `/users?${getFilterQuery({ role_type: ROLE_TYPE.SUPER_VISOR })}`,
-          'admin': `admin-home`,
+          'admin': `/admin-home?page_limit=50&skip_count=0&user_type=all`,
         };
 
         const defaultPath = "/home";

@@ -37,7 +37,7 @@ const AdminLogin = () => {
         if (role === 'admin') {
           localStorage.setItem("token", data.token);
           localStorage.setItem("user_id", user_id);
-          navigate('/admin-home');
+          navigate('/admin-home?page_limit=50&skip_count=0&user_type=all');
         } else {
           setError("You are not allowed to access this page");
         }
