@@ -3449,7 +3449,6 @@ app.get("/api/get-master-list", async (req, res) => {
     page_limit,
     from_date,
     to_date,
-    status,
     risk_score,
     case_of_htn,
     case_of_dm,
@@ -3647,7 +3646,8 @@ app.get("/api/get-master-list", async (req, res) => {
     LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
     LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
     LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
-    LEFT JOIN family_members AS head_members ON head_members.id = family_members.head_id `;
+    LEFT JOIN family_members AS head_members ON head_members.id = family_members.head_id 
+    WHERE family_members.status = 1 `;
 
     let totalQuery = `
     SELECT 
@@ -3675,21 +3675,15 @@ app.get("/api/get-master-list", async (req, res) => {
     LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
     LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
     LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
-    LEFT JOIN family_members AS head_members ON head_members.id = family_members.head_id `; 
+    LEFT JOIN family_members AS head_members ON head_members.id = family_members.head_id 
+    WHERE family_members.status = 1 `; 
 
     const params = [];
     
     if(from_date && to_date) {
-      query += "WHERE family_members.date BETWEEN ? AND ?  ";
-      totalQuery += "WHERE family_members.date BETWEEN ? AND ?  ";
+      query += "AND family_members.date BETWEEN ? AND ?  ";
+      totalQuery += "AND family_members.date BETWEEN ? AND ?  ";
       params.push(from_date, to_date);
-    }
-    
-
-    if (status) {
-      query += "AND family_members.status = ? ";
-      totalQuery += "AND family_members.status = ? ";
-      params.push(status);
     }
 
     if (risk_score) {
@@ -3818,14 +3812,13 @@ app.get("/api/get-master-list", async (req, res) => {
 
     if (search_term) {
       query +=
-        "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.village LIKE ?) ";
+        "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR dif.village LIKE ?) ";
         totalQuery +=
-        "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR district_info.village LIKE ?) ";
+        "AND (family_members.name LIKE ? OR pi.card_number LIKE ? OR dif.village LIKE ?) ";
       params.push(
         `%${search_term}%`,
         `%${search_term}%`,
         `%${search_term}%`,
-        `%${search_term}%`
       );
     }
 
