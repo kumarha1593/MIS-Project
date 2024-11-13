@@ -23,7 +23,7 @@ const SearchableDropdown = ({ label, options, onSelect, placeholder, style = {},
 
     useState(() => {
         setSearchTerm(value);
-    }, [value])
+    }, [value]);
 
     return (
         <div style={style} className="dropdown-container">
@@ -32,7 +32,7 @@ const SearchableDropdown = ({ label, options, onSelect, placeholder, style = {},
                 type="text"
                 className="dropdown-input"
                 placeholder={placeholder}
-                value={searchTerm || value}
+                value={searchTerm || ''}
                 onChange={handleSearchChange}
                 onClick={() => setIsOpen(!isOpen)}
                 style={inputStyle}

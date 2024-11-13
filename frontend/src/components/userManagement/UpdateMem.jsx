@@ -150,9 +150,9 @@ const UpdateMem = ({ visible, onDismiss, data, onDone }) => {
                                                 onSelect={(data) => {
                                                     setFormData(prev => ({ ...prev, ['village']: `${data?.label} / ${data?.value}` }));
                                                 }}
-                                                placeholder="Select Village"
                                                 style={{ width: '49%' }}
                                                 value={formData?.['village'] ? String(formData?.['village']) : ''}
+                                                placeholder={formData?.['village'] ? String(formData?.['village']) : 'Select Village'}
                                                 inputStyle={{ padding: '10px' }}
                                                 label="Village"
                                             />
