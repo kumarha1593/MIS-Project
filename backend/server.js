@@ -3915,7 +3915,7 @@ app.get("/api/get-screening-report", async (req, res) => {
   }
 });
 
-// Created by Tanmay Pradhan - 28 Oct 2024
+// Created by Tanmay Pradhan - 06 Nov 2024
 app.get("/api/export-master-list", async (req, res) => {
   const {
     from_date,
@@ -5008,10 +5008,10 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
 
           var headId = '0';
           
-          if(results[index]['head_name'] && results[index]['head_identifier']) {
+          if(results[index]['Head of Family'] && results[index]['head_identifier']) {
             const [headResult] = await db.promise().query(`SELECT id FROM family_members fm WHERE name = ? AND Aadhar = ?;`,
               [
-                results[index]['head_name'],
+                results[index]['Head of Family'],
                 results[index]['head_identifier'],
               ]
             );
