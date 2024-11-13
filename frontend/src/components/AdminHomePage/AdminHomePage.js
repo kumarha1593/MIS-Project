@@ -80,6 +80,7 @@ const AdminHomePage = () => {
           <table className="users-table">
             <thead>
               <tr>
+                <th style={{ width: '50px' }}>ID</th>
                 <th>Name</th>
                 <th>Email ID</th>
                 <th>Phone Number</th>
@@ -92,6 +93,7 @@ const AdminHomePage = () => {
             <tbody>
               {allData?.map((user, idx) => (
                 <tr key={idx}>
+                  <td style={{ width: '50px' }}>{user?.id || 'N/A'}</td>
                   <td>{user?.name || 'N/A'}</td>
                   <td>{user?.email || 'N/A'}</td>
                   <td>{user?.phone || 'N/A'}</td>

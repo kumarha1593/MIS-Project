@@ -539,7 +539,7 @@ export const inputFields = [
     { label: "Name of Asha", key: "asha_name", type: 'text', required: true, options: [] },
     { label: "District", key: "district", type: 'text', required: true, options: [] },
     { label: "Health Facility", key: "health_facility", type: 'text', required: true, options: [] },
-    { label: "Midori Staff", key: "midori_staff_name", type: 'text', required: true, options: [] },
+    // { label: "Midori Staff", key: "midori_staff_name", type: 'text', required: true, options: [] },
     { label: "Name of MO/CHO/ANM", key: "mo_mpw_cho_anu_name", type: 'text', required: true, options: [] },
     { label: "Village", key: "village", type: 'village', required: true, options: [] },
 ]
@@ -642,7 +642,7 @@ export const formFields = {
     "asha_name": '',
     "district": '',
     "health_facility": '',
-    "midori_staff_name": '',
+    // "midori_staff_name": '',
     "mo_mpw_cho_anu_name": '',
     "village": '',
     "fc_id": ''
