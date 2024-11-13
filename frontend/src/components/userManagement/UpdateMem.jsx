@@ -47,6 +47,10 @@ const UpdateMem = ({ visible, onDismiss, data, onDone }) => {
         setIsLoading(true);
         const response = await defaultInstance.put(`${API_ENDPOINTS.UPDATE_MASTER_LIST}${data?.fm_id}/`, { ...formData, fc_id: Number(formData?.fc_id || 0) });
         setIsLoading(false);
+        if (!response?.data?.success) {
+            alert(response?.data?.message);
+            return
+        }
         if (response?.data?.success) {
             onDone();
         }
@@ -150,7 +154,7 @@ const UpdateMem = ({ visible, onDismiss, data, onDone }) => {
                                                 onSelect={(data) => {
                                                     setFormData(prev => ({ ...prev, ['village']: `${data?.label} / ${data?.value}` }));
                                                 }}
-                                                style={{ width: '49%' }}
+                                                style={{ width: '49%', marginTop: '-16px' }}
                                                 value={formData?.['village'] ? String(formData?.['village']) : ''}
                                                 placeholder={formData?.['village'] ? String(formData?.['village']) : 'Select Village'}
                                                 inputStyle={{ padding: '10px' }}
