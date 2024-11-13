@@ -3189,20 +3189,31 @@ app.get("/api/user-list/", async (req, res) => {
       LEFT JOIN Users m ON u.manager_id = m.id
       WHERE u.is_active = ?
     `;
+    let totalQuery = `
+      SELECT COUNT(*) AS total_rows 
+      FROM Users u
+      LEFT JOIN Users m ON u.manager_id = m.id
+      WHERE u.is_active = ?`;
+
     let queryParams = [is_active !== undefined ? is_active : true];
+    let totalParams = [is_active !== undefined ? is_active : true];
 
     if (user_type && user_type !== "all") {
       query += ` AND u.role = ?`;
+      totalQuery += ` AND u.role = ?`;
       queryParams.push(user_type);
+      totalParams.push(user_type);
     }
 
     query += ` LIMIT ? OFFSET ?;`;
     queryParams.push(parseInt(page_limit), parseInt(skip_count));
 
     const [users] = await db.promise().query(query, queryParams);
+    const [totalUsers] = await db.promise().query(totalQuery, totalParams);
 
     res.status(200).json({
       success: true,
+      total_count : totalUsers[0].total_rows,
       data: users,
     });
   } catch (error) {
@@ -3462,11 +3473,12 @@ app.get("/api/get-master-list", async (req, res) => {
     leprosy
   } = req.query;
 
-  if (!skip_count || !page_limit || !from_date || !to_date) {
+  if (!skip_count || !page_limit) {
     return res
       .status(500)
-      .json({ success: false, message: "Skip Count, Page Limit, From Date and To Date are required" });
+      .json({ success: false, message: "Skip Count, Page Limit are required" });
   }
+
   try {
 
     let query = `SELECT
@@ -3635,8 +3647,7 @@ app.get("/api/get-master-list", async (req, res) => {
     LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
     LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
     LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
-    LEFT JOIN family_members AS head_members ON head_members.id = family_members.head_id
-    WHERE family_members.date BETWEEN ? AND ? `;
+    LEFT JOIN family_members AS head_members ON head_members.id = family_members.head_id `;
 
     let totalQuery = `
     SELECT 
@@ -3664,10 +3675,16 @@ app.get("/api/get-master-list", async (req, res) => {
     LEFT JOIN mentalhealth AS mh ON mh.id = master_data.mental_health_id
     LEFT JOIN assessment_and_action_taken AS aat ON aat.id = master_data.assesmentandaction_id
     LEFT JOIN abhaid AS ab ON ab.id = master_data.AHBA_id
-    LEFT JOIN family_members AS head_members ON head_members.id = family_members.head_id
-    WHERE family_members.date BETWEEN ? AND ? `; 
+    LEFT JOIN family_members AS head_members ON head_members.id = family_members.head_id `; 
 
-    const params = [from_date, to_date];
+    const params = [];
+    
+    if(from_date && to_date) {
+      query += "WHERE family_members.date BETWEEN ? AND ?  ";
+      totalQuery += "WHERE family_members.date BETWEEN ? AND ?  ";
+      params.push(from_date, to_date);
+    }
+    
 
     if (status) {
       query += "AND family_members.status = ? ";
@@ -3968,12 +3985,13 @@ app.get("/api/export-master-list", async (req, res) => {
     let query = `
       SELECT 
       ROW_NUMBER() OVER (ORDER BY dif.district) AS 'Sr No',
+      family_members.id AS 'FM ID',
       dif.district AS 'District Name',
       dif.health_facility AS 'Health Facility Name',
       dif.village AS 'Village Name',
       dif.mo_mpw_cho_anu_name AS 'Name of MO/MPW/CHO/ANU',
       dif.asha_name AS 'Name of ASHA',
-      dif.midori_staff_name AS 'Midori Staff Name',
+      Users.name AS 'Midori Staff Name',
       family_members.date AS 'Screening Date',
       head_members.name AS 'Head of Family',
       pi.name AS 'Patient Name',
