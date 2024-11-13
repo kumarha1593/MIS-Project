@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./AdminHomePage.css";
 import defaultInstance from "../../axiosHelper";
 import { API_ENDPOINTS } from "../../utils/apiEndPoints";
@@ -10,16 +10,23 @@ const AdminHomePage = () => {
   const fileInputRef = useRef(null);
 
   const navigate = useNavigate();
+
+  const location = useLocation();
+
+  const queryParams = Object.fromEntries(new URLSearchParams(location?.search));
+
+  const [totalCount, setTotalCount] = useState(0);
   const [allData, setAllData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showVillageModal, setShowVillageModal] = useState(false);
 
   const fetchUsers = async () => {
     try {
-      const response = await defaultInstance.get(API_ENDPOINTS.USER_LIST, { params: { user_type: 'all' } });
+      const response = await defaultInstance.get(API_ENDPOINTS.USER_LIST, { params: { ...queryParams } });
       setIsLoading(false)
       if (response?.data?.success) {
         setAllData(response?.data?.data || []);
+        setTotalCount(response?.data?.total_count || 0)
       }
     } catch (error) {
       setIsLoading(false);
@@ -31,7 +38,7 @@ const AdminHomePage = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [JSON.stringify(queryParams)]);
 
   const markActiveAndInactive = async (user) => {
     try {
@@ -52,16 +59,39 @@ const AdminHomePage = () => {
     if (file) {
       const fd = new FormData();
       fd.append('file', file)
-      defaultInstance.post(API_ENDPOINTS.IMPORT_MASTER_LIST, fd).then(() => {
+      defaultInstance.post(API_ENDPOINTS.IMPORT_MASTER_LIST, fd).then((res) => {
         fetchUsers();
       }).catch((err) => console.log(err))
     }
   };
 
+  const handlePaginate = (type) => {
+    const { page_limit = 50, skip_count = 0 } = queryParams || {};
+    const newPageLimit = page_limit;
+    let newSkipCount = Number(skip_count);
+
+    if (type === 'N') {
+      newSkipCount += 50;
+      if (newSkipCount >= totalCount) {
+        newSkipCount = totalCount - (totalCount % page_limit);
+      }
+    } else if (type === 'P') {
+      newSkipCount -= 50;
+      if (newSkipCount < 0) {
+        newSkipCount = 0;
+      }
+    }
+
+    navigate(`/admin-home?page_limit=${newPageLimit || 50}&skip_count=${newSkipCount || 0}&user_type=all`);
+  };
+
+  const viewingCount = Number(queryParams?.skip_count) + 50
+
   return (
     <div className="admin-home-container">
       <h1 className="welcome-heading">Welcome, Admin</h1>
-      <div style={{ display: 'flex', marginBottom: 20, justifyContent: 'center' }}>
+      <div style={{ display: 'flex', marginBottom: 20, justifyContent: 'flex-end' }}>
+        <p style={{ marginRight: '5px' }}>{`Showing ${viewingCount > totalCount ? totalCount : viewingCount} of ${totalCount} results`}</p>
         <button onClick={() => navigate("/admin-form")} className="add-user-button">Add User Manually</button>
         <button onClick={() => fileInputRef?.current?.click()} className="add-user-button">Bulk Import</button>
         <button onClick={() => setShowVillageModal(true)} className="add-user-button">Add Village</button>
@@ -120,6 +150,12 @@ const AdminHomePage = () => {
         visible={showVillageModal}
         onDismiss={() => setShowVillageModal(false)}
       />
+      <div className='custom-pagination'>
+        <div className="option-container">
+          <div onClick={() => handlePaginate('P')} className="option">Previous</div>
+          <div onClick={() => handlePaginate('N')} className="option">Next</div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -67,7 +67,7 @@ const AdminFormPage = () => {
       setIsLoading(false);
       if (response?.data?.success) {
         alert(isEdit ? 'User updated successfully!' : 'User created successfully!')
-        navigate('/admin-home');
+        navigate('/admin-home?page_limit=50&skip_count=0&user_type=all');
       }
 
     } catch (err) {
