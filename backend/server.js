@@ -3173,7 +3173,15 @@ app.get("/api/family-details/", async (req, res) => {
 
 app.get("/api/user-list/", async (req, res) => {
   try {
-    const { user_type, is_active } = req.query;
+    const { user_type, is_active, page_limit, skip_count } = req.query;
+
+    if(!page_limit || !skip_count) {
+      res.status(200).json({
+        status : false,
+        message : 'Skip and Page limit required',
+      });
+      return;
+    }
 
     let query = `
       SELECT u.*, m.name as manager_name
@@ -3187,6 +3195,9 @@ app.get("/api/user-list/", async (req, res) => {
       query += ` AND u.role = ?`;
       queryParams.push(user_type);
     }
+
+    query += ` LIMIT ? OFFSET ?;`;
+    queryParams.push(parseInt(page_limit), parseInt(skip_count));
 
     const [users] = await db.promise().query(query, queryParams);
 
