@@ -60,7 +60,13 @@ const AdminHomePage = () => {
       const fd = new FormData();
       fd.append('file', file)
       defaultInstance.post(API_ENDPOINTS.IMPORT_MASTER_LIST, fd).then((res) => {
-        fetchUsers();
+        if (!res?.data?.success) {
+          alert(res?.data?.message);
+          return
+        }
+        if (res?.data?.success) {
+          fetchUsers();
+        }
       }).catch((err) => console.log(err))
     }
   };

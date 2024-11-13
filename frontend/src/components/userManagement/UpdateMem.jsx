@@ -72,7 +72,9 @@ const UpdateMem = ({ visible, onDismiss, data, onDone }) => {
             }
             return acc;
         }, {});
-        setFormData(obj);
+        setTimeout(() => {
+            setFormData(obj);
+        }, 300);
     };
 
     const fetchVillages = async () => {
