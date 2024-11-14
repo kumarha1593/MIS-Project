@@ -5402,7 +5402,7 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
           // FAMILY MEMBERS
           const [fmResult] = await db.promise().query(`INSERT INTO family_members
             (fc_id, name, Aadhar, head_id, master_data_id, di_id, status, date)
-            VALUES (?, ?, ?, ?, ?, ?, ?, NOW());`,
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
           [
             results[index]['fc_id'],
             results[index]['Patient Name'],
@@ -5410,7 +5410,8 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
             headId,
             70,
             districtId,
-            1
+            1,
+            convertDateFormat(results[index]['Screening Date']),
           ]);
 
           const fmId = fmResult.insertId;
