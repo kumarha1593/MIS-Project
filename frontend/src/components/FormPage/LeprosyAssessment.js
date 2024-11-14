@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SelectAll from "../global/SelectAll";
 
-const LeprosyAssessment = ({ currentFmId }) => {
+const LeprosyAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     lesionSensationLoss: "",
     ulceration: "",
@@ -45,7 +45,8 @@ const LeprosyAssessment = ({ currentFmId }) => {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/leprosy-assessment`,
@@ -60,6 +61,7 @@ const LeprosyAssessment = ({ currentFmId }) => {
       );
       if (response.data.success) {
         alert("Leprosy assessment saved successfully!");
+        handleNext?.()
       }
     } catch (error) {
       console.error("Error saving Leprosy assessment:", error);
@@ -116,91 +118,96 @@ const LeprosyAssessment = ({ currentFmId }) => {
         label='Select All No'
         onChange={handleSelectAllChange}
       />
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          Hypopigmented or discolored lesion(s) with loss of sensation *
-        </label>
-        <select
-          name="lesionSensationLoss"
-          value={formData.lesionSensationLoss}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+      <form onSubmit={handleSave}>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>
+            Hypopigmented or discolored lesion(s) with loss of sensation *
+          </label>
+          <select
+            name="lesionSensationLoss"
+            value={formData.lesionSensationLoss}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          Recurrent ulceration on palm or sole *
-        </label>
-        <select
-          name="ulceration"
-          value={formData.ulceration}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>
+            Recurrent ulceration on palm or sole *
+          </label>
+          <select
+            name="ulceration"
+            value={formData.ulceration}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          Clawing of fingers or tingling/numbness in hands/feet *
-        </label>
-        <select
-          name="clawingFingers"
-          value={formData.clawingFingers}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>
+            Clawing of fingers or tingling/numbness in hands/feet *
+          </label>
+          <select
+            name="clawingFingers"
+            value={formData.clawingFingers}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Inability to close eyelid *</label>
-        <select
-          name="inabilityToCloseEyelid"
-          value={formData.inabilityToCloseEyelid}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Inability to close eyelid *</label>
+          <select
+            name="inabilityToCloseEyelid"
+            value={formData.inabilityToCloseEyelid}
+            onChange={handleInputChange}
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          Difficulty in holding objects or weakness in feet *
-        </label>
-        <select
-          name="weaknessFeet"
-          value={formData.weaknessFeet}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <button type="button" onClick={handleSave} style={styles.button}>
-        Save Draft
-      </button>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>
+            Difficulty in holding objects or weakness in feet *
+          </label>
+          <select
+            name="weaknessFeet"
+            value={formData.weaknessFeet}
+            onChange={handleInputChange}
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <footer className="form-footer">
+          <button type="button" onClick={handleBack}>
+            Back
+          </button>
+          <button type="submit">
+            Save & Next
+          </button>
+        </footer>
+      </form>
     </div>
   );
 };

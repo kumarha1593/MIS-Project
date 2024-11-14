@@ -2,7 +2,7 @@ import React from "react";
 import { useEffect } from "react";
 import axios from "axios";
 
-const HealthProfileForm = ({ formData, handleInputChange, currentFmId }) => {
+const HealthProfileForm = ({ formData, handleInputChange, handleNext }) => {
   const styles = {
     formSection: {
       marginBottom: "20px",
@@ -50,7 +50,8 @@ const HealthProfileForm = ({ formData, handleInputChange, currentFmId }) => {
     },
   };
 
-  const handleSave = async () => {
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       const fm_id = localStorage.getItem("current_fm_id");
       const response = await axios.post(
@@ -73,7 +74,7 @@ const HealthProfileForm = ({ formData, handleInputChange, currentFmId }) => {
 
       if (response.data.success) {
         alert("Personal information saved successfully!");
-        window.location.reload();
+        handleNext?.();
       }
     } catch (error) {
       console.error("Error saving personal information:", error);
@@ -107,132 +108,143 @@ const HealthProfileForm = ({ formData, handleInputChange, currentFmId }) => {
 
   return (
     <div style={styles.formSection}>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Name</label>
-        <input
-          type="text"
-          name="name"
-          value={formData.name || ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label} htmlFor="identifier">
-          Identifier
-        </label>
-        <select
-          id="identifier"
-          name="identifier"
-          value={formData.identifier || ""}
-          onChange={handleInputChange}
-        >
-          <option value="">Select Identifier</option>
-          <option value="ABHA">ABHA ID</option>
-          <option value="Aadhar">Aadhar Card</option>
-          <option value="UID">UID</option>
-          <option value="Voter">Voter ID</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Card Number</label>
-        <input
-          type="text"
-          name="card_number"
-          value={formData.card_number || ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Date of Birth</label>
-        <input
-          type="date"
-          name="dob"
-          value={formData.dob || ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label} htmlFor="sex">
-          Sex
-        </label>
-        <select
-          id="sex"
-          name="sex"
-          value={formData.sex || ""}
-          onChange={handleInputChange}
-        >
-          <option value="">Select</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="others">Others</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Phone Number</label>
-        <input
-          type="tel"
-          name="tel_no"
-          value={formData.tel_no || ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Address</label>
-        <textarea
-          name="address"
-          value={formData.address || ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label} htmlFor="state_health_insurance">
-          Health Insurance (State/Government/Private)
-        </label>
-        <select
-          id="state_health_insurance"
-          name="state_health_insurance"
-          value={formData.state_health_insurance || ""}
-          onChange={handleInputChange}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div style={styles.formGroup} id="state_health_insurance_remark">
-        <label style={styles.label}>State Health Insurance Remark</label>
-        <textarea
-          name="state_health_insurance_remark"
-          value={formData.state_health_insurance_remark || ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label} htmlFor="disability">
-          Disability
-        </label>
-        <select
-          id="disability"
-          name="disability"
-          value={formData.disability || ""}
-          onChange={handleInputChange}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div style={styles.formGroup} id="disability_remark">
-        <label style={styles.label}>Disability Remark</label>
-        <textarea
-          name="disability_remark"
-          value={formData.disability_remark || ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <button onClick={handleSave} style={styles.button}>
-        Save Draft
-      </button>
+      <form onSubmit={handleSave}>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Name</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name || ""}
+            onChange={handleInputChange}
+            required={true}
+          />
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label} htmlFor="identifier">
+            Identifier
+          </label>
+          <select
+            id="identifier"
+            name="identifier"
+            value={formData.identifier || ""}
+            onChange={handleInputChange}
+            required={true}
+          >
+            <option value="">Select Identifier</option>
+            <option value="ABHA">ABHA ID</option>
+            <option value="Aadhar">Aadhar Card</option>
+            <option value="UID">UID</option>
+            <option value="Voter">Voter ID</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Card Number</label>
+          <input
+            type="text"
+            name="card_number"
+            value={formData.card_number || ""}
+            onChange={handleInputChange}
+            required={true}
+          />
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Date of Birth</label>
+          <input
+            type="date"
+            name="dob"
+            value={formData.dob || ""}
+            onChange={handleInputChange}
+            required={true}
+          />
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label} htmlFor="sex">
+            Sex
+          </label>
+          <select
+            id="sex"
+            name="sex"
+            value={formData.sex || ""}
+            onChange={handleInputChange}
+            required={true}
+          >
+            <option value="">Select</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="others">Others</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Phone Number</label>
+          <input
+            type="tel"
+            name="tel_no"
+            value={formData.tel_no || ""}
+            onChange={handleInputChange}
+            required={true}
+          />
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Address</label>
+          <textarea
+            name="address"
+            value={formData.address || ""}
+            onChange={handleInputChange}
+            required={true}
+          />
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label} htmlFor="state_health_insurance">
+            Health Insurance (State/Government/Private)
+          </label>
+          <select
+            id="state_health_insurance"
+            name="state_health_insurance"
+            value={formData.state_health_insurance || ""}
+            onChange={handleInputChange}
+            required={true}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div style={styles.formGroup} id="state_health_insurance_remark">
+          <label style={styles.label}>State Health Insurance Remark</label>
+          <textarea
+            name="state_health_insurance_remark"
+            value={formData.state_health_insurance_remark || ""}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label} htmlFor="disability">
+            Disability
+          </label>
+          <select
+            id="disability"
+            name="disability"
+            value={formData.disability || ""}
+            onChange={handleInputChange}
+            required={true}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div style={styles.formGroup} id="disability_remark">
+          <label style={styles.label}>Disability Remark</label>
+          <textarea
+            name="disability_remark"
+            value={formData.disability_remark || ""}
+            onChange={handleInputChange}
+          />
+        </div>
+        <footer className="form-footer">
+          <button type="submit">Save & Next</button>
+        </footer>
+      </form>
     </div>
   );
 };

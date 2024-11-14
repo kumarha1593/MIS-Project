@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const CataractAssessment = ({ currentFmId }) => {
+const CataractAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     cloudyBlurredVision: "",
     painOrRedness: "",
@@ -40,7 +40,8 @@ const CataractAssessment = ({ currentFmId }) => {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/cataract-assessment`,
@@ -53,6 +54,7 @@ const CataractAssessment = ({ currentFmId }) => {
       );
       if (response.data.success) {
         alert("Cataract assessment saved successfully!");
+        handleNext?.();
       }
     } catch (error) {
       console.error("Error saving Cataract assessment:", error);
@@ -94,57 +96,62 @@ const CataractAssessment = ({ currentFmId }) => {
 
   return (
     <div style={styles.formSection}>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          Do you have cloudy or blurred vision? *
-        </label>
-        <select
-          name="cloudyBlurredVision"
-          value={formData.cloudyBlurredVision}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+      <form onSubmit={handleSave}>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>
+            Do you have cloudy or blurred vision? *
+          </label>
+          <select
+            name="cloudyBlurredVision"
+            value={formData.cloudyBlurredVision}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          Pain or redness in eyes lasting for more than a week *
-        </label>
-        <select
-          name="painOrRedness"
-          value={formData.painOrRedness}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>
+            Pain or redness in eyes lasting for more than a week
+          </label>
+          <select
+            name="painOrRedness"
+            value={formData.painOrRedness}
+            onChange={handleInputChange}
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Cataract Assessment Result *</label>
-        <select
-          name="cataractAssessmentResult"
-          value={formData.cataractAssessmentResult}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Suspected">Suspected</option>
-          <option value="Not Suspected">Not Suspected</option>
-        </select>
-      </div>
-      <button type="button" onClick={handleSave}style={styles.button}>
-        Save Draft
-      </button>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Cataract Assessment Result</label>
+          <select
+            name="cataractAssessmentResult"
+            value={formData.cataractAssessmentResult}
+            onChange={handleInputChange}
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Suspected">Suspected</option>
+            <option value="Not Suspected">Not Suspected</option>
+          </select>
+        </div>
+        <footer className="form-footer">
+          <button type="button" onClick={handleBack}>
+            Back
+          </button>
+          <button type="submit">
+            Save & Next
+          </button>
+        </footer>
+      </form>
     </div>
   );
 };

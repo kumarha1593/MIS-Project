@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import moment from "moment";
 
-const ABHAIdStatus = ({ currentFmId }) => {
+const ABHAIdStatus = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     abhaIdStatus: "",
     screeningDate: "",
@@ -59,7 +59,8 @@ const ABHAIdStatus = ({ currentFmId }) => {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       // Save ABHA ID status
       const abhaResponse = await axios.post(
@@ -83,6 +84,7 @@ const ABHAIdStatus = ({ currentFmId }) => {
 
       if (abhaResponse.data.success && dateResponse.data.success) {
         alert("Data saved successfully!");
+        handleNext?.()
       } else {
         alert("Failed to save some data. Please try again.");
       }
@@ -126,44 +128,52 @@ const ABHAIdStatus = ({ currentFmId }) => {
 
   return (
     <div style={styles.formSection}>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>ABHA ID Status</label>
-        <select
-          name="abhaIdStatus"
-          value={formData.abhaIdStatus} // Ensure this is correctly mapped to the state
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Created">Created</option>
-          <option value="Linked">Linked</option>
-          <option value="None">None</option>
-        </select>
-      </div>
+      <form onSubmit={handleSave}>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>ABHA ID Status</label>
+          <select
+            name="abhaIdStatus"
+            value={formData.abhaIdStatus} // Ensure this is correctly mapped to the state
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Created">Created</option>
+            <option value="Linked">Linked</option>
+            <option value="None">None</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Screening Date</label>
-        <input
-          type="date"
-          name="screeningDate"
-          value={formData.screeningDate}
-          onChange={(evt) => {
-            const today = moment();
-            const pastYear = moment().subtract(1, 'year');
-            const selectedMoment = moment(evt.target?.value);
-            if (selectedMoment.isBetween(pastYear, today, undefined, '[]')) {
-              handleInputChange(evt)
-            } else {
-              alert('Please select a date within the past year.');
-            }
-          }}
-          style={styles.input}
-        />
-      </div>
-      <button type="button" onClick={handleSave} style={styles.button}>
-        Save Draft
-      </button>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Screening Date</label>
+          <input
+            type="date"
+            name="screeningDate"
+            value={formData.screeningDate}
+            onChange={(evt) => {
+              const today = moment();
+              const pastYear = moment().subtract(1, 'year');
+              const selectedMoment = moment(evt.target?.value);
+              if (selectedMoment.isBetween(pastYear, today, undefined, '[]')) {
+                handleInputChange(evt)
+              } else {
+                alert('Please select a date within the past year.');
+              }
+            }}
+            style={styles.input}
+            required
+          />
+        </div>
+        <footer className="form-footer">
+          <button type="button" onClick={handleBack}>
+            Back
+          </button>
+          <button type="submit">
+            Submit
+          </button>
+        </footer>
+      </form>
     </div>
   );
 };

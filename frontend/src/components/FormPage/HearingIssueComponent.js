@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const HearingIssue = ({ currentFmId }) => {
+const HearingIssue = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     hearingIssue: "",
   });
@@ -35,7 +35,8 @@ const HearingIssue = ({ currentFmId }) => {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/hearing-issue-assessment`,
@@ -46,6 +47,7 @@ const HearingIssue = ({ currentFmId }) => {
       );
       if (response.data.success) {
         alert("Hearing Issue assessment saved successfully!");
+        handleNext?.();
       }
     } catch (error) {
       console.error("Error saving Hearing Issue assessment:", error);
@@ -87,23 +89,30 @@ const HearingIssue = ({ currentFmId }) => {
 
   return (
     <div style={styles.formSection}>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Do you have difficulty in hearing? *</label>
-        <select
-          name="hearingIssue"
-          value={formData.hearingIssue || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <button type="button" onClick={handleSave} style={styles.button}>
-        Save Draft
-      </button>
+      <form onSubmit={handleSave}>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Do you have difficulty in hearing? *</label>
+          <select
+            name="hearingIssue"
+            value={formData.hearingIssue || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <footer className="form-footer">
+          <button type="button" onClick={handleBack}>
+            Back
+          </button>
+          <button type="submit">
+            Save & Next
+          </button>
+        </footer>
+      </form>
     </div>
   );
 };

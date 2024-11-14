@@ -35,6 +35,7 @@ const UploadBulkUser = ({ visible, onDismiss, onDone, selectedFile }) => {
                 return
             }
             if (res?.data?.success) {
+                alert("User created successfully!");
                 onDone?.();
             }
         }).catch((err) => console.log(err))

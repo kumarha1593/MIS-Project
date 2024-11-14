@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SelectAll from "../global/SelectAll";
 
-const CervicalCancerAssessment = ({ currentFmId }) => {
+const CervicalCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     known_case: "",
     bleeding_between_periods: "",
@@ -41,7 +41,8 @@ const CervicalCancerAssessment = ({ currentFmId }) => {
     }
   }, [currentFmId]);
 
-  const handleSave = async () => {
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/cervical-cancer-assessment`,
@@ -52,6 +53,7 @@ const CervicalCancerAssessment = ({ currentFmId }) => {
       );
       if (response.data.success) {
         alert("Cervical Cancer Assessment saved successfully!");
+        handleNext?.();
       }
     } catch (error) {
       console.error("Error saving cervical cancer assessment:", error);
@@ -84,120 +86,126 @@ const CervicalCancerAssessment = ({ currentFmId }) => {
         label='Select All No'
         onChange={handleSelectAllChange}
       />
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Known Case *</label>
-        <select
-          id="known_case"
-          name="known_case"
-          value={formData.known_case}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes and on treatment">Yes and on treatment</option>
-          <option value="Yes and not on treatment">
-            Yes and not on treatment
-          </option>
-          <option value="No">No</option>
-        </select>
-      </div>
+      <form onSubmit={handleSave}>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Known Case *</label>
+          <select
+            id="known_case"
+            name="known_case"
+            value={formData.known_case}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes and on treatment">Yes and on treatment</option>
+            <option value="Yes and not on treatment">
+              Yes and not on treatment
+            </option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Bleeding Between Periods *</label>
-        <select
-          id="bleeding_between_periods"
-          name="bleeding_between_periods"
-          value={formData.bleeding_between_periods}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Bleeding Between Periods *</label>
+          <select
+            id="bleeding_between_periods"
+            name="bleeding_between_periods"
+            value={formData.bleeding_between_periods}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Bleeding After Menopause *</label>
-        <select
-          id="bleeding_after_menopause"
-          name="bleeding_after_menopause"
-          value={formData.bleeding_after_menopause}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Bleeding After Menopause *</label>
+          <select
+            id="bleeding_after_menopause"
+            name="bleeding_after_menopause"
+            value={formData.bleeding_after_menopause}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Bleeding After Intercourse *</label>
-        <select
-          id="bleeding_after_intercourse"
-          name="bleeding_after_intercourse"
-          value={formData.bleeding_after_intercourse}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Bleeding After Intercourse *</label>
+          <select
+            id="bleeding_after_intercourse"
+            name="bleeding_after_intercourse"
+            value={formData.bleeding_after_intercourse}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Foul Smelling Discharge *</label>
-        <select
-          id="foul_smelling_discharge"
-          name="foul_smelling_discharge"
-          value={formData.foul_smelling_discharge}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Foul Smelling Discharge *</label>
+          <select
+            id="foul_smelling_discharge"
+            name="foul_smelling_discharge"
+            value={formData.foul_smelling_discharge}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>VIA Appointment Date </label>
-        <input
-          type="date"
-          id="via_appointment_date"
-          name="via_appointment_date"
-          value={formData.via_appointment_date}
-          onChange={handleInputChange}
-          style={styles.input}
-        />
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>VIA Appointment Date </label>
+          <input
+            type="date"
+            id="via_appointment_date"
+            name="via_appointment_date"
+            value={formData.via_appointment_date}
+            onChange={handleInputChange}
+            style={styles.input}
+          />
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>VIA Result </label>
-        <select
-          id="via_result"
-          name="via_result"
-          value={formData.via_result}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Positive">Positive</option>
-          <option value="Negative">Negative</option>
-        </select>
-      </div>
-
-      <button type="button" onClick={handleSave} style={styles.button}>
-        Save Draft
-      </button>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>VIA Result </label>
+          <select
+            id="via_result"
+            name="via_result"
+            value={formData.via_result}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Positive">Positive</option>
+            <option value="Negative">Negative</option>
+          </select>
+        </div>
+        <footer className="form-footer">
+          <button type="button" onClick={handleBack}>
+            Back
+          </button>
+          <button type="submit">
+            Save & Next
+          </button>
+        </footer>
+      </form>
     </div>
   );
 };

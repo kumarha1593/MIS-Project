@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const RiskAssessment = ({ currentFmId }) => {
+const RiskAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     age: "",
     tobacco_use: "",
@@ -137,7 +137,8 @@ const RiskAssessment = ({ currentFmId }) => {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/risk-assessment`,
@@ -148,6 +149,7 @@ const RiskAssessment = ({ currentFmId }) => {
       );
       if (response.data.success) {
         alert("Risk assessment saved successfully!");
+        handleNext?.();
       }
     } catch (error) {
       console.error("Error saving risk assessment:", error);
@@ -189,146 +191,153 @@ const RiskAssessment = ({ currentFmId }) => {
 
   return (
     <div style={styles.formSection}>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Age *</label>
-        <select
-          id="age"
-          name="age"
-          value={formData.age}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="18-29 years">18-29 years</option>
-          <option value="30-39 years">30-39 years</option>
-          <option value="40-49 years">40-49 years</option>
-          <option value="50-59 years">50-59 years</option>
-          <option value="60 years or above">60 years or above</option>
-        </select>
-      </div>
-
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Tobacco Use *</label>
-        <select
-          id="tobacco_use"
-          name="tobacco_use"
-          value={formData.tobacco_use}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Never">Never</option>
-          <option value="Used to consume in the past/ Sometimes now">
-            Used to consume in the past/ Sometimes now
-          </option>
-          <option value="Daily">Daily</option>
-        </select>
-      </div>
-
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Alcohol Consumption *</label>
-        <select
-          id="alcohol_use"
-          name="alcohol_use"
-          value={formData.alcohol_use}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="No">No</option>
-          <option value="Yes">Yes</option>
-        </select>
-      </div>
-
-      {sex === "female" ? (
+      <form onSubmit={handleSave}>
         <div style={styles.formGroup}>
-          <label style={styles.label}>Waist Circumference (Female) *</label>
+          <label style={styles.label}>Age *</label>
           <select
-            id="waist_female"
-            name="waist_female"
-            value={formData.waist_female}
+            id="age"
+            name="age"
+            value={formData.age}
             onChange={handleInputChange}
             required
             style={styles.input}
           >
             <option value="">Select</option>
-            <option value="80 cm or less">80 cm or less</option>
-            <option value="81-90 cm">81-90 cm</option>
-            <option value="More than 90 cm">More than 90 cm</option>
+            <option value="18-29 years">18-29 years</option>
+            <option value="30-39 years">30-39 years</option>
+            <option value="40-49 years">40-49 years</option>
+            <option value="50-59 years">50-59 years</option>
+            <option value="60 years or above">60 years or above</option>
           </select>
         </div>
-      ) : (
+
         <div style={styles.formGroup}>
-          <label style={styles.label}>Waist Circumference (Male) *</label>
+          <label style={styles.label}>Tobacco Use *</label>
           <select
-            id="waist_male"
-            name="waist_male"
-            value={formData.waist_male}
+            id="tobacco_use"
+            name="tobacco_use"
+            value={formData.tobacco_use}
             onChange={handleInputChange}
             required
             style={styles.input}
           >
             <option value="">Select</option>
-            <option value="90 cm or less">90 cm or less</option>
-            <option value="91-100 cm">91-100 cm</option>
-            <option value="More than 100 cm">More than 100 cm</option>
+            <option value="Never">Never</option>
+            <option value="Used to consume in the past/ Sometimes now">
+              Used to consume in the past/ Sometimes now
+            </option>
+            <option value="Daily">Daily</option>
           </select>
         </div>
-      )}
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Physical Activity *</label>
-        <select
-          id="physical_activity"
-          name="physical_activity"
-          value={formData.physical_activity}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="At least 150 minutes in a week">
-            At least 150 minutes in a week
-          </option>
-          <option value="Less than 150 minutes in a week">
-            Less than 150 minutes in a week
-          </option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Alcohol Consumption *</label>
+          <select
+            id="alcohol_use"
+            name="alcohol_use"
+            value={formData.alcohol_use}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Family History of Diabetes *</label>
-        <select
-          id="family_diabetes_history"
-          name="family_diabetes_history"
-          value={formData.family_diabetes_history}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="No">No</option>
-          <option value="Yes">Yes</option>
-        </select>
-      </div>
+        {sex === "female" ? (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Waist Circumference (Female) *</label>
+            <select
+              id="waist_female"
+              name="waist_female"
+              value={formData.waist_female}
+              onChange={handleInputChange}
+              required
+              style={styles.input}
+            >
+              <option value="">Select</option>
+              <option value="80 cm or less">80 cm or less</option>
+              <option value="81-90 cm">81-90 cm</option>
+              <option value="More than 90 cm">More than 90 cm</option>
+            </select>
+          </div>
+        ) : (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Waist Circumference (Male) *</label>
+            <select
+              id="waist_male"
+              name="waist_male"
+              value={formData.waist_male}
+              onChange={handleInputChange}
+              required
+              style={styles.input}
+            >
+              <option value="">Select</option>
+              <option value="90 cm or less">90 cm or less</option>
+              <option value="91-100 cm">91-100 cm</option>
+              <option value="More than 100 cm">More than 100 cm</option>
+            </select>
+          </div>
+        )}
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Risk Score *</label>
-        <input
-          type="text"
-          id="risk_score"
-          name="risk_score"
-          value={formData.risk_score}
-          style={styles.input}
-          readOnly
-        />
-      </div>
-      <button type="button" onClick={handleSave} style={styles.button}>
-        Save Risk Assessment
-      </button>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Physical Activity *</label>
+          <select
+            id="physical_activity"
+            name="physical_activity"
+            value={formData.physical_activity}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="At least 150 minutes in a week">
+              At least 150 minutes in a week
+            </option>
+            <option value="Less than 150 minutes in a week">
+              Less than 150 minutes in a week
+            </option>
+          </select>
+        </div>
+
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Family History of Diabetes *</label>
+          <select
+            id="family_diabetes_history"
+            name="family_diabetes_history"
+            value={formData.family_diabetes_history}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Risk Score *</label>
+          <input
+            type="text"
+            id="risk_score"
+            name="risk_score"
+            value={formData.risk_score}
+            style={styles.input}
+            readOnly
+          />
+        </div>
+        <footer className="form-footer">
+          <button type="button" onClick={handleBack}>
+            Back
+          </button>
+          <button type="submit">
+            Save & Next
+          </button>
+        </footer>
+      </form>
     </div>
   );
 };

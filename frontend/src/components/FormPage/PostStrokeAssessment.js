@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const PostStrokeAssessment = ({ currentFmId }) => {
+const PostStrokeAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     history_of_stroke: "",
     stroke_date: "",
@@ -82,7 +82,8 @@ const PostStrokeAssessment = ({ currentFmId }) => {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/post-stroke-assessment`,
@@ -93,6 +94,7 @@ const PostStrokeAssessment = ({ currentFmId }) => {
       );
       if (response.data.success) {
         alert("Post-stroke assessment saved successfully!");
+        handleNext?.();
       }
     } catch (error) {
       console.error("Error saving post-stroke assessment:", error);
@@ -134,84 +136,96 @@ const PostStrokeAssessment = ({ currentFmId }) => {
 
   return (
     <div style={styles.formSection}>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>History of Stroke *</label>
-        <select
-          id="history_of_stroke"
-          name="history_of_stroke"
-          value={formData.history_of_stroke || ""}
-          onChange={handleInputChange}
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+      <form onSubmit={handleSave}>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>History of Stroke *</label>
+          <select
+            id="history_of_stroke"
+            name="history_of_stroke"
+            value={formData.history_of_stroke || ""}
+            onChange={handleInputChange}
+            style={styles.input}
+            required
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      {showStrokeDetails && (
-        <>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Date of Stroke *</label>
-            <input
-              type="date"
-              id="stroke_date"
-              name="stroke_date"
-              value={formData.stroke_date || ""}
-              onChange={handleInputChange}
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Present Condition *</label>
-            <select
-              id="present_condition"
-              name="present_condition"
-              value={formData.present_condition || ""}
-              onChange={handleInputChange}
-              style={styles.input}
-            >
-              <option value="">Select</option>
-              <option value="Recovered">Recovered</option>
-              <option value="Not Recovered">Not Recovered</option>
-              <option value="Need Physiotherapy">Need Physiotherapy</option>
-            </select>
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Action for Stroke Symptoms *</label>
-            <select
-              id="stroke_sign_action"
-              name="stroke_sign_action"
-              value={formData.stroke_sign_action || ""}
-              onChange={handleInputChange}
-              style={styles.input}
-            >
-              <option value="">Select</option>
-              <option value="Teleconsultation">Teleconsultation</option>
-              <option value="Referral">Referral</option>
-            </select>
-          </div>
-
-          {showReferralField && (
+        {showStrokeDetails && (
+          <>
             <div style={styles.formGroup}>
-              <label style={styles.label}>Referred Centre for Stroke *</label>
+              <label style={styles.label}>Date of Stroke *</label>
               <input
-                type="text"
-                id="referral_center_name"
-                name="referral_center_name"
-                value={formData.referral_center_name || ""}
+                type="date"
+                id="stroke_date"
+                name="stroke_date"
+                value={formData.stroke_date || ""}
                 onChange={handleInputChange}
                 style={styles.input}
+                required
               />
             </div>
-          )}
-        </>
-      )}
-      <button type="button" onClick={handleSave} style={styles.button}>
-        Save Draft
-      </button>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Present Condition *</label>
+              <select
+                id="present_condition"
+                name="present_condition"
+                value={formData.present_condition || ""}
+                onChange={handleInputChange}
+                style={styles.input}
+                required
+              >
+                <option value="">Select</option>
+                <option value="Recovered">Recovered</option>
+                <option value="Not Recovered">Not Recovered</option>
+                <option value="Need Physiotherapy">Need Physiotherapy</option>
+              </select>
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Action for Stroke Symptoms *</label>
+              <select
+                id="stroke_sign_action"
+                name="stroke_sign_action"
+                value={formData.stroke_sign_action || ""}
+                onChange={handleInputChange}
+                style={styles.input}
+                required
+              >
+                <option value="">Select</option>
+                <option value="Teleconsultation">Teleconsultation</option>
+                <option value="Referral">Referral</option>
+              </select>
+            </div>
+
+            {showReferralField && (
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Referred Centre for Stroke *</label>
+                <input
+                  type="text"
+                  id="referral_center_name"
+                  name="referral_center_name"
+                  value={formData.referral_center_name || ""}
+                  onChange={handleInputChange}
+                  style={styles.input}
+                  required
+                />
+              </div>
+            )}
+          </>
+        )}
+        <footer className="form-footer">
+          <button type="button" onClick={handleBack}>
+            Back
+          </button>
+          <button type="submit">
+            Save & Next
+          </button>
+        </footer>
+      </form>
     </div>
   );
 };

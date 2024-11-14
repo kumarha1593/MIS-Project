@@ -303,48 +303,131 @@ const FormPage = () => {
           <HealthProfileForm
             formData={formData}
             handleInputChange={handleInputChange}
+            handleNext={handleNext}
           />
         );
       case 2:
-        return <HealthMeasurements currentFmId={currentFmId} />;
+        return <HealthMeasurements
+          currentFmId={currentFmId}
+          handleBack={handleBack}
+          handleNext={handleNext}
+        />;
       case 3:
-        return <HTNAssessment currentFmId={currentFmId} />;
+        return <HTNAssessment
+          currentFmId={currentFmId}
+          handleBack={handleBack}
+          handleNext={handleNext}
+        />;
       case 4:
-        return <DMAssessment currentFmId={currentFmId} />;
+        return <DMAssessment
+          currentFmId={currentFmId}
+          handleBack={handleBack}
+          handleNext={handleNext}
+        />;
       case 5:
-        return <RiskAssessment currentFmId={currentFmId} />;
+        return <RiskAssessment
+          currentFmId={currentFmId}
+          handleBack={handleBack}
+          handleNext={handleNext}
+        />;
       case 6:
-        return <OralCancerAssessment currentFmId={currentFmId} />;
+        return <OralCancerAssessment
+          currentFmId={currentFmId}
+          handleBack={handleBack}
+          handleNext={handleNext}
+        />;
       case 7:
-        return <BreastCancerAssessment currentFmId={currentFmId} />;
+        return <BreastCancerAssessment
+          currentFmId={currentFmId}
+          handleBack={handleBack}
+          handleNext={handleNext}
+        />;
       case 8:
         return sex === "female" ? (
-          <CervicalCancerAssessment currentFmId={currentFmId} />
+          <CervicalCancerAssessment
+            handleBack={handleBack}
+            handleNext={handleNext}
+            currentFmId={currentFmId}
+          />
         ) : (
-          <div>Cervical Cancer Assessment is not applicable.</div>
+          <div>
+            <div>Cervical Cancer Assessment is not applicable.</div>
+            <footer className="form-footer">
+              <button onClick={handleBack}>
+                Back
+              </button>
+              <button onClick={handleNext}>
+                Save & Next
+              </button>
+            </footer>
+          </div>
         );
       case 9:
-        return <CVDAssessment currentFmId={currentFmId} />;
+        return <CVDAssessment
+          currentFmId={currentFmId}
+          handleBack={handleBack}
+          handleNext={handleNext}
+        />;
       case 10:
-        return <PostStrokeAssessment currentFmId={currentFmId} />;
+        return <PostStrokeAssessment
+          currentFmId={currentFmId}
+          handleBack={handleBack}
+          handleNext={handleNext}
+        />;
       case 11:
-        return <CKDAssessment currentFmId={currentFmId} />;
+        return <CKDAssessment
+          handleBack={handleBack}
+          handleNext={handleNext}
+          currentFmId={currentFmId}
+        />;
       case 12:
-        return <COPDTBAssessment currentFmId={currentFmId} />;
+        return <COPDTBAssessment
+          handleBack={handleBack}
+          handleNext={handleNext}
+          currentFmId={currentFmId}
+        />;
       case 13:
-        return <CataractAssessment currentFmId={currentFmId} />;
+        return <CataractAssessment
+          currentFmId={currentFmId}
+          handleBack={handleBack}
+          handleNext={handleNext}
+        />;
       case 14:
-        return <HearingIssue currentFmId={currentFmId} />;
+        return <HearingIssue
+          handleBack={handleBack}
+          handleNext={handleNext}
+          currentFmId={currentFmId}
+        />;
       case 15:
-        return <LeprosyAssessment currentFmId={currentFmId} />;
+        return <LeprosyAssessment
+          handleBack={handleBack}
+          handleNext={handleNext}
+          currentFmId={currentFmId}
+        />;
       case 16:
-        return <ElderlyAssessment currentFmId={currentFmId} />;
+        return <ElderlyAssessment
+          currentFmId={currentFmId}
+          handleBack={handleBack}
+          handleNext={handleNext}
+        />;
       case 17:
-        return <MentalHealthAssessment currentFmId={currentFmId} />;
+        return <MentalHealthAssessment
+          handleBack={handleBack}
+          handleNext={handleNext}
+          currentFmId={currentFmId}
+        />;
       case 18:
-        return <AssessmentAndActionTaken currentFmId={currentFmId} />;
+        return <AssessmentAndActionTaken
+          handleBack={handleBack}
+          handleNext={handleNext}
+          currentFmId={currentFmId}
+        />;
       case 19:
-        return <ABHAIdStatus currentFmId={currentFmId} />;
+        return <ABHAIdStatus
+          handleBack={handleBack}
+          handleNext={handleNext}
+          currentFmId={currentFmId}
+        />;
       default:
         return null;
     }
@@ -359,14 +442,6 @@ const FormPage = () => {
         <h2>{sections[currentPage - 1]}</h2>
         {renderFormPage()}
       </main>
-      <footer className="form-footer">
-        <button onClick={handleBack} disabled={currentPage === 1}>
-          Back
-        </button>
-        <button onClick={handleNext}>
-          {currentPage === 19 ? "Submit" : "Next"}
-        </button>
-      </footer>
       <h5 className="page-no">Page {currentPage}</h5>
       <Sidebar
         isOpen={isSidebarOpen}
