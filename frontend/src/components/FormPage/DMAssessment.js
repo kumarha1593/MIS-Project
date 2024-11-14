@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const DMAssessment = ({ currentFmId }) => {
+const DMAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     case_of_dm: "",
     fasting_blood_sugar: "",
@@ -70,7 +70,8 @@ const DMAssessment = ({ currentFmId }) => {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/dm-assessment`,
@@ -81,6 +82,7 @@ const DMAssessment = ({ currentFmId }) => {
       );
       if (response.data.success) {
         alert("DM assessment saved successfully!");
+        handleNext?.();
       }
     } catch (error) {
       console.error("Error saving DM assessment:", error);
@@ -122,94 +124,102 @@ const DMAssessment = ({ currentFmId }) => {
 
   return (
     <div style={styles.formSection}>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Known case of DM *</label>
-        <select
-          id="case_of_dm"
-          name="case_of_dm"
-          value={formData.case_of_dm || ""}
-          onChange={handleInputChange}
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="yes and on treatment">Yes and on Treatment</option>
-          <option value="yes and not on treatment">
-            Yes and Not on Treatment
-          </option>
-          <option value="No">No</option>
-        </select>
-      </div>
-
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Fasting Blood Sugar (mg/dL)</label>
-        <input
-          type="number"
-          id="fasting_blood_sugar"
-          name="fasting_blood_sugar"
-          value={formData.fasting_blood_sugar || ""}
-          onChange={handleInputChange}
-          style={styles.input}
-        />
-      </div>
-
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Post Prandial Blood Sugar (mg/dL)</label>
-        <input
-          type="number"
-          id="post_prandial_blood_sugar"
-          name="post_prandial_blood_sugar"
-          value={formData.post_prandial_blood_sugar || ""}
-          onChange={handleInputChange}
-          style={styles.input}
-        />
-      </div>
-
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Random Blood Sugar (mg/dL)</label>
-        <input
-          type="number"
-          id="random_blood_sugar"
-          name="random_blood_sugar"
-          value={formData.random_blood_sugar || ""}
-          onChange={handleInputChange}
-          style={styles.input}
-        />
-      </div>
-
-      {showHighBSOptions && (
+      <form onSubmit={handleSave}>
         <div style={styles.formGroup}>
-          <label style={styles.label}>Action for High Blood Sugar *</label>
+          <label style={styles.label}>Known case of DM *</label>
           <select
-            id="action_high_bs"
-            name="action_high_bs"
-            value={formData.action_high_bs || ""}
+            id="case_of_dm"
+            name="case_of_dm"
+            value={formData.case_of_dm || ""}
             onChange={handleInputChange}
             style={styles.input}
+            required
           >
             <option value="">Select</option>
-            <option value="referral">Referral</option>
-            <option value="teleconsultation">Teleconsultation</option>
+            <option value="yes and on treatment">Yes and on Treatment</option>
+            <option value="yes and not on treatment">
+              Yes and Not on Treatment
+            </option>
+            <option value="No">No</option>
           </select>
         </div>
-      )}
 
-      {showReferralField && (
         <div style={styles.formGroup}>
-          <label style={styles.label}>Referred Centre for DM *</label>
+          <label style={styles.label}>Fasting Blood Sugar (mg/dL)</label>
           <input
-            type="text"
-            id="referral_center"
-            name="referral_center"
-            value={formData.referral_center || ""}
+            type="number"
+            id="fasting_blood_sugar"
+            name="fasting_blood_sugar"
+            value={formData.fasting_blood_sugar || ""}
             onChange={handleInputChange}
             style={styles.input}
           />
         </div>
-      )}
 
-      <button type="button" onClick={handleSave} style={styles.button}>
-        Save Draft
-      </button>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Post Prandial Blood Sugar (mg/dL)</label>
+          <input
+            type="number"
+            id="post_prandial_blood_sugar"
+            name="post_prandial_blood_sugar"
+            value={formData.post_prandial_blood_sugar || ""}
+            onChange={handleInputChange}
+            style={styles.input}
+          />
+        </div>
+
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Random Blood Sugar (mg/dL)</label>
+          <input
+            type="number"
+            id="random_blood_sugar"
+            name="random_blood_sugar"
+            value={formData.random_blood_sugar || ""}
+            onChange={handleInputChange}
+            style={styles.input}
+            required
+          />
+        </div>
+
+        {showHighBSOptions && (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Action for High Blood Sugar *</label>
+            <select
+              id="action_high_bs"
+              name="action_high_bs"
+              value={formData.action_high_bs || ""}
+              onChange={handleInputChange}
+              style={styles.input}
+            >
+              <option value="">Select</option>
+              <option value="referral">Referral</option>
+              <option value="teleconsultation">Teleconsultation</option>
+            </select>
+          </div>
+        )}
+
+        {showReferralField && (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Referred Centre for DM *</label>
+            <input
+              type="text"
+              id="referral_center"
+              name="referral_center"
+              value={formData.referral_center || ""}
+              onChange={handleInputChange}
+              style={styles.input}
+            />
+          </div>
+        )}
+        <footer className="form-footer">
+          <button type="button" onClick={handleBack}>
+            Back
+          </button>
+          <button type="submit">
+            Save & Next
+          </button>
+        </footer>
+      </form>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const COPDTBAssessment = ({ currentFmId }) => {
+const COPDTBAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     known_case_crd: "",
     crd_specify: "",
@@ -99,7 +99,8 @@ const COPDTBAssessment = ({ currentFmId }) => {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/copd-tb-assessment`,
@@ -110,6 +111,7 @@ const COPDTBAssessment = ({ currentFmId }) => {
       );
       if (response.data.success) {
         alert("COPD/TB assessment saved successfully!");
+        handleNext?.();
       }
     } catch (error) {
       console.error("Error saving COPD/TB assessment:", error);
@@ -151,283 +153,289 @@ const COPDTBAssessment = ({ currentFmId }) => {
 
   return (
     <div style={styles.formSection}>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          Known case of chronic respiratory diseases (ASTHMA/COPD/OTHERS) *
-        </label>
-        <select
-          name="known_case_crd"
-          value={formData.known_case_crd || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-
-      {showRespiratoryDiseaseField && (
+      <form onSubmit={handleSave}>
         <div style={styles.formGroup}>
-          <label style={styles.label}>Specify Respiratory Disease</label>
-          <input
-            type="text"
-            name="crd_specify"
-            value={formData.crd_specify || ""}
-            onChange={handleInputChange}
-            required
-            style={styles.input}
-          />
-        </div>
-      )}
-
-<div style={styles.formGroup}>
-        <label style={styles.label}>Occupational Exposure *</label>
-        <select
-          name="occupational_exposure"
-          value={formData.occupational_exposure || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="No">No</option>
-          <option value="Crop residue burning">Crop residue burning</option>
-          <option value="Burning of garbage/leaves">
-            Burning of garbage/leaves
-          </option>
-          <option value="Working in industries with smoke, gas, and dust exposure">
-            Working in industries with smoke, gas, and dust exposure
-          </option>
-        </select>
-      </div>
-
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Type of Fuel Used for Cooking *</label>
-        <select
-          name="cooking_fuel_type"
-          value={formData.cooking_fuel_type || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Firewood">Firewood</option>
-          <option value="Crop Residue">Crop Residue</option>
-          <option value="Cow dung cake">Cow dung cake</option>
-          <option value="Coal">Coal</option>
-          <option value="Kerosene">Kerosene</option>
-          <option value="LPG">LPG</option>
-        </select>
-      </div>
-
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Chest Sound *</label>
-        <select
-          name="chest_sound"
-          value={formData.chest_sound || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Normal">Normal</option>
-          <option value="Abnormal">Abnormal</option>
-        </select>
-      </div>
-
-      {showChestSoundOptions && (
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Action for Abnormal Chest Sound *</label>
+          <label style={styles.label}>
+            Known case of chronic respiratory diseases (ASTHMA/COPD/OTHERS) *
+          </label>
           <select
-            name="chest_sound_action"
-            value={formData.chest_sound_action || ""}
+            name="known_case_crd"
+            value={formData.known_case_crd || ""}
             onChange={handleInputChange}
             required
             style={styles.input}
           >
             <option value="">Select</option>
-            <option value="Teleconsultation">Teleconsultation</option>
-            <option value="Referral">Referral</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
           </select>
         </div>
-      )}
 
-      {showReferralField && (
+        {showRespiratoryDiseaseField && (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Specify Respiratory Disease</label>
+            <input
+              type="text"
+              name="crd_specify"
+              value={formData.crd_specify || ""}
+              onChange={handleInputChange}
+              required
+              style={styles.input}
+            />
+          </div>
+        )}
+
         <div style={styles.formGroup}>
-          <label style={styles.label}>Name of the Centre Referred</label>
-          <input
-            type="text"
-            name="referral_center_name"
-            value={formData.referral_center_name || ""}
+          <label style={styles.label}>Occupational Exposure *</label>
+          <select
+            name="occupational_exposure"
+            value={formData.occupational_exposure || ""}
             onChange={handleInputChange}
             required
             style={styles.input}
-          />
+          >
+            <option value="">Select</option>
+            <option value="No">No</option>
+            <option value="Crop residue burning">Crop residue burning</option>
+            <option value="Burning of garbage/leaves">
+              Burning of garbage/leaves
+            </option>
+            <option value="Working in industries with smoke, gas, and dust exposure">
+              Working in industries with smoke, gas, and dust exposure
+            </option>
+          </select>
         </div>
-      )}
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          Respiratory/COPD disease confirmed at PHC/CHC/DH 
-        </label>
-        <select
-          name="copd_confirmed"
-          value={formData.copd_confirmed || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-
-      {showRespiratoryConfirmedDate && (
         <div style={styles.formGroup}>
-          <label style={styles.label}>Date of Confirmation</label>
-          <input
-            type="date"
-            name="copd_confirmation_date"
-            value={formData.copd_confirmation_date || ""}
+          <label style={styles.label}>Type of Fuel Used for Cooking *</label>
+          <select
+            name="cooking_fuel_type"
+            value={formData.cooking_fuel_type || ""}
             onChange={handleInputChange}
             required
             style={styles.input}
-          />
+          >
+            <option value="">Select</option>
+            <option value="Firewood">Firewood</option>
+            <option value="Crop Residue">Crop Residue</option>
+            <option value="Cow dung cake">Cow dung cake</option>
+            <option value="Coal">Coal</option>
+            <option value="Kerosene">Kerosene</option>
+            <option value="LPG">LPG</option>
+          </select>
         </div>
-      )}
 
-      {/* Additional questions */}
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Shortness of Breath *</label>
-        <select
-          name="shortness_of_breath"
-          value={formData.shortness_of_breath || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Chest Sound *</label>
+          <select
+            name="chest_sound"
+            value={formData.chest_sound || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Normal">Normal</option>
+            <option value="Abnormal">Abnormal</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Coughing for More Than 2 Weeks *</label>
-        <select
-          name="coughing_more_than_2_weeks"
-          value={formData.coughing_more_than_2_weeks || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        {showChestSoundOptions && (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Action for Abnormal Chest Sound *</label>
+            <select
+              name="chest_sound_action"
+              value={formData.chest_sound_action || ""}
+              onChange={handleInputChange}
+              required
+              style={styles.input}
+            >
+              <option value="">Select</option>
+              <option value="Teleconsultation">Teleconsultation</option>
+              <option value="Referral">Referral</option>
+            </select>
+          </div>
+        )}
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Blood in Sputum *</label>
-        <select
-          name="blood_in_sputum"
-          value={formData.blood_in_sputum || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        {showReferralField && (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Name of the Centre Referred</label>
+            <input
+              type="text"
+              name="referral_center_name"
+              value={formData.referral_center_name || ""}
+              onChange={handleInputChange}
+              required
+              style={styles.input}
+            />
+          </div>
+        )}
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Fever for More Than 2 Weeks *</label>
-        <select
-          name="fever_more_than_2_weeks"
-          value={formData.fever_more_than_2_weeks || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>
+            Respiratory/COPD disease confirmed at PHC/CHC/DH
+          </label>
+          <select
+            name="copd_confirmed"
+            value={formData.copd_confirmed || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      {/* Night Sweats Field */}
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Night Sweats *</label>
-        <select
-          name="night_sweats"
-          value={formData.night_sweats || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        {showRespiratoryConfirmedDate && (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Date of Confirmation</label>
+            <input
+              type="date"
+              name="copd_confirmation_date"
+              value={formData.copd_confirmation_date || ""}
+              onChange={handleInputChange}
+              required
+              style={styles.input}
+            />
+          </div>
+        )}
 
-      {/* Taking Anti-TB Drugs Field */}
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          Are you currently taking anti-TB drugs? *
-        </label>
-        <select
-          name="taking_anti_tb_drugs"
-          value={formData.taking_anti_tb_drugs || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        {/* Additional questions */}
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Shortness of Breath *</label>
+          <select
+            name="shortness_of_breath"
+            value={formData.shortness_of_breath || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          Anyone in family currently suffering from TB *
-        </label>
-        <select
-          name="family_tb_history"
-          value={formData.family_tb_history || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Coughing for More Than 2 Weeks *</label>
+          <select
+            name="coughing_more_than_2_weeks"
+            value={formData.coughing_more_than_2_weeks || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>History of TB *</label>
-        <select
-          name="history_of_tb"
-          value={formData.history_of_tb || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <button type="button" onClick={handleSave} style={styles.button}>
-        Save Draft
-      </button>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Blood in Sputum *</label>
+          <select
+            name="blood_in_sputum"
+            value={formData.blood_in_sputum || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Fever for More Than 2 Weeks *</label>
+          <select
+            name="fever_more_than_2_weeks"
+            value={formData.fever_more_than_2_weeks || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        {/* Night Sweats Field */}
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Night Sweats *</label>
+          <select
+            name="night_sweats"
+            value={formData.night_sweats || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        {/* Taking Anti-TB Drugs Field */}
+        <div style={styles.formGroup}>
+          <label style={styles.label}>
+            Are you currently taking anti-TB drugs? *
+          </label>
+          <select
+            name="taking_anti_tb_drugs"
+            value={formData.taking_anti_tb_drugs || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div style={styles.formGroup}>
+          <label style={styles.label}>
+            Anyone in family currently suffering from TB *
+          </label>
+          <select
+            name="family_tb_history"
+            value={formData.family_tb_history || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div style={styles.formGroup}>
+          <label style={styles.label}>History of TB</label>
+          <select
+            name="history_of_tb"
+            value={formData.history_of_tb || ""}
+            onChange={handleInputChange}
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <footer className="form-footer">
+          <button type="button" onClick={handleBack}>
+            Back
+          </button>
+          <button type="submit">
+            Save & Next
+          </button>
+        </footer>
+      </form>
     </div>
   );
 };

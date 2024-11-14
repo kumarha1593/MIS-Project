@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SelectAll from "../global/SelectAll";
 
-const OralCancerAssessment = ({ currentFmId }) => {
+const OralCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     known_case: "",
     persistent_ulcer: "",
@@ -33,7 +33,8 @@ const OralCancerAssessment = ({ currentFmId }) => {
     }
   }, [currentFmId]);
 
-  const handleSave = async () => {
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/oral-cancer-assessment`,
@@ -44,6 +45,7 @@ const OralCancerAssessment = ({ currentFmId }) => {
       );
       if (response.data.success) {
         alert("Oral Cancer Assessment saved successfully!");
+        handleNext?.();
       }
     } catch (error) {
       console.error("Error saving oral cancer assessment:", error);
@@ -113,140 +115,146 @@ const OralCancerAssessment = ({ currentFmId }) => {
         onChange={handleSelectAllChange}
       />
       {/* Form groups for each field */}
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Known Case *</label>
-        <select
-          id="known_case"
-          name="known_case"
-          value={formData.known_case || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes and on treatment">Yes and on treatment</option>
-          <option value="Yes and not on treatment">
-            Yes and not on treatment
-          </option>
-          <option value="No">No</option>
-        </select>
-      </div>
+      <form onSubmit={handleSave}>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Known Case *</label>
+          <select
+            id="known_case"
+            name="known_case"
+            value={formData.known_case || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes and on treatment">Yes and on treatment</option>
+            <option value="Yes and not on treatment">
+              Yes and not on treatment
+            </option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Persistent Ulcer *</label>
-        <select
-          id="persistent_ulcer"
-          name="persistent_ulcer"
-          value={formData.persistent_ulcer || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Persistent Ulcer *</label>
+          <select
+            id="persistent_ulcer"
+            name="persistent_ulcer"
+            value={formData.persistent_ulcer || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Persistent Patch *</label>
-        <select
-          id="persistent_patch"
-          name="persistent_patch"
-          value={formData.persistent_patch || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Persistent Patch *</label>
+          <select
+            id="persistent_patch"
+            name="persistent_patch"
+            value={formData.persistent_patch || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Difficulty Chewing *</label>
-        <select
-          id="difficulty_chewing"
-          name="difficulty_chewing"
-          value={formData.difficulty_chewing || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Difficulty Chewing *</label>
+          <select
+            id="difficulty_chewing"
+            name="difficulty_chewing"
+            value={formData.difficulty_chewing || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Difficulty Opening Mouth *</label>
-        <select
-          id="difficulty_opening_mouth"
-          name="difficulty_opening_mouth"
-          value={formData.difficulty_opening_mouth || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Difficulty Opening Mouth *</label>
+          <select
+            id="difficulty_opening_mouth"
+            name="difficulty_opening_mouth"
+            value={formData.difficulty_opening_mouth || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Growth in Mouth *</label>
-        <select
-          id="growth_in_mouth"
-          name="growth_in_mouth"
-          value={formData.growth_in_mouth || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Growth in Mouth *</label>
+          <select
+            id="growth_in_mouth"
+            name="growth_in_mouth"
+            value={formData.growth_in_mouth || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Sudden change in voice *</label>
-        <select
-          id="swelling_in_neck"
-          name="swelling_in_neck"
-          value={formData.swelling_in_neck || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Sudden change in voice *</label>
+          <select
+            id="swelling_in_neck"
+            name="swelling_in_neck"
+            value={formData.swelling_in_neck || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Suspected Oral Cancer *</label>
-        <select
-          id="suspected_oral_cancer"
-          name="suspected_oral_cancer"
-          value={formData.suspected_oral_cancer || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-
-      <button type="button" onClick={handleSave} style={styles.button}>
-        Save Draft
-      </button>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Suspected Oral Cancer *</label>
+          <select
+            id="suspected_oral_cancer"
+            name="suspected_oral_cancer"
+            value={formData.suspected_oral_cancer || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <footer className="form-footer">
+          <button type="button" onClick={handleBack}>
+            Back
+          </button>
+          <button type="submit">
+            Save & Next
+          </button>
+        </footer>
+      </form>
     </div>
   );
 };

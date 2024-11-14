@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const AssessmentAndActionTaken = ({ currentFmId }) => {
+const AssessmentAndActionTaken = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     majorNCDDetected: "",
     anyOtherDiseaseDetected: "",
@@ -39,7 +39,8 @@ const AssessmentAndActionTaken = ({ currentFmId }) => {
     }));
   };
 
-  const handleSave = async () => {
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/assessment-and-action-taken`,
@@ -50,6 +51,7 @@ const AssessmentAndActionTaken = ({ currentFmId }) => {
       );
       if (response.data.success) {
         alert("Assessment and action taken saved successfully!");
+        handleNext?.()
       }
     } catch (error) {
       console.error("Error saving assessment and action taken:", error);
@@ -94,7 +96,7 @@ const AssessmentAndActionTaken = ({ currentFmId }) => {
   };
 
   return (
-    <div>
+    <form onSubmit={handleSave}>
       <div style={styles.formGroup}>
         <label style={styles.label}>Major NCD Detected</label>
         <input
@@ -177,11 +179,15 @@ const AssessmentAndActionTaken = ({ currentFmId }) => {
           style={styles.textarea}
         ></textarea>
       </div>
-
-      <button type="button" style={styles.button} onClick={handleSave}>
-        Save Draft
-      </button>
-    </div>
+      <footer className="form-footer">
+        <button type="button" onClick={handleBack}>
+          Back
+        </button>
+        <button type="submit">
+          Save & Next
+        </button>
+      </footer>
+    </form>
   );
 };
 

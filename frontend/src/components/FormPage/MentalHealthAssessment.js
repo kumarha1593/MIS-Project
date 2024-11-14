@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const MentalHealthAssessment = ({ currentFmId }) => {
+const MentalHealthAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     littleInterestOrPleasure: "",
     feelingDownOrDepressed: "",
@@ -86,8 +86,8 @@ const MentalHealthAssessment = ({ currentFmId }) => {
     }
   };
 
-  const handleSave = async () => {
-    console.log("Form data being sent:", formData);
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/mental-health-assessment`,
@@ -105,6 +105,7 @@ const MentalHealthAssessment = ({ currentFmId }) => {
       );
       if (response.data.success) {
         alert("Mental health assessment saved successfully!");
+        handleNext?.();
       } else {
         console.error("Server responded with an error:", response.data);
         alert("Failed to save Mental Health assessment. Please try again.");
@@ -161,141 +162,142 @@ const MentalHealthAssessment = ({ currentFmId }) => {
         problems? (Anyone with total score greater than 3 from below given
         questions, refer to CHO/MO)
       </p>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          Little interest or pleasure in doing things? *
-        </label>
-        <select
-          name="littleInterestOrPleasure"
-          value={formData.littleInterestOrPleasure || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.select}
-        >
-          <option value="">Select</option>
-          <option value="Not at all">Not at all</option>
-          <option value="Several days">Several days</option>
-          <option value="More than half the day">More than half the day</option>
-          <option value="Nearly every day">Nearly every day</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          Feeling down, depressed, or hopeless? *
-        </label>
-        <select
-          name="feelingDownOrDepressed"
-          value={formData.feelingDownOrDepressed || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.select}
-        >
-          <option value="">Select</option>
-          <option value="Not at all">Not at all</option>
-          <option value="Several days">Several days</option>
-          <option value="More than half the day">More than half the day</option>
-          <option value="Nearly every day">Nearly every day</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Mental Health Score:</label>
-        <input
-          type="text"
-          value={mentalHealthScore}
-          readOnly
-          style={styles.input}
-        />
-        {mentalHealthScore > 3 && (
-          <p style={styles.warning}>
-            Score is greater than 3. Please refer to CHO/MO.
-          </p>
-        )}
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
-          Mental Health problem detected through the questionnaire *
-        </label>
-        <select
-          name="mentalHealthProblem"
-          value={formData.mentalHealthProblem || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.select}
-        >
-          <option value="">Select</option>
-          <option value="Depression">Depression</option>
-          <option value="Alcohol dependence">Alcohol dependence</option>
-          <option value="Common Mental Health">Common Mental Health</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>History of fits *</label>
-        <select
-          name="historyOfFits"
-          value={formData.historyOfFits || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.select}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Other mental disorder *</label>
-        <select
-          name="otherMentalDisorder"
-          value={formData.otherMentalDisorder || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.select}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Brief intervention given? *</label>
-        <select
-          name="briefIntervention"
-          value={formData.briefIntervention}
-          onChange={handleInputChange}
-          required
-          style={styles.select}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-
-      {formData.briefIntervention === "Yes" && (
+      <form onSubmit={handleSave}>
         <div style={styles.formGroup}>
-          <label style={styles.label}>If yes, Brief intervention given *</label>
+          <label style={styles.label}>
+            Little interest or pleasure in doing things? *
+          </label>
           <select
-            name="interventionType"
-            value={formData.interventionType}
+            name="littleInterestOrPleasure"
+            value={formData.littleInterestOrPleasure || ""}
             onChange={handleInputChange}
             required
             style={styles.select}
           >
             <option value="">Select</option>
-            <option value="Counselling">Counselling</option>
-            <option value="Dispensing of medication">
-              Dispensing of medication
-            </option>
-            <option value="Psycho-education">Psycho-education</option>
-            <option value="Others">Others</option>
+            <option value="Not at all">Not at all</option>
+            <option value="Several days">Several days</option>
+            <option value="More than half the day">More than half the day</option>
+            <option value="Nearly every day">Nearly every day</option>
           </select>
         </div>
-      )}
+        <div style={styles.formGroup}>
+          <label style={styles.label}>
+            Feeling down, depressed, or hopeless? *
+          </label>
+          <select
+            name="feelingDownOrDepressed"
+            value={formData.feelingDownOrDepressed || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.select}
+          >
+            <option value="">Select</option>
+            <option value="Not at all">Not at all</option>
+            <option value="Several days">Several days</option>
+            <option value="More than half the day">More than half the day</option>
+            <option value="Nearly every day">Nearly every day</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Mental Health Score:</label>
+          <input
+            type="text"
+            value={mentalHealthScore}
+            readOnly
+            style={styles.input}
+          />
+          {mentalHealthScore > 3 && (
+            <p style={styles.warning}>
+              Score is greater than 3. Please refer to CHO/MO.
+            </p>
+          )}
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>
+            Mental Health problem detected through the questionnaire
+          </label>
+          <select
+            name="mentalHealthProblem"
+            value={formData.mentalHealthProblem || ""}
+            onChange={handleInputChange}
+            style={styles.select}
+          >
+            <option value="">Select</option>
+            <option value="Depression">Depression</option>
+            <option value="Alcohol dependence">Alcohol dependence</option>
+            <option value="Common Mental Health">Common Mental Health</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>History of fits</label>
+          <select
+            name="historyOfFits"
+            value={formData.historyOfFits || ""}
+            onChange={handleInputChange}
+            style={styles.select}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Other mental disorder</label>
+          <select
+            name="otherMentalDisorder"
+            value={formData.otherMentalDisorder || ""}
+            onChange={handleInputChange}
+            style={styles.select}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Brief intervention given?</label>
+          <select
+            name="briefIntervention"
+            value={formData.briefIntervention}
+            onChange={handleInputChange}
+            style={styles.select}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <button type="button" onClick={handleSave} style={styles.button}>
-        Save Draft
-      </button>
+        {formData.briefIntervention === "Yes" && (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>If yes, Brief intervention given</label>
+            <select
+              name="interventionType"
+              value={formData.interventionType}
+              onChange={handleInputChange}
+              style={styles.select}
+            >
+              <option value="">Select</option>
+              <option value="Counselling">Counselling</option>
+              <option value="Dispensing of medication">
+                Dispensing of medication
+              </option>
+              <option value="Psycho-education">Psycho-education</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+        )}
+        <footer className="form-footer">
+          <button type="button" onClick={handleBack}>
+            Back
+          </button>
+          <button type="submit">
+            Save & Next
+          </button>
+        </footer>
+      </form>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
-const CKDAssessment = ({ currentFmId }) => {
+const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     knownCKD: "",
     historyCKDStone: "",
@@ -86,7 +86,8 @@ const CKDAssessment = ({ currentFmId }) => {
     }
   }, [currentFmId]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (evt) => {
+    evt.preventDefault();
     const ckdRiskScore = calculateCKDRiskScore();
     const riskaAssessment = calculateRiskAssessment(ckdRiskScore);
 
@@ -103,6 +104,7 @@ const CKDAssessment = ({ currentFmId }) => {
 
       if (response.data.success) {
         alert("CKD assessment saved successfully!");
+        handleNext?.();
       } else {
         console.error("Server responded with an error:", response.data);
         alert(
@@ -165,156 +167,163 @@ const CKDAssessment = ({ currentFmId }) => {
 
   return (
     <div style={styles.formSection}>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Known case of CKD *</label>
-        <select
-          name="knownCKD"
-          value={formData.knownCKD}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes, on treatment">Yes, on treatment</option>
-          <option value="Yes, not on treatment">Yes, not on treatment</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>History of CKD/Stone *</label>
-        <select
-          name="historyCKDStone"
-          value={formData.historyCKDStone}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Age Above 50 *</label>
-        <select
-          name="ageAbove50"
-          value={formData.ageAbove50}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Hypertension Patient *</label>
-        <select
-          name="hypertensionPatient"
-          value={formData.hypertensionPatient}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Diabetes Patient *</label>
-        <select
-          name="diabetesPatient"
-          value={formData.diabetesPatient}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Anemia Patient *</label>
-        <select
-          name="anemiaPatient"
-          value={formData.anemiaPatient}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>History of Stroke *</label>
-        <select
-          name="historyOfStroke"
-          value={formData.historyOfStroke}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Swelling on Face and Leg *</label>
-        <select
-          name="swellingFaceLeg"
-          value={formData.swellingFaceLeg}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>History of NSAIDS *</label>
-        <select
-          name="historyNSAIDS"
-          value={formData.historyNSAIDS}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Risk Score *</label>
-        <input
-          type="text"
-          name="ckdRiskScore"
-          value={calculateCKDRiskScore()}
-          readOnly
-          style={styles.input}
-        />
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Risk Assessment *</label>
-        <input
-          type="text"
-          name="riskaAssessment"
-          value={calculateRiskAssessment(calculateCKDRiskScore())}
-          readOnly
-          style={styles.input}
-        />
-      </div>
-      <button type="button" onClick={handleSubmit} style={styles.button}>
-        Save CKD Assessment
-      </button>
+      <form onSubmit={handleSubmit}>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Known case of CKD *</label>
+          <select
+            name="knownCKD"
+            value={formData.knownCKD}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes, on treatment">Yes, on treatment</option>
+            <option value="Yes, not on treatment">Yes, not on treatment</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>History of CKD/Stone *</label>
+          <select
+            name="historyCKDStone"
+            value={formData.historyCKDStone}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Age Above 50 *</label>
+          <select
+            name="ageAbove50"
+            value={formData.ageAbove50}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Hypertension Patient *</label>
+          <select
+            name="hypertensionPatient"
+            value={formData.hypertensionPatient}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Diabetes Patient *</label>
+          <select
+            name="diabetesPatient"
+            value={formData.diabetesPatient}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Anemia Patient *</label>
+          <select
+            name="anemiaPatient"
+            value={formData.anemiaPatient}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>History of Stroke *</label>
+          <select
+            name="historyOfStroke"
+            value={formData.historyOfStroke}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Swelling on Face and Leg *</label>
+          <select
+            name="swellingFaceLeg"
+            value={formData.swellingFaceLeg}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>History of NSAIDS *</label>
+          <select
+            name="historyNSAIDS"
+            value={formData.historyNSAIDS}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Risk Score *</label>
+          <input
+            type="text"
+            name="ckdRiskScore"
+            value={calculateCKDRiskScore()}
+            readOnly
+            style={styles.input}
+          />
+        </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Risk Assessment *</label>
+          <input
+            type="text"
+            name="riskaAssessment"
+            value={calculateRiskAssessment(calculateCKDRiskScore())}
+            readOnly
+            style={styles.input}
+          />
+        </div>
+        <footer className="form-footer">
+          <button type="button" onClick={handleBack}>
+            Back
+          </button>
+          <button type="submit">
+            Save & Next
+          </button>
+        </footer>
+      </form>
     </div>
   );
 };

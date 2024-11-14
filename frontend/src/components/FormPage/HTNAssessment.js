@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const HTNAssessment = ({ currentFmId }) => {
+const HTNAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     case_of_htn: "",
     upper_bp: "",
@@ -56,7 +56,8 @@ const HTNAssessment = ({ currentFmId }) => {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/htn-assessment`,
@@ -67,6 +68,7 @@ const HTNAssessment = ({ currentFmId }) => {
       );
       if (response.data.success) {
         alert("HTN assessment saved successfully!");
+        handleNext?.();
       }
     } catch (error) {
       console.error("Error saving HTN assessment:", error);
@@ -108,76 +110,86 @@ const HTNAssessment = ({ currentFmId }) => {
 
   return (
     <div style={styles.formSection}>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Known case of HTN *</label>
-        <select
-          id="case_of_htn"
-          name="case_of_htn"
-          value={formData.case_of_htn || ""}
-          onChange={handleInputChange}
-        >
-          <option value="">Select</option>
-          <option value="yes and on treatment">Yes and on Treatment</option>
-          <option value="yes and not on treatment">
-            Yes and Not on Treatment
-          </option>
-          <option value="No">No</option>
-        </select>
-      </div>
-
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Upper BP (mmHg) *</label>
-        <input
-          type="number"
-          id="upper_bp"
-          name="upper_bp"
-          value={formData.upper_bp || ""}
-          onChange={handleInputChange}
-        />
-      </div>
-
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Lower BP (mmHg) *</label>
-        <input
-          type="number"
-          id="lower_bp"
-          name="lower_bp"
-          value={formData.lower_bp || ""}
-          onChange={handleInputChange}
-        />
-      </div>
-
-      {showHighBPOptions && (
+      <form onSubmit={handleSave}>
         <div style={styles.formGroup}>
-          <label style={styles.label}>Action for High BP *</label>
+          <label style={styles.label}>Known case of HTN *</label>
           <select
-            id="action_high_bp"
-            name="action_high_bp"
-            value={formData.action_high_bp || ""}
+            id="case_of_htn"
+            name="case_of_htn"
+            value={formData.case_of_htn || ""}
             onChange={handleInputChange}
+            required
           >
             <option value="">Select</option>
-            <option value="referral">Referral</option>
-            <option value="teleconsultation">Teleconsultation</option>
+            <option value="yes and on treatment">Yes and on Treatment</option>
+            <option value="yes and not on treatment">
+              Yes and Not on Treatment
+            </option>
+            <option value="No">No</option>
           </select>
         </div>
-      )}
 
-      {formData.action_high_bp === "referral" && (
         <div style={styles.formGroup}>
-          <label style={styles.label}>Referred Centre for HTN *</label>
+          <label style={styles.label}>Upper BP (mmHg) *</label>
           <input
-            type="text"
-            id="referral_center"
-            name="referral_center"
-            value={formData.referral_center || ""}
+            type="number"
+            id="upper_bp"
+            name="upper_bp"
+            value={formData.upper_bp || ""}
             onChange={handleInputChange}
+            required
           />
         </div>
-      )}
-      <button type="button" onClick={handleSave} style={styles.button}>
-        Save HTN Assessment
-      </button>
+
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Lower BP (mmHg) *</label>
+          <input
+            type="number"
+            id="lower_bp"
+            name="lower_bp"
+            value={formData.lower_bp || ""}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+
+        {showHighBPOptions && (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Action for High BP *</label>
+            <select
+              id="action_high_bp"
+              name="action_high_bp"
+              value={formData.action_high_bp || ""}
+              onChange={handleInputChange}
+            >
+              <option value="">Select</option>
+              <option value="referral">Referral</option>
+              <option value="teleconsultation">Teleconsultation</option>
+            </select>
+          </div>
+        )}
+
+        {formData.action_high_bp === "referral" && (
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Referred Centre for HTN *</label>
+            <input
+              type="text"
+              id="referral_center"
+              name="referral_center"
+              value={formData.referral_center || ""}
+              onChange={handleInputChange}
+            />
+          </div>
+        )}
+        <footer className="form-footer">
+          <button type="button" onClick={handleBack}>
+            Back
+          </button>
+          <button type="submit">
+            Save & Next
+          </button>
+        </footer>
+      </form>
     </div>
   );
 };

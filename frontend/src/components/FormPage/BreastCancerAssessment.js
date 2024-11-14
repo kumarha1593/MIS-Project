@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SelectAll from "../global/SelectAll";
 
-const BreastCancerAssessment = ({ currentFmId }) => {
+const BreastCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     known_case: "",
     lump_in_breast: "",
@@ -32,7 +32,8 @@ const BreastCancerAssessment = ({ currentFmId }) => {
     }
   }, [currentFmId]);
 
-  const handleSave = async () => {
+  const handleSave = async (evt) => {
+    evt.preventDefault();
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/breast-cancer-assessment`,
@@ -43,6 +44,7 @@ const BreastCancerAssessment = ({ currentFmId }) => {
       );
       if (response.data.success) {
         alert("Breast Cancer Assessment saved successfully!");
+        handleNext?.()
       }
     } catch (error) {
       console.error("Error saving breast cancer assessment:", error);
@@ -78,124 +80,125 @@ const BreastCancerAssessment = ({ currentFmId }) => {
         label='Select All No'
         onChange={handleSelectAllChange}
       />
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Known Case *</label>
-        <select
-          id="known_case"
-          name="known_case"
-          value={formData.known_case || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes and on treatment">Yes and on treatment</option>
-          <option value="Yes and not on treatment">
-            Yes and not on treatment
-          </option>
-          <option value="No">No</option>
-        </select>
-      </div>
+      <form onSubmit={handleSave}>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Known Case *</label>
+          <select
+            id="known_case"
+            name="known_case"
+            value={formData.known_case || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes and on treatment">Yes and on treatment</option>
+            <option value="Yes and not on treatment">
+              Yes and not on treatment
+            </option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Lump in Breast *</label>
-        <select
-          id="lump_in_breast"
-          name="lump_in_breast"
-          value={formData.lump_in_breast || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Lump in Breast</label>
+          <select
+            id="lump_in_breast"
+            name="lump_in_breast"
+            value={formData.lump_in_breast || ""}
+            onChange={handleInputChange}
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Blood-Stained Discharge *</label>
-        <select
-          id="blood_stained_discharge"
-          name="blood_stained_discharge"
-          value={formData.blood_stained_discharge || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Blood-Stained Discharge</label>
+          <select
+            id="blood_stained_discharge"
+            name="blood_stained_discharge"
+            value={formData.blood_stained_discharge || ""}
+            onChange={handleInputChange}
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Change in Shape *</label>
-        <select
-          id="change_in_shape"
-          name="change_in_shape"
-          value={formData.change_in_shape || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Change in Shape</label>
+          <select
+            id="change_in_shape"
+            name="change_in_shape"
+            value={formData.change_in_shape || ""}
+            onChange={handleInputChange}
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Constant Pain or Swelling *</label>
-        <select
-          id="constant_pain_or_swelling"
-          name="constant_pain_or_swelling"
-          value={formData.constant_pain_or_swelling || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Constant Pain or Swelling</label>
+          <select
+            id="constant_pain_or_swelling"
+            name="constant_pain_or_swelling"
+            value={formData.constant_pain_or_swelling || ""}
+            onChange={handleInputChange}
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Redness or Ulcer *</label>
-        <select
-          id="redness_or_ulcer"
-          name="redness_or_ulcer"
-          value={formData.redness_or_ulcer || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Redness or Ulcer *</label>
+          <select
+            id="redness_or_ulcer"
+            name="redness_or_ulcer"
+            value={formData.redness_or_ulcer || ""}
+            onChange={handleInputChange}
+            required
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Suspected Breast Cancer *</label>
-        <select
-          id="suspected_breast_cancer"
-          name="suspected_breast_cancer"
-          value={formData.suspected_breast_cancer || ""}
-          onChange={handleInputChange}
-          required
-          style={styles.input}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-
-      <button type="button" onClick={handleSave} style={styles.button}>
-        Save Draft
-      </button>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Suspected Breast Cancer</label>
+          <select
+            id="suspected_breast_cancer"
+            name="suspected_breast_cancer"
+            value={formData.suspected_breast_cancer || ""}
+            onChange={handleInputChange}
+            style={styles.input}
+          >
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <footer className="form-footer">
+          <button type="button" onClick={handleBack}>
+            Back
+          </button>
+          <button type="submit">
+            Save & Next
+          </button>
+        </footer>
+      </form>
     </div>
   );
 };
