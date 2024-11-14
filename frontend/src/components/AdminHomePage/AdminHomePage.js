@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./AdminHomePage.css";
 import defaultInstance from "../../axiosHelper";
@@ -6,8 +6,6 @@ import { API_ENDPOINTS } from "../../utils/apiEndPoints";
 import AddVillage from "./AddVillage";
 
 const AdminHomePage = () => {
-
-  const fileInputRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -53,24 +51,6 @@ const AdminHomePage = () => {
     }
   }
 
-
-  const handleFileChange = (event) => {
-    const file = event?.target?.files?.[0];
-    if (file) {
-      const fd = new FormData();
-      fd.append('file', file)
-      defaultInstance.post(API_ENDPOINTS.IMPORT_MASTER_LIST, fd).then((res) => {
-        if (!res?.data?.success) {
-          alert(res?.data?.message);
-          return
-        }
-        if (res?.data?.success) {
-          fetchUsers();
-        }
-      }).catch((err) => console.log(err))
-    }
-  };
-
   const handlePaginate = (type) => {
     const { page_limit = 50, skip_count = 0 } = queryParams || {};
     const newPageLimit = page_limit;
@@ -99,15 +79,7 @@ const AdminHomePage = () => {
       <div style={{ display: 'flex', marginBottom: 20, justifyContent: 'flex-end' }}>
         <p style={{ marginRight: '5px' }}>{`Showing ${viewingCount > totalCount ? totalCount : viewingCount} of ${totalCount} results`}</p>
         <button onClick={() => navigate("/admin-form")} className="add-user-button">Add User Manually</button>
-        <button onClick={() => fileInputRef?.current?.click()} className="add-user-button">Bulk Import</button>
         <button onClick={() => setShowVillageModal(true)} className="add-user-button">Add Village</button>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          style={{ display: 'none' }}
-          accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        />
       </div>
       <div className="table-container">
         {isLoading ? (
