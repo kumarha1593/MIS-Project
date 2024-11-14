@@ -5025,12 +5025,7 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
           );
   
           if(existsResult.length > 0) {
-            await db.promise().rollback();
-            res.status(200).json({
-              success : false,
-              message : 'CSV rejected. Error inserting ' + results[index]['Patient Name'] + '. Duplicate found!',
-            });
-            return;
+            continue;
           }
 
           var headId = '0';
