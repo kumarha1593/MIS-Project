@@ -4989,7 +4989,7 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
 const upload = multer({ dest: 'uploads/' });
 
 function convertDateFormat(dateStr) {
-  const [day, month, year] = dateStr.split('/'); // Split the date string
+  const [day, month, year] = dateStr.split('-'); // Split the date string
   return `${year}-${month}-${day}`; // Reformat to yyyy-MM-dd
 }
 
@@ -5003,15 +5003,20 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
     .on('data', (data) => results.push(data))
     .on('end', async () => {
       // Prepare data for bulk insertion
-      const columns = Object.keys(results[0]); // Get all column names from the first row
-      const values = results.map(item => columns.map(col => item[col])); // Extract values for each row
+      // const columns = Object.keys(results[0]); // Get all column names from the first row
+      // const values = results.map(item => columns.map(col => item[col])); // Extract values for each row
 
       fs.unlinkSync(filePath);
 
       try {
         await db.promise().beginTransaction();
         for (let index = 0; index < results.length; index++) {
+          console.log('Sr No: ' + results[index]['Sr No']);
           
+          if(!results[index]['Sr No']) {
+            continue;
+          }
+
           const [existsResult] = await db.promise().query(`SELECT * FROM family_members fm WHERE name = ? AND Aadhar = ?;`,
             [
               results[index]['Patient Name'],
@@ -5107,9 +5112,9 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
               results[index]['Known Case of DM'],
               results[index]['Action High BS'] == "" ? null : results[index]['Action High BS'],
               results[index]['Blood Sugar Referral Center'],
-              results[index]['Fasting Blood Sugar'],
-              results[index]['Post Prandial Blood Sugar'],
-              results[index]['Random Blood Sugar'],
+              results[index]['Fasting Blood Sugar'] == "" ? null : results[index]['Fasting Blood Sugar'],
+              results[index]['Post Prandial Blood Sugar'] == "" ? null : results[index]['Post Prandial Blood Sugar'],
+              results[index]['Random Blood Sugar'] == "" ? null : results[index]['Random Blood Sugar'],
             ]);
 
           const dmId = dmResult.insertId;
@@ -5160,12 +5165,12 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW());`,
           [
             results[index]['Breast Cancer Known Case'],
-            results[index]['Lump in Breast'],
-            results[index]['Blood Stained Discharge'],
-            results[index]['Change in Shape and size of Breast'],
-            results[index]['Constant Pain or Swelling'],
-            results[index]['Redness or Ulcer'],
-            results[index]['Suspected Breast Cancer'],
+            results[index]['Lump in Breast'] == "" ? null : results[index]['Lump in Breast'],
+            results[index]['Blood Stained Discharge'] == "" ? null : results[index]['Blood Stained Discharge'],
+            results[index]['Change in Shape and size of Breast'] == "" ? null : results[index]['Change in Shape and size of Breast'],
+            results[index]['Constant Pain or Swelling'] == "" ? null : results[index]['Constant Pain or Swelling'],
+            results[index]['Redness or Ulcer'] == "" ? null : results[index]['Redness or Ulcer'],
+            results[index]['Suspected Breast Cancer'] == "" ? null : results[index]['Suspected Breast Cancer'],
           ]);
 
           const bcId = bcResult.insertId;
@@ -5178,10 +5183,10 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW());`,
           [
             results[index]['Cervical Cancer Known Case'],
-            results[index]['Bleeding Between Periods'],
-            results[index]['Bleeding After Menopause'],
-            results[index]['Bleeding After Intercourse'],
-            results[index]['Foul Smelling Discharge'],
+            results[index]['Bleeding Between Periods'] == "" ? null : results[index]['Bleeding Between Periods'],
+            results[index]['Bleeding After Menopause'] == "" ? null : results[index]['Bleeding After Menopause'],
+            results[index]['Bleeding After Intercourse'] == "" ? null : results[index]['Bleeding After Intercourse'],
+            results[index]['Foul Smelling Discharge'] == "" ? null : results[index]['Foul Smelling Discharge'],
             null,
             null,
           ]);
@@ -5282,9 +5287,9 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
             (cloudy_blurred_vision, pain_or_redness, cataract_assessment_result, created_at, updated_at)
             VALUES(?, ?, ?, NOW(), NOW());`,
           [
-            results[index]['Cloudy Blurred Vision'],
-            results[index]['Pain or Redness'],
-            results[index]['Cataract Assessment Result'],
+            results[index]['Cloudy Blurred Vision'] == "" ? null : results[index]['Cloudy Blurred Vision'],
+            results[index]['Pain or Redness'] == "" ? null : results[index]['Pain or Redness'],
+            results[index]['Cataract Assessment Result'] == "" ? null : results[index]['Cataract Assessment Result'],
           ]);
 
           const cId = cResult.insertId;
@@ -5465,7 +5470,10 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
         
       } catch (error) {
         console.error("Error inserting csv:", error);
-        res.status(500).json({ success: false, message: "Server error" });
+        res.status(200).json({ 
+          success: false, 
+          message: error.message,
+        });
         return;
       }
     })
