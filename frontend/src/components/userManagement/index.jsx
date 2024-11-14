@@ -76,6 +76,7 @@ const Users = () => {
                 onExport={onExport}
                 onEdit={() => setShowMemModal(true)}
                 selectedItem={selectedItem}
+                onDone={fetchMasterList}
             />
             <FamilyMembers
                 data={allData}

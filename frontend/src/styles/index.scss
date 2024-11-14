@@ -426,3 +426,14 @@
     align-items: center;
     justify-content: space-between;
 }
+
+.document-wrap {
+    border: 1px solid #ddd;
+    padding: 12px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 20px;
+    margin-top: 30px;
+    align-items: center;
+}
