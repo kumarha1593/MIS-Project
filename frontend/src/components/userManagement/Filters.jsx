@@ -5,17 +5,19 @@ import { FaFilter } from 'react-icons/fa';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 import { AbhaIdStatus, age, cataract, getFilterQuery, getScreeningFilterQuery, htnOptions, riskScore, sex, yesNoOptions } from '../../utils/helper';
+import UploadBulkUser from './UploadBulkUser';
 
-const Filters = ({ queryParams, totalCount, viewingCount, onExport, selectedItem, onEdit }) => {
+const Filters = ({ queryParams, totalCount, viewingCount, onExport, selectedItem, onEdit, onDone }) => {
 
     const filterDefaults = getFilterQuery(queryParams);
+    const fileInputRef = useRef(null);
 
     const userData = useRef(null)
 
     const navigate = useNavigate();
 
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-
+    const [selectedFile, setSelectedFile] = useState(null);
     const [filterData, setFilterData] = useState(filterDefaults)
 
     const updateValue = (key, value) => setFilterData((prevState) => ({ ...prevState, [key]: value }));
@@ -48,7 +50,15 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport, selectedItem
                 page_limit: queryParams?.page_limit || 50,
             })
         }, 1000);
-    }, [])
+    }, []);
+
+
+    const handleFileChange = (event) => {
+        const file = event?.target?.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+        }
+    };
 
     return (
         <div className="filters-container">
@@ -68,6 +78,21 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport, selectedItem
                     null
                 }
                 <button
+                    onClick={() => fileInputRef?.current?.click()}
+                    className="add-user-button"
+                    style={{ padding: '8px 10px' }}
+                >
+                    Bulk Import
+                </button>
+                <input
+                    id='image_id'
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }}
+                    accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                />
+                <button
                     style={{ padding: '8px 10px' }}
                     onClick={() => {
                         const queryString = getScreeningFilterQuery({ role_type: queryParams?.role_type })
@@ -85,7 +110,6 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport, selectedItem
                             <div onClick={() => setShowFilterDropdown((prevState) => !prevState)} className='close-btn'>
                                 <MdOutlineClose />
                             </div>
-
                             <div className="filter-option">
                                 <label>From Date:</label>
                                 <DatePicker
@@ -95,7 +119,6 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport, selectedItem
                                     dateFormat="dd/MM/yyyy"
                                 />
                             </div>
-
                             <div className="filter-option">
                                 <label>To Date:</label>
                                 <DatePicker
@@ -405,6 +428,21 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport, selectedItem
                     )}
                 </div>
             </div>
+            <UploadBulkUser
+                visible={selectedFile ? true : false}
+                onDismiss={() => {
+                    setSelectedFile(null);
+                    const imageElement = document.getElementById("image_id");
+                    if (imageElement) {
+                        imageElement.textContent = "";
+                    }
+                }}
+                onDone={() => {
+                    setSelectedFile(null)
+                    onDone()
+                }}
+                selectedFile={selectedFile}
+            />
         </div>
     )
 }
