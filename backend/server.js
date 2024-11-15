@@ -4447,13 +4447,13 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
     WHERE fm.id = ?;`;
 
     const aaatParams = [
-      major_ncd_detected,
-      any_other_disease_detected,
-      known_case_dm_htn,
-      aaat_teleconsultation,
-      prescription_given,
-      other_advices,
-      remarks,
+      major_ncd_detected == '' ? null : major_ncd_detected,
+      any_other_disease_detected == '' ? null : any_other_disease_detected,
+      known_case_dm_htn == '' ? null : known_case_dm_htn,
+      aaat_teleconsultation == '' ? null : aaat_teleconsultation,
+      prescription_given == '' ? null : prescription_given,
+      other_advices == '' ? null : other_advices,
+      remarks == '' ? null : remarks,
       fm_id,
     ];
 
@@ -4474,12 +4474,12 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
 
     const bcParams = [
       bc_known_case,
-      lump_in_breast,
-      blood_stained_discharge,
-      change_in_shape,
-      constant_pain_or_swelling,
+      lump_in_breast == '' ? null : lump_in_breast,
+      blood_stained_discharge == '' ? null : blood_stained_discharge,
+      change_in_shape == '' ? null : change_in_shape,
+      constant_pain_or_swelling == '' ? null : constant_pain_or_swelling,
       redness_or_ulcer,
-      suspected_breast_cancer,
+      suspected_breast_cancer == '' ? null : suspected_breast_cancer,
       fm_id,
     ];
 
@@ -4495,9 +4495,9 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
     WHERE fm.id = ?;`;
 
     const cParams = [
-      cloudy_blurred_vision,
-      pain_or_redness,
-      cataract_assessment_result,
+      cloudy_blurred_vision == '' ? null : cloudy_blurred_vision,
+      pain_or_redness == '' ? null : pain_or_redness,
+      cataract_assessment_result == '' ? null : cataract_assessment_result,
       fm_id,
     ];
 
@@ -4547,17 +4547,17 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
     WHERE fm.id = ?;`;
 
     const ckdParams = [
-      known_ckd,
-      history_ckd_stone,
-      age_above_50,
-      hypertension_patient,
-      diabetes_patient,
-      anemia_patient,
-      history_of_stroke_ckd,
-      swelling_face_leg,
-      history_nsaids,
+      known_ckd == '' ? null : known_ckd,
+      history_ckd_stone == '' ? null : history_ckd_stone,
+      age_above_50 == '' ? null : age_above_50,
+      hypertension_patient == '' ? null : hypertension_patient,
+      diabetes_patient == '' ? null : diabetes_patient,
+      anemia_patient == '' ? null : anemia_patient,
+      history_of_stroke_ckd == '' ? null : history_of_stroke_ckd,
+      swelling_face_leg == '' ? null : swelling_face_leg,
+      history_nsaids == '' ? null : history_nsaids,
       ckd_risk_score,
-      risk_assessment,
+      risk_assessment == '' ? null : risk_assessment,
       fm_id,
     ];
 
@@ -4587,23 +4587,23 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
     WHERE fm.id = ?;`;
 
     const copdtbParams = [
-      known_case_crd,
-      crd_specify,
-      occupational_exposure,
-      cooking_fuel_type,
-      chest_sound,
-      chest_sound_action,
-      referral_center_name_ct,
-      copd_confirmed,
-      copd_confirmation_date,
-      shortness_of_breath,
-      coughing_more_than_2_weeks,
-      blood_in_sputum,
-      fever_more_than_2_weeks,
-      night_sweats,
-      taking_anti_tb_drugs,
-      family_tb_history,
-      history_of_tb,
+      known_case_crd == '' ? null : known_case_crd,
+      crd_specify == '' ? null : crd_specify,
+      occupational_exposure == '' ? null : occupational_exposure,
+      cooking_fuel_type == '' ? null : cooking_fuel_type,
+      chest_sound == '' ? null : chest_sound,
+      chest_sound_action == '' ? null : chest_sound_action,
+      referral_center_name_ct == '' ? null : referral_center_name_ct,
+      copd_confirmed == '' ? null : copd_confirmed,
+      copd_confirmation_date == '' ? null : copd_confirmation_date,
+      shortness_of_breath == '' ? null : shortness_of_breath,
+      coughing_more_than_2_weeks == '' ? null : coughing_more_than_2_weeks,
+      blood_in_sputum == '' ? null : blood_in_sputum,
+      fever_more_than_2_weeks == '' ? null : fever_more_than_2_weeks,
+      night_sweats == '' ? null : night_sweats,
+      taking_anti_tb_drugs == '' ? null : taking_anti_tb_drugs,
+      family_tb_history == '' ? null : family_tb_history,
+      history_of_tb == '' ? null : history_of_tb,
       fm_id,
     ];
 
@@ -4625,13 +4625,13 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
 
     const cvdParams = [
       cvd_known_case,
-      heart_sound,
-      symptom,
+      heart_sound == '' ? null : heart_sound,
+      symptom == '' ? null : symptom,
       cvd_date == '' ? null : cvd_date,
-      suspected_cvd,
-      cvd_teleconsultation,
-      cvd_referral,
-      cvd_referral_centre,
+      suspected_cvd == '' ? null : suspected_cvd,
+      cvd_teleconsultation == '' ? null : cvd_teleconsultation,
+      cvd_referral == '' ? null : cvd_referral,
+      cvd_referral_centre == '' ? null : cvd_referral_centre,
       fm_id,
     ];
 
@@ -4651,11 +4651,11 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
 
     const dmParams = [
       case_of_dm,
-      action_high_bs,
-      referral_center_dm,
-      fasting_blood_sugar,
-      post_prandial_blood_sugar,
-      random_blood_sugar,
+      action_high_bs == '' ? null : action_high_bs,
+      referral_center_dm == '' ? null : referral_center_dm,
+      fasting_blood_sugar == '' ? null : fasting_blood_sugar,
+      post_prandial_blood_sugar == '' ? null : post_prandial_blood_sugar,
+      random_blood_sugar == '' ? null : random_blood_sugar,
       fm_id,
     ];
 
@@ -4672,10 +4672,10 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
     WHERE fm.id = ?;`;
 
     const elderlyParams = [
-      unsteady_walking,
-      physical_disability,
-      help_from_others,
-      forget_names,
+      unsteady_walking == '' ? null : unsteady_walking,
+      physical_disability == '' ? null : physical_disability,
+      help_from_others == '' ? null : help_from_others,
+      forget_names == '' ? null : forget_names,
       fm_id,
     ];
 
@@ -4753,8 +4753,8 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
 
     const htnParams = [
       case_of_htn,
-      action_high_bp,
-      referral_center_htn,
+      action_high_bp == '' ? null : action_high_bp,
+      referral_center_htn == '' ? null : referral_center_htn,
       upper_bp,
       lower_bp,
       fm_id,
@@ -4774,11 +4774,11 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
     WHERE fm.id = ?;`;
 
     const leprosyParams = [
-      hypopigmented_patch,
-      recurrent_ulceration,
-      clawing_of_fingers,
-      inability_to_close_eyelid,
-      difficulty_holding_objects,
+      hypopigmented_patch == '' ? null : hypopigmented_patch,
+      recurrent_ulceration == '' ? null : recurrent_ulceration,
+      clawing_of_fingers == '' ? null : clawing_of_fingers,
+      inability_to_close_eyelid == '' ? null : inability_to_close_eyelid,
+      difficulty_holding_objects == '' ? null : difficulty_holding_objects,
       fm_id,
     ];
 
@@ -4799,14 +4799,14 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
     WHERE fm.id = ?;`;
 
     const mentalHealthParams = [
-      little_interest_or_pleasure,
-      feeling_down_or_depressed,
-      mental_health_score,
-      mental_health_problem,
-      history_of_fits,
-      other_mental_disorder,
-      brief_intervention_given,
-      intervention_type,
+      little_interest_or_pleasure == '' ? null : little_interest_or_pleasure,
+      feeling_down_or_depressed == '' ? null : feeling_down_or_depressed,
+      mental_health_score == '' ? null : mental_health_score,
+      mental_health_problem == '' ? null : mental_health_problem,
+      history_of_fits == '' ? null : history_of_fits,
+      other_mental_disorder == '' ? null : other_mental_disorder,
+      brief_intervention_given == '' ? null : brief_intervention_given,
+      intervention_type == '' ? null : intervention_type,
       fm_id,
     ];
 
@@ -4827,14 +4827,14 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
     WHERE fm.id = ?;`;
 
     const oralCancerParams = [
-      oc_known_case,
-      persistent_ulcer,
-      persistent_patch,
-      difficulty_chewing,
-      difficulty_opening_mouth,
-      growth_in_mouth,
-      swelling_in_neck,
-      suspected_oral_cancer,
+      oc_known_case == '' ? null : oc_known_case,
+      persistent_ulcer == '' ? null : persistent_ulcer,
+      persistent_patch == '' ? null : persistent_patch,
+      difficulty_chewing == '' ? null : difficulty_chewing,
+      difficulty_opening_mouth == '' ? null : difficulty_opening_mouth,
+      growth_in_mouth == '' ? null : growth_in_mouth,
+      swelling_in_neck == '' ? null : swelling_in_neck,
+      suspected_oral_cancer == '' ? null : suspected_oral_cancer,
       fm_id,
     ];
 
@@ -4886,11 +4886,11 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
     WHERE fm.id = ?;`;
 
     const postStrokeParams = [
-      history_of_stroke,
-      stroke_date,
-      present_condition,
-      stroke_sign_action,
-      ps_referral_center_name,
+      history_of_stroke == '' ? null : history_of_stroke,
+      stroke_date == '' ? null : stroke_date,
+      present_condition == '' ? null : present_condition,
+      stroke_sign_action == '' ? null : stroke_sign_action,
+      ps_referral_center_name == '' ? null : ps_referral_center_name,
       fm_id,
     ];
 
@@ -4916,8 +4916,8 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
       alcohol_use,
       waist_female,
       waist_male,
-      physical_activity,
-      family_diabetes_history,
+      physical_activity == '' ? null : physical_activity,
+      family_diabetes_history == '' ? null : family_diabetes_history,
       risk_score,
       fm_id,
     ];
