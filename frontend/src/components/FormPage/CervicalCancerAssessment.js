@@ -107,13 +107,12 @@ const CervicalCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Bleeding Between Periods *</label>
+          <label style={styles.label}>Bleeding Between Periods</label>
           <select
             id="bleeding_between_periods"
             name="bleeding_between_periods"
             value={formData.bleeding_between_periods}
             onChange={handleInputChange}
-            required
             style={styles.input}
           >
             <option value="">Select</option>
@@ -123,13 +122,12 @@ const CervicalCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Bleeding After Menopause *</label>
+          <label style={styles.label}>Bleeding After Menopause</label>
           <select
             id="bleeding_after_menopause"
             name="bleeding_after_menopause"
             value={formData.bleeding_after_menopause}
             onChange={handleInputChange}
-            required
             style={styles.input}
           >
             <option value="">Select</option>
@@ -139,13 +137,12 @@ const CervicalCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Bleeding After Intercourse *</label>
+          <label style={styles.label}>Bleeding After Intercourse</label>
           <select
             id="bleeding_after_intercourse"
             name="bleeding_after_intercourse"
             value={formData.bleeding_after_intercourse}
             onChange={handleInputChange}
-            required
             style={styles.input}
           >
             <option value="">Select</option>
@@ -155,13 +152,12 @@ const CervicalCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Foul Smelling Discharge *</label>
+          <label style={styles.label}>Foul Smelling Discharge</label>
           <select
             id="foul_smelling_discharge"
             name="foul_smelling_discharge"
             value={formData.foul_smelling_discharge}
             onChange={handleInputChange}
-            required
             style={styles.input}
           >
             <option value="">Select</option>
@@ -183,13 +179,12 @@ const CervicalCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
         </div>
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>VIA Result </label>
+          <label style={styles.label}>VIA Result</label>
           <select
             id="via_result"
             name="via_result"
             value={formData.via_result}
             onChange={handleInputChange}
-            required
             style={styles.input}
           >
             <option value="">Select</option>
