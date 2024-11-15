@@ -5343,8 +5343,8 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
             results[index]['Mental Health Score'],
             results[index]['Mental Health Problem'],
             results[index]['History of Fits'],
-            results[index]['Other Mental Disorder'],
-            results[index]['Brief Intervention Given'],
+            results[index]['Other Mental Disorder'] == '' ? null : results[index]['Other Mental Disorder'],
+            results[index]['Brief Intervention Given'] == '' ? null : results[index]['Brief Intervention Given'],
             null,
           ]);
 
@@ -5361,8 +5361,8 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
             results[index]['Major NCD Detected'],
             results[index]['Any Other Disease Detected'],
             results[index]['Known Case of DM with HTN'],
-            results[index]['Teleconsultation'],
-            results[index]['Prescription Given'],
+            results[index]['Teleconsultation'] == '' ? null : results[index]['Teleconsultation'],
+            results[index]['Prescription Given'] == '' ? null : results[index]['Prescription Given'],
             results[index]['Other Advices'],
             results[index]['Remarks'],
           ]);
