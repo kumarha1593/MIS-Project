@@ -4517,13 +4517,13 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
     WHERE fm.id = ?;`;
 
     const ccParams = [
-      cc_known_case,
-      bleeding_between_periods,
-      bleeding_after_menopause,
-      bleeding_after_intercourse,
-      foul_smelling_discharge,
-      via_appointment_date,
-      via_result,
+      cc_known_case == '' ? null : cc_known_case,
+      bleeding_between_periods == '' ? null : bleeding_between_periods,
+      bleeding_after_menopause == '' ? null : bleeding_after_menopause,
+      bleeding_after_intercourse == '' ? null : bleeding_after_intercourse,
+      foul_smelling_discharge == '' ? null : foul_smelling_discharge,
+      via_appointment_date == '' ? null : via_appointment_date,
+      via_result == '' ? null : via_result,
       fm_id,
     ];
 
@@ -4627,7 +4627,7 @@ app.put("/api/update-master-list/:fm_id", async (req, res) => {
       cvd_known_case,
       heart_sound,
       symptom,
-      cvd_date,
+      cvd_date == '' ? null : cvd_date,
       suspected_cvd,
       cvd_teleconsultation,
       cvd_referral,
