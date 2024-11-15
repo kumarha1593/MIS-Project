@@ -303,7 +303,16 @@ const FormPage = () => {
           <HealthProfileForm
             formData={formData}
             handleInputChange={handleInputChange}
-            handleNext={handleNext}
+            handleNext={() => {
+              const fm_id = localStorage.getItem("current_fm_id");
+              if (fm_id) {
+                setCurrentFmId(fm_id);
+                fetchPersonalInfo(fm_id);
+              }
+              setTimeout(() => {
+                setCurrentPage(currentPage + 1);
+              }, 300);
+            }}
           />
         );
       case 2:
