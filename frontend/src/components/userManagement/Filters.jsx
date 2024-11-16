@@ -4,7 +4,7 @@ import { MdOutlineClose } from "react-icons/md";
 import { FaFilter } from 'react-icons/fa';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
-import { AbhaIdStatus, age, cataract, getFilterQuery, getScreeningFilterQuery, htnOptions, riskScore, sex, yesNoOptions } from '../../utils/helper';
+import { AbhaIdStatus, age, cataract, getDashboardFilterQuery, getFilterQuery, getScreeningFilterQuery, htnOptions, riskScore, sex, yesNoOptions } from '../../utils/helper';
 import UploadBulkUser from './UploadBulkUser';
 
 const Filters = ({ queryParams, totalCount, viewingCount, onExport, selectedItem, onEdit, onDone }) => {
@@ -78,6 +78,26 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport, selectedItem
                     null
                 }
                 <button
+                    style={{ padding: '8px 10px' }}
+                    onClick={() => {
+                        const queryString = getDashboardFilterQuery({ role_type: queryParams?.role_type })
+                        navigate(`/dashboard-overview?${queryString}`)
+                    }}
+                    className="add-user-button"
+                >
+                    Dashboard
+                </button>
+                <button
+                    style={{ padding: '8px 10px' }}
+                    onClick={() => {
+                        const queryString = getScreeningFilterQuery({ role_type: queryParams?.role_type })
+                        navigate(`/screening-count?${queryString}`)
+                    }}
+                    className="add-user-button"
+                >
+                    Screening Count
+                </button>
+                <button
                     onClick={() => fileInputRef?.current?.click()}
                     className="add-user-button"
                     style={{ padding: '8px 10px' }}
@@ -92,16 +112,6 @@ const Filters = ({ queryParams, totalCount, viewingCount, onExport, selectedItem
                     style={{ display: 'none' }}
                     accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 />
-                <button
-                    style={{ padding: '8px 10px' }}
-                    onClick={() => {
-                        const queryString = getScreeningFilterQuery({ role_type: queryParams?.role_type })
-                        navigate(`/screening-count?${queryString}`)
-                    }}
-                    className="add-user-button"
-                >
-                    Screening Count
-                </button>
                 <button style={{ padding: '8px 10px' }} onClick={onExport} className="add-user-button">Bulk Export</button>
                 <div className="filter-container">
                     <button onClick={() => setShowFilterDropdown((prevState) => !prevState)} className="filter-button"><FaFilter /> Filter</button>

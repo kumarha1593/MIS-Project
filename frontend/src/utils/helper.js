@@ -145,8 +145,6 @@ export const getFilterQuery = (data) => {
 
     return queryString
 }
-
-
 export const getScreeningFilterQuery = (data) => {
 
     const queryParams = {
@@ -156,6 +154,25 @@ export const getScreeningFilterQuery = (data) => {
         page_limit: data?.page_limit || 400,
         skip_count: data?.skip_count || 0,
         role_type: data?.role_type || '',
+    }
+
+    const queryString = new URLSearchParams(queryParams).toString();
+
+    return queryString
+}
+
+export const getDashboardFilterQuery = (data) => {
+
+    const queryParams = {
+        from_date: data?.from_date || moment().format('YYYY-MM-DD'),
+        to_date: data?.to_date || moment().format('YYYY-MM-DD'),
+        search_term: data?.search_term || '',
+        page_limit: data?.page_limit || 50,
+        skip_count: data?.skip_count || 0,
+        role_type: data?.role_type || '',
+        village: data?.village || '',
+        district: data?.district || '',
+        health_facility: data?.health_facility || '',
     }
 
     const queryString = new URLSearchParams(queryParams).toString();
@@ -179,6 +196,12 @@ export const yesNoOptions = [
     { label: 'Select', value: "" },
     { label: 'Yes', value: 'Yes' },
     { label: 'No', value: 'No' },
+]
+
+export const viaResultOptions = [
+    { label: 'Select', value: "" },
+    { label: 'Positive', value: 'Positive' },
+    { label: 'Negative', value: 'Negative' },
 ]
 
 export const AbhaIdStatus = [
@@ -275,6 +298,7 @@ export const heartSound = [
     { label: 'Select', value: "" },
     { label: 'Normal', value: 'Normal' },
     { label: 'Abnormal', value: 'Abnormal' },
+    { label: 'Not Done', value: 'Not Done' },
 ]
 
 export const cataract = [
@@ -544,6 +568,16 @@ export const inputFields = [
     { label: "Village", key: "village", type: 'village', required: true, options: [] },
 ]
 
+export const femaleCervicalAssessments = [
+    { label: "Known Case *", key: "cc_known_case", type: 'select', required: true, options: htnOptions },
+    { label: "Bleeding Between Periods", key: "bleeding_between_periods", type: 'select', required: true, options: yesNoOptions },
+    { label: "Bleeding After Menopause", key: "bleeding_after_menopause", type: 'select', required: true, options: yesNoOptions },
+    { label: "Bleeding After Intercourse", key: "bleeding_after_intercourse", type: 'select', required: true, options: yesNoOptions },
+    { label: "Foul Smelling Discharge", key: "foul_smelling_discharge", type: 'select', required: true, options: yesNoOptions },
+    { label: "VIA Appointment Date", key: "via_appointment_date", type: 'date', required: true, options: [] },
+    { label: "VIA Result", key: "via_result", type: 'select', required: true, options: viaResultOptions },
+]
+
 export const formFields = {
     "pi_name": "",
     "pi_identifier": "",
@@ -645,5 +679,12 @@ export const formFields = {
     // "midori_staff_name": '',
     "mo_mpw_cho_anu_name": '',
     "village": '',
-    "fc_id": ''
+    "fc_id": '',
+    "cc_known_case": '',
+    "bleeding_between_periods": "",
+    "bleeding_after_menopause": "",
+    "bleeding_after_intercourse": "",
+    "foul_smelling_discharge": "",
+    "via_appointment_date": "",
+    "via_result": "",
 }

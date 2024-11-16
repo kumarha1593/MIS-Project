@@ -352,7 +352,7 @@ const FormPage = () => {
           handleNext={handleNext}
         />;
       case 8:
-        return sex === "female" ? (
+        return (sex == "female" || sex == "F") ? (
           <CervicalCancerAssessment
             handleBack={handleBack}
             handleNext={handleNext}
