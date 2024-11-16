@@ -437,3 +437,48 @@
     margin-top: 30px;
     align-items: center;
 }
+
+.card-container {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px;
+    flex-wrap: wrap;
+
+    .card {
+        width: 300px;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+
+        .card-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .content-wrap {
+            display: flex;
+            align-items: center;
+            padding: 3px 0px;
+
+            .card-content {
+                font-size: 16px;
+                color: #000;
+                font-weight: 500;
+            }
+
+            .card-value {
+                font-size: 16px;
+                color: #666;
+                font-weight: 500;
+            }
+        }
+    }
+}

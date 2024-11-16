@@ -15,6 +15,7 @@ import FormPage from '../components/FormPage/FormPage'
 import ReviewPage from "../components/Review/Review";
 import { Route, Routes } from 'react-router-dom'
 import ScreeningCount from '../components/userManagement/ScreeningCount'
+import OverView from '../components/userManagement/OverView'
 
 const RouteStack = () => {
     return (
@@ -62,6 +63,16 @@ const RouteStack = () => {
                     element={
                         <AppLayout hideFamily>
                             <ScreeningCount />
+                        </AppLayout>
+                    }
+                />
+
+                {/* OverView Routes */}
+                <Route
+                    path="/dashboard-overview"
+                    element={
+                        <AppLayout hideFamily>
+                            <OverView />
                         </AppLayout>
                     }
                 />

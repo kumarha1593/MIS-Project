@@ -145,8 +145,6 @@ export const getFilterQuery = (data) => {
 
     return queryString
 }
-
-
 export const getScreeningFilterQuery = (data) => {
 
     const queryParams = {
@@ -156,6 +154,25 @@ export const getScreeningFilterQuery = (data) => {
         page_limit: data?.page_limit || 400,
         skip_count: data?.skip_count || 0,
         role_type: data?.role_type || '',
+    }
+
+    const queryString = new URLSearchParams(queryParams).toString();
+
+    return queryString
+}
+
+export const getDashboardFilterQuery = (data) => {
+
+    const queryParams = {
+        from_date: data?.from_date || moment().format('YYYY-MM-DD'),
+        to_date: data?.to_date || moment().format('YYYY-MM-DD'),
+        search_term: data?.search_term || '',
+        page_limit: data?.page_limit || 50,
+        skip_count: data?.skip_count || 0,
+        role_type: data?.role_type || '',
+        village: data?.village || '',
+        district: data?.district || '',
+        health_facility: data?.health_facility || '',
     }
 
     const queryString = new URLSearchParams(queryParams).toString();
