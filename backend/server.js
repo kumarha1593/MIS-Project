@@ -5177,7 +5177,7 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
             foul_smelling_discharge, via_appointment_date, via_result, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW());`,
           [
-            results[index]['Cervical Cancer Known Case'],
+            results[index]['Cervical Cancer Known Case'] == "" ? null : results[index]['Cervical Cancer Known Case'],
             results[index]['Bleeding Between Periods'] == "" ? null : results[index]['Bleeding Between Periods'],
             results[index]['Bleeding After Menopause'] == "" ? null : results[index]['Bleeding After Menopause'],
             results[index]['Bleeding After Intercourse'] == "" ? null : results[index]['Bleeding After Intercourse'],
