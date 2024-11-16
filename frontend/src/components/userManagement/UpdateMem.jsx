@@ -3,7 +3,7 @@ import ButtonLoader from '../global/ButtonLoader';
 import Modal from "react-modal";
 import TextInput from '../global/TextInput';
 import SelectInput from '../global/SelectInput';
-import { formFields, inputFields } from '../../utils/helper';
+import { formFields, inputFields, femaleCervicalAssessments } from '../../utils/helper';
 import { MdOutlineClose } from "react-icons/md";
 import moment from 'moment';
 import defaultInstance from '../../axiosHelper';
@@ -111,6 +111,12 @@ const UpdateMem = ({ visible, onDismiss, data, onDone }) => {
         }
     }, [visible, JSON.stringify(data)]);
 
+    let allData = [...inputFields];
+
+    if (data?.pi_sex == 'F' || data?.pi_sex == 'female') {
+        allData = [...inputFields, ...femaleCervicalAssessments]
+    }
+
     return (
         <Modal
             isOpen={visible}
@@ -123,7 +129,7 @@ const UpdateMem = ({ visible, onDismiss, data, onDone }) => {
                     <MdOutlineClose size={30} />
                 </div>
                 <form noValidate>
-                    {inputFields.reduce((acc, field, index) => {
+                    {allData.reduce((acc, field, index) => {
                         if (index % 2 === 0) {
                             acc.push([field]);
                         } else {

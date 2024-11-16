@@ -145,6 +145,7 @@ const CVDAssessment = ({ currentFmId, handleBack, handleNext }) => {
             <option value="">Select</option>
             <option value="Normal">Normal</option>
             <option value="Abnormal">Abnormal</option>
+            <option value="Not Done">Not Done</option>
           </select>
         </div>
 
