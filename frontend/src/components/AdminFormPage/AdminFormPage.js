@@ -89,7 +89,7 @@ const AdminFormPage = () => {
     if (!label) return;
 
     try {
-      const response = await defaultInstance.get(API_ENDPOINTS.USER_LIST, { params: { user_type: label } });
+      const response = await defaultInstance.get(API_ENDPOINTS.USER_LIST, { params: { user_type: label, page_limit: 100000, skip_count: 0 } });
       if (response?.data?.success) {
         const formattedUsers = response?.data?.data?.map(({ id, name }) => ({
           value: id,
