@@ -5588,7 +5588,8 @@ app.get("/api/get-summary-count", async (req, res) => {
     JOIN master_data md ON md.risk_assessment_id = ra.id 
     JOIN family_members fm ON fm.id = md.fm_id 
     WHERE fm.status = 1 AND ra.age != ''
-    GROUP BY ra.age;`;
+    GROUP BY ra.age 
+    ORDER BY ra.age ASC;`;
     const [resultAge] = await db.promise().query(query);
 
     res.status(200).json({
