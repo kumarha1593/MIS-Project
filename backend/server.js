@@ -5592,8 +5592,14 @@ app.get("/api/get-summary-count", async (req, res) => {
     ORDER BY ra.age ASC;`;
     const [resultAge] = await db.promise().query(query);
 
+    query = `SELECT COUNT(fm.id) AS 'total_screenings' 
+    FROM family_members fm
+    WHERE fm.status = 1;`;
+    const [totalScreening] = await db.promise().query(query);
+
     res.status(200).json({
       success: true,
+      total_screenings_till_date : totalScreening[0].total_screenings,
       village_count: resultVillage[0].village_count,
       male_count: resultGenderMale[0].gender_count,
       female_count: resultGenderFemale[0].gender_count,
