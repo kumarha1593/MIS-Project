@@ -58,7 +58,7 @@ const OverViewHeader = ({ queryParams }) => {
                 <FaHome /> Home
             </button>
             <span style={{ fontSize: '35px' }}>Dashboard Overview</span>
-            <div className="filter-container">
+            <div style={{ opacity: 0 }} className="filter-container">
                 <button onClick={() => setShowFilterDropdown((prevState) => !prevState)} className="filter-button"><FaFilter /> Filter</button>
                 {showFilterDropdown && (
                     <div className="filter-dropdown filters">
