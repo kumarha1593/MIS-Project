@@ -4998,6 +4998,7 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
   const filePath = path.join(__dirname, req.file.path);
 
   const results = [];
+  var duplicateCount = 0;
   fs.createReadStream(filePath)
     .pipe(csv())
     .on('data', (data) => results.push(data))
@@ -5025,6 +5026,7 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
           );
   
           if(existsResult.length > 0) {
+            duplicateCount += 1;
             continue;
           }
 
@@ -5460,8 +5462,9 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
         
         res.status(201).json({
           success : true,
+          duplicate_count : duplicateCount,
           message : "Inserted!",
-          results : results,
+          
         });
         
       } catch (error) {
@@ -5509,6 +5512,100 @@ app.get("/api/get-family-member-list", async (req, res) => {
     res.status(200).json({
       success: true,
       data: result,
+    });
+    
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Created by Tanmay Pradhan - 18 Nov 2024
+app.get("/api/get-summary-count", async (req, res) => {
+  try {
+
+    var query = `SELECT COUNT(DISTINCT(village)) AS district_count FROM district_info_fc dif 
+    WHERE village != '';`;
+    // const params = [fc_id];
+    const [resultVillage] = await db.promise().query(query);
+
+    query = `SELECT COUNT(pi2.id) AS gender_count FROM family_members fm
+    JOIN master_data md ON md.fm_id = fm.id 
+    JOIN personal_info pi2 ON pi2.id = md.personal_info_id
+    WHERE pi2.sex = ?;`;
+    const [resultGenderMale] = await db.promise().query(query,['M']);
+    const [resultGenderFemale] = await db.promise().query(query,['F']);
+
+    query = `SELECT DISTINCT(dif.district), COUNT(fm.id) AS district_count FROM family_members fm
+    JOIN district_info_fc dif ON dif.id = fm.di_id
+    WHERE fm.status = 1
+    GROUP BY dif.district;`;
+    const [resultDistrict] = await db.promise().query(query);
+
+    query = `SELECT COUNT(d.id) AS dm_count FROM DM d
+    JOIN master_data md ON md.dm_id = d.id
+    JOIN family_members fm ON fm.id = md.fm_id 
+    WHERE d.case_of_dm = ?
+    AND fm.status = 1;`;
+    const [resultDMNotOnTreatment] = await db.promise().query(query,['yes and not on treatment']);
+    const [resultDMOnTreatment] = await db.promise().query(query,['yes and on treatment']);
+
+    query = `SELECT COUNT(h.id) AS htn_count FROM htn h
+    JOIN master_data md ON md.htn_id = h.id
+    JOIN family_members fm ON fm.id = md.fm_id 
+    WHERE h.case_of_htn = ?
+    AND fm.status = 1;`;
+    const [resultHTNNotOnTreatment] = await db.promise().query(query,['yes and not on treatment']);
+    const [resultHTNOnTreatment] = await db.promise().query(query,['yes and on treatment']);
+
+    query = `SELECT COUNT(md.id) AS dm_htn_count FROM family_members fm
+    JOIN master_data md ON md.fm_id = fm.id 
+    JOIN DM d ON d.id = md.dm_id 
+    JOIN htn h ON h.id = md.htn_id 
+    WHERE d.case_of_dm != 'No'
+    AND h.case_of_htn != 'No';`;
+    const [resultHTNAndDM] = await db.promise().query(query);
+
+    query = `SELECT COUNT(DISTINCT(health_facility)) AS health_facility_count FROM district_info_fc dif
+    WHERE dif.health_facility != '';`;
+    const [resultHealthFacility] = await db.promise().query(query);
+
+    query = `SELECT COUNT(fm.id) AS not_at_risk_count FROM risk_assessment ra
+    JOIN master_data md ON md.risk_assessment_id = ra.id 
+    JOIN family_members fm ON fm.id = md.fm_id 
+    WHERE fm.status = 1 
+    AND ra.risk_score < 5;`;
+    const [resultNotAtRisk] = await db.promise().query(query);
+
+    query = `SELECT COUNT(fm.id) AS not_at_risk_count FROM risk_assessment ra
+    JOIN master_data md ON md.risk_assessment_id = ra.id 
+    JOIN family_members fm ON fm.id = md.fm_id 
+    WHERE fm.status = 1 
+    AND ra.risk_score >= 5;`;
+    const [resultAtRisk] = await db.promise().query(query);
+
+    query = `SELECT DISTINCT(ra.age), COUNT(fm.id) AS age_count FROM risk_assessment ra
+    JOIN master_data md ON md.risk_assessment_id = ra.id 
+    JOIN family_members fm ON fm.id = md.fm_id 
+    WHERE fm.status = 1 AND ra.age != ''
+    GROUP BY ra.age;`;
+    const [resultAge] = await db.promise().query(query);
+
+    res.status(200).json({
+      success: true,
+      village_count: resultVillage[0].village_count,
+      male_count: resultGenderMale[0].gender_count,
+      female_count: resultGenderFemale[0].gender_count,
+      districts : resultDistrict,
+      dm_not_on_treatment_count : resultDMNotOnTreatment[0].dm_count,
+      dm_on_treatment_count : resultDMOnTreatment[0].dm_count,
+      htn_not_on_treatment_count : resultHTNNotOnTreatment[0].htn_count,
+      htn_on_treatment_count : resultHTNOnTreatment[0].htn_count,
+      dm_htn_count : resultHTNAndDM[0].dm_htn_count,
+      health_facility_count : resultHealthFacility[0].health_facility_count,
+      not_at_risk_count : resultNotAtRisk[0].not_at_risk_count,
+      at_risk_count : resultAtRisk[0].at_risk_count,
+      ages : resultAge,
     });
     
   } catch (error) {
