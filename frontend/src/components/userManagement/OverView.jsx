@@ -18,6 +18,8 @@ const COLORS = [
     { background: 'rgba(255, 159, 64, 0.6)', border: 'rgba(255, 159, 64, 1)' },
     { background: 'rgba(199, 199, 199, 0.6)', border: 'rgba(199, 199, 199, 1)' },
     { background: 'rgba(83, 102, 255, 0.6)', border: 'rgba(83, 102, 255, 1)' },
+    { background: 'rgba(0, 128, 128, 0.6)', border: 'rgba(0, 128, 128, 1)' },
+    { background: 'rgba(128, 0, 128, 0.6)', border: 'rgba(128, 0, 128, 1)' },
 ];
 
 const chartOptions = {
@@ -40,12 +42,19 @@ const chartOptions = {
 
 const CARD_CONFIG = [
     {
-        title: 'DM Known Case',
+        title: 'Total Screenings',
         colorIndex: 0,
-        fields: [
-            { label: 'On treatment: ', key: 'dm_on_treatment_count' },
-            { label: 'Not on treatment: ', key: 'dm_not_on_treatment_count' },
-        ],
+        fields: [{ label: 'Total Screenings: ', key: 'total_screenings_till_date' }],
+    },
+    {
+        title: 'Health Facility',
+        colorIndex: 3,
+        fields: [{ label: 'Health Facility: ', key: 'health_facility_count' }],
+    },
+    {
+        title: 'Villages',
+        colorIndex: 4,
+        fields: [{ label: 'Total Villages: ', key: 'village_count' }],
     },
     {
         title: 'HTN Known Case',
@@ -56,31 +65,40 @@ const CARD_CONFIG = [
         ],
     },
     {
+        title: 'DM Known Case',
+        colorIndex: 8,
+        fields: [
+            { label: 'On treatment: ', key: 'dm_on_treatment_count' },
+            { label: 'Not on treatment: ', key: 'dm_not_on_treatment_count' },
+        ],
+    },
+    {
         title: 'DM/HTN Known Case',
         colorIndex: 1,
         fields: [{ label: 'Total: ', key: 'dm_htn_count' }],
     },
     {
-        title: 'Health Facility',
-        colorIndex: 3,
-        fields: [{ label: 'Health Facility: ', key: 'health_facility_count' }],
-    },
-    {
-        title: 'Risk Assessments',
-        colorIndex: 7,
-        fields: [
-            { label: 'Not at risk: ', key: 'not_at_risk_count' },
-            { label: 'At risk: ', key: 'at_risk_count' },
-        ],
-    },
-    {
         title: 'Sex',
-        colorIndex: 4,
+        colorIndex: 6,
         fields: [
             { label: 'Male: ', key: 'male_count' },
             { label: 'Female: ', key: 'female_count' },
         ],
     },
+    {
+        title: 'Age Groups',
+        colorIndex: 9,
+        fields: [],
+    },
+    {
+        title: 'Risk Assessments',
+        colorIndex: 7,
+        fields: [
+            { label: 'At risk: ', key: 'at_risk_count' },
+            { label: 'Not at risk: ', key: 'not_at_risk_count' },
+        ],
+    },
+
 ];
 
 const containerStyle = { marginTop: 40 };
@@ -112,10 +130,12 @@ const OverView = () => {
                     male_count: data?.male_count || 0,
                     female_count: data?.female_count || 0,
                     at_risk_count: data?.at_risk_count || 0,
+                    total_screenings_till_date: data?.total_screenings_till_date || 0,
+                    village_count: data?.village_count || 0,
                 });
                 setAgeGroups(data?.ages || []);
                 setDistrictChartData({
-                    labels: data?.districts?.map((d) => d.district) || [],
+                    labels: data?.districts?.map((d) => d.district == 'Imphal east(kshetri bangoon awang leikai kshetrigao)' ? 'Imphal east' : d.district) || [],
                     datasets: [
                         {
                             label: 'District base data captured',
@@ -152,17 +172,11 @@ const OverView = () => {
                         key={index}
                         style={{ backgroundColor: COLORS[colorIndex].background }}
                         title={title}
-                        data={fields}
-                        values={counts}
+                        data={title === 'Age Groups' ? ageGroups : fields}
+                        values={title === 'Age Groups' ? null : counts}
+                        type={title === 'Age Groups' ? 'age' : ''}
                     />
                 ))}
-                <OverviewCard
-                    title="Age Groups"
-                    data={ageGroups}
-                    values={null}
-                    type="age"
-                    style={{ backgroundColor: COLORS[2].background }}
-                />
             </div>
             <div style={chartContainerStyle}>
                 {districtChartData && <Bar data={districtChartData} options={chartOptions} />}
