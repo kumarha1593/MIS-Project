@@ -5524,7 +5524,7 @@ app.get("/api/get-family-member-list", async (req, res) => {
 app.get("/api/get-summary-count", async (req, res) => {
   try {
 
-    var query = `SELECT COUNT(DISTINCT(village)) AS district_count FROM district_info_fc dif 
+    var query = `SELECT COUNT(DISTINCT(village)) AS village_count FROM district_info_fc dif 
     WHERE village != '';`;
     // const params = [fc_id];
     const [resultVillage] = await db.promise().query(query);
