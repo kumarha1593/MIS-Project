@@ -5577,7 +5577,7 @@ app.get("/api/get-summary-count", async (req, res) => {
     AND ra.risk_score < 5;`;
     const [resultNotAtRisk] = await db.promise().query(query);
 
-    query = `SELECT COUNT(fm.id) AS not_at_risk_count FROM risk_assessment ra
+    query = `SELECT COUNT(fm.id) AS at_risk_count FROM risk_assessment ra
     JOIN master_data md ON md.risk_assessment_id = ra.id 
     JOIN family_members fm ON fm.id = md.fm_id 
     WHERE fm.status = 1 
