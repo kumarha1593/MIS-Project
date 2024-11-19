@@ -688,3 +688,22 @@ export const formFields = {
     "via_appointment_date": "",
     "via_result": "",
 }
+
+export const defaultDistrict = [
+    { "district_count": 0, "label": "Bishnupur", "value": "Bishnupur" },
+    { "district_count": 0, "label": "Chandel", "value": "Chandel" },
+    { "district_count": 0, "label": "Churachandpur", "value": "Churachandpur" },
+    { "district_count": 0, "label": "Imphal East", "value": "Imphal East" },
+    { "district_count": 0, "label": "Imphal West", "value": "Imphal West" },
+    { "district_count": 0, "label": "Jiribam", "value": "Jiribam" },
+    { "district_count": 0, "label": "Kakching", "value": "Kakching" },
+    { "district_count": 0, "label": "Kamjong", "value": "Kamjong" },
+    { "district_count": 0, "label": "Kangpokpi", "value": "Kangpokpi" },
+    { "district_count": 0, "label": "Noney", "value": "Noney" },
+    { "district_count": 0, "label": "Pherzawl", "value": "Pherzawl" },
+    { "district_count": 0, "label": "Senapati", "value": "Senapati" },
+    { "district_count": 0, "label": "Tamenglong", "value": "Tamenglong" },
+    { "district_count": 0, "label": "Tengnoupal", "value": "Tengnoupal" },
+    { "district_count": 0, "label": "Thoubal", "value": "Thoubal" },
+    { "district_count": 0, "label": "Ukhrul", "value": "Ukhrul" }
+]
