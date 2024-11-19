@@ -6,6 +6,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import { Bar } from 'react-chartjs-2';
 import defaultInstance from '../../axiosHelper';
 import { API_ENDPOINTS } from '../../utils/apiEndPoints';
+import { defaultDistrict } from '../../utils/helper';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -113,6 +114,47 @@ const OverView = () => {
     const [counts, setCounts] = useState({});
     const [isLoading, setIsLoading] = useState(true);
 
+    // Function to clean and merge duplicate districts
+    const mergeDistricts = (data) => {
+        const merged = [...defaultDistrict];
+        data.forEach(entry => {
+            if (entry?.district == 'Bishnupur') {
+                merged[0].district_count += entry.district_count;
+            } else if (entry?.district == 'Chandel') {
+                merged[1].district_count += entry.district_count;
+            } else if (entry?.district == 'Churachandpur') {
+                merged[2].district_count += entry.district_count;
+            } else if (entry?.district == 'Imphal East' || entry?.district == 'Imphal east' || entry?.district == 'Imphal east(kshetri bangoon awang leikai kshetrigao)') {
+                merged[3].district_count += entry.district_count;
+            } else if (entry?.district == 'Imphal West' || entry?.district == 'IHMPHAL WEST' || entry?.district == "Imphal West " || entry?.district == "IW") {
+                merged[4].district_count += entry.district_count;
+            } else if (entry?.district == 'Jiribam' || entry?.district == "Jiribam " || entry?.district == " Jiribam ") {
+                merged[5].district_count += entry.district_count;
+            } else if (entry?.district == 'Kakching' || entry?.district == "Kakching ") {
+                merged[6].district_count += entry.district_count;
+            } else if (entry?.district == 'Kamjong') {
+                merged[7].district_count += entry.district_count;
+            } else if (entry?.district == 'Kangpokpi') {
+                merged[8].district_count += entry.district_count;
+            } else if (entry?.district == 'Noney') {
+                merged[9].district_count += entry.district_count;
+            } else if (entry?.district == 'Pherzawl') {
+                merged[10].district_count += entry.district_count;
+            } else if (entry?.district == 'Senapati' || entry?.district == "Senapati ") {
+                merged[11].district_count += entry.district_count;
+            } else if (entry?.district == 'Tamenglong') {
+                merged[12].district_count += entry.district_count;
+            } else if (entry?.district == 'Tengnoupal') {
+                merged[13].district_count += entry.district_count;
+            } else if (entry?.district == 'Thoubal' || entry?.district == "Thoubal " || entry?.district == "Thouba" || entry?.district == "Thoubal wangmataba") {
+                merged[14].district_count += entry.district_count;
+            } else if (entry?.district == 'Ukhrul') {
+                merged[15].district_count += entry.district_count;
+            }
+        });
+        return merged;
+    }
+
     const fetchCounts = async () => {
         try {
             setIsLoading(true)
@@ -134,12 +176,13 @@ const OverView = () => {
                     village_count: data?.village_count || 0,
                 });
                 setAgeGroups(data?.ages || []);
+                const mergedData = mergeDistricts(data?.districts);
                 setDistrictChartData({
-                    labels: data?.districts?.map((d) => d.district == 'Imphal east(kshetri bangoon awang leikai kshetrigao)' ? 'Imphal east' : d.district) || [],
+                    labels: mergedData?.map((d) => d.label) || [],
                     datasets: [
                         {
                             label: 'District base data captured',
-                            data: data?.districts?.map((d) => d.district_count) || [],
+                            data: mergedData?.map((d) => d.district_count) || [],
                             backgroundColor: COLORS.map((c) => c.background),
                             borderColor: COLORS.map((c) => c.border),
                             borderWidth: 1,

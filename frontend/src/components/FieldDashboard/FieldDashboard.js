@@ -9,6 +9,7 @@ import SearchableDropdown from '../global/SearchableDropdown';
 import AddFamilyHead from "../global/AddFamilyHead";
 import defaultInstance from "../../axiosHelper";
 import { API_ENDPOINTS } from "../../utils/apiEndPoints";
+import { defaultDistrict } from "../../utils/helper";
 
 const FieldDashboard = () => {
   const [districtInfo, setDistrictInfo] = useState(null);
@@ -202,12 +203,20 @@ const FieldDashboard = () => {
                 District: {districtInfo.district}
               </span>
               {isEditing && (
-                <input
-                  type="text"
-                  name="district"
-                  value={editableData.district}
-                  onChange={handleInputChange}
-                  className="input-field"
+                <SearchableDropdown
+                  showLabelOnly={true}
+                  options={defaultDistrict}
+                  onSelect={(data) => {
+                    setTimeout(() => {
+                      setEditableData({
+                        ...editableData,
+                        ['district']: data?.label || '',
+                      });
+                    }, 500);
+                  }}
+                  placeholder=""
+                  style={{ maxWidth: '300px' }}
+                  value={editableData?.district || ''}
                 />
               )}
             </div>
