@@ -7,6 +7,7 @@ import { Bar } from 'react-chartjs-2';
 import defaultInstance from '../../axiosHelper';
 import { API_ENDPOINTS } from '../../utils/apiEndPoints';
 import { defaultDistrict } from '../../utils/helper';
+import cloneDeep from 'lodash/cloneDeep'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -116,7 +117,7 @@ const OverView = () => {
 
     // Function to clean and merge duplicate districts
     const mergeDistricts = (data) => {
-        const merged = [...defaultDistrict];
+        const merged = cloneDeep(defaultDistrict)
         data.forEach(entry => {
             if (entry?.district == 'Bishnupur') {
                 merged[0].district_count += entry.district_count;
@@ -134,7 +135,7 @@ const OverView = () => {
                 merged[6].district_count += entry.district_count;
             } else if (entry?.district == 'Kamjong') {
                 merged[7].district_count += entry.district_count;
-            } else if (entry?.district == 'Kangpokpi') {
+            } else if (entry?.district == 'Kangpokpi' || entry?.district == "kangpokpi" || entry?.district == "Kangpokpi ") {
                 merged[8].district_count += entry.district_count;
             } else if (entry?.district == 'Noney') {
                 merged[9].district_count += entry.district_count;
