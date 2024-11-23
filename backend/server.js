@@ -4998,7 +4998,9 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
   const filePath = path.join(__dirname, req.file.path);
 
   const results = [];
+  var currentSrNo;
   var duplicateCount = 0;
+
   fs.createReadStream(filePath)
     .pipe(csv())
     .on('data', (data) => results.push(data))
@@ -5017,6 +5019,8 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
           if(!results[index]['Sr No']) {
             continue;
           }
+
+          currentSrNo = results[index]['Sr No'];
 
           const [existsResult] = await db.promise().query(`SELECT * FROM family_members fm WHERE name = ? AND Aadhar = ?;`,
             [
@@ -5471,7 +5475,7 @@ app.post('/api/import-master-list', upload.single('file'), async (req, res) => {
         console.error("Error inserting csv:", error);
         res.status(200).json({ 
           success: false, 
-          message: error.message,
+          message: 'Error on Sr No: [' + currentSrNo + "]  -   " + error.message,
         });
         return;
       }
@@ -5619,6 +5623,100 @@ app.get("/api/get-summary-count", async (req, res) => {
     console.error("Error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
+});
+
+// Created by Tanmay Pradhan - 11 Nov 2024
+app.post('/api/update-district-id-list', upload.single('file'), async (req, res) => {
+  const filePath = path.join(__dirname, req.file.path);
+
+  const results = [];
+  var uniqueCount = 0;
+  var skippedCount = 0;
+  fs.createReadStream(filePath)
+    .pipe(csv())
+    .on('data', (data) => results.push(data))
+    .on('end', async () => {
+      // Prepare data for bulk insertion
+      // const columns = Object.keys(results[0]); // Get all column names from the first row
+      // const values = results.map(item => columns.map(col => item[col])); // Extract values for each row
+
+      fs.unlinkSync(filePath);
+
+      try {
+        await db.promise().beginTransaction();
+        for (let index = 0; index < results.length; index++) {
+          console.log('Sr No: ' + results[index]['Sr No']);
+          
+          if(!results[index]['Sr No']) {
+            continue;
+          }
+
+          const [existsResult] = await db.promise().query(`SELECT * FROM family_members fm WHERE id = ?;`,
+            [
+              results[index]['FM ID'],
+            ]
+          );
+  
+          if(existsResult.length == 0) {
+            uniqueCount += 1;
+            continue;
+          }
+          console.log('DI ID: ' + existsResult[0].di_id);
+
+          if(existsResult[0].di_id != null) {
+            skippedCount += 1;
+            continue;
+          }
+
+          // ------------------------------------------------------------------------------------------------
+          // DISTRICT 
+          const [districtResult] = await db.promise().query(`INSERT INTO district_info_fc
+            (user_id, district, village, health_facility, mo_mpw_cho_anu_name, asha_name, midori_staff_name, date)
+            VALUES(?, ?, ?, ?, ?, ?, ?, NOW());`,
+          [
+            "50",
+            results[index]['District Name'],
+            results[index]['Village Name'],
+            results[index]['Health Facility Name'],
+            results[index]['Name of MO/MPW/CHO/ANU'],
+            results[index]['Name of ASHA'],
+            results[index]['Midori Staff Name'],
+          ]);
+
+          const districtId = districtResult.insertId;
+
+          await db.promise().query(`UPDATE family_members
+            SET di_id = ?
+            WHERE id = ?;`,
+          [
+            districtId,
+            results[index]['FM ID'],
+          ]);
+        }
+
+        await db.promise().commit();
+        
+        res.status(201).json({
+          success : true,
+          uniqueCount : uniqueCount,
+          skippedCount : skippedCount,
+          message : "Updated!",
+          
+        });
+        
+      } catch (error) {
+        console.error("Error inserting csv:", error);
+        res.status(200).json({ 
+          success: false, 
+          message: error.message,
+        });
+        return;
+      }
+    })
+    .on('error', (err) => {
+      console.error('Error reading CSV file:', err);
+      res.status(500).json({ error: 'Failed to process CSV file' });
+    });
 });
 
 // Start server
