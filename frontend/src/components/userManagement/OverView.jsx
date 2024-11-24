@@ -22,6 +22,12 @@ const COLORS = [
     { background: 'rgba(83, 102, 255, 0.6)', border: 'rgba(83, 102, 255, 1)' },
     { background: 'rgba(0, 128, 128, 0.6)', border: 'rgba(0, 128, 128, 1)' },
     { background: 'rgba(128, 0, 128, 0.6)', border: 'rgba(128, 0, 128, 1)' },
+    { background: 'rgba(128, 128, 0, 0.6)', border: 'rgba(128, 128, 0, 1)' },
+    { background: 'rgba(255, 20, 147, 0.6)', border: 'rgba(255, 20, 147, 1)' },
+    { background: 'rgba(0, 100, 0, 0.6)', border: 'rgba(0, 100, 0, 1)' },
+    { background: 'rgba(70, 130, 180, 0.6)', border: 'rgba(70, 130, 180, 1)' },
+    { background: 'rgba(210, 105, 30, 0.6)', border: 'rgba(210, 105, 30, 1)' },
+    { background: 'rgba(244, 164, 96, 0.6)', border: 'rgba(244, 164, 96, 1)' },
 ];
 
 const chartOptions = {
@@ -45,60 +51,60 @@ const chartOptions = {
 const CARD_CONFIG = [
     {
         title: 'Total Screenings',
-        colorIndex: 0,
         fields: [{ label: 'Total Screenings: ', key: 'total_screenings_till_date' }],
+        background: 'rgba(255, 99, 132, 0.2)'
     },
     {
         title: 'Health Facility',
-        colorIndex: 3,
         fields: [{ label: 'Health Facility: ', key: 'health_facility_count' }],
+        background: 'rgba(54, 162, 235, 0.2)',
     },
     {
         title: 'Villages',
-        colorIndex: 4,
         fields: [{ label: 'Total Villages: ', key: 'village_count' }],
+        background: 'rgba(255, 206, 86, 0.2)',
     },
     {
         title: 'HTN Known Case',
-        colorIndex: 5,
         fields: [
             { label: 'On treatment: ', key: 'htn_on_treatment_count' },
             { label: 'Not on treatment: ', key: 'htn_not_on_treatment_count' },
         ],
+        background: 'rgba(75, 192, 192, 0.2)',
     },
     {
         title: 'DM Known Case',
-        colorIndex: 8,
         fields: [
             { label: 'On treatment: ', key: 'dm_on_treatment_count' },
             { label: 'Not on treatment: ', key: 'dm_not_on_treatment_count' },
         ],
+        background: 'rgba(153, 102, 255, 0.2)',
     },
     {
         title: 'DM/HTN Known Case',
-        colorIndex: 1,
         fields: [{ label: 'Total: ', key: 'dm_htn_count' }],
+        background: 'rgba(255, 159, 64, 0.2)',
     },
     {
         title: 'Sex',
-        colorIndex: 6,
         fields: [
             { label: 'Male: ', key: 'male_count' },
             { label: 'Female: ', key: 'female_count' },
         ],
+        background: 'rgba(199, 199, 199, 0.2)',
     },
     {
         title: 'Age Groups',
-        colorIndex: 9,
         fields: [],
+        background: 'rgba(83, 102, 255, 0.2)',
     },
     {
         title: 'Risk Assessments',
-        colorIndex: 7,
         fields: [
             { label: 'At risk: ', key: 'at_risk_count' },
             { label: 'Not at risk: ', key: 'not_at_risk_count' },
         ],
+        background: 'rgba(0, 128, 128, 0.2)',
     },
 
 ];
@@ -116,45 +122,98 @@ const OverView = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     // Function to clean and merge duplicate districts
+    // const mergeDistricts = (data) => {
+    //     const merged = cloneDeep(defaultDistrict)
+    //     data.forEach(entry => {
+    //         if (entry?.district == 'Bishnupur' || entry?.district == "Bishnupur ") {
+    //             merged[0].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Chandel' || entry?.district == "CHANDEL" || entry?.district == "Chandel ") {
+    //             merged[1].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Churachandpur') {
+    //             merged[2].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Imphal East' || entry?.district == 'Imphal east' || entry?.district == 'Imphal east(kshetri bangoon awang leikai kshetrigao)') {
+    //             merged[3].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Imphal West' || entry?.district == 'IHMPHAL WEST' || entry?.district == "Imphal West " || entry?.district == "IW") {
+    //             merged[4].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Jiribam' || entry?.district == "Jiribam " || entry?.district == " Jiribam ") {
+    //             merged[5].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Kakching' || entry?.district == "Kakching " || entry?.district == "kakching ") {
+    //             merged[6].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Kamjong') {
+    //             merged[7].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Kangpokpi' || entry?.district == "kangpokpi" || entry?.district == "Kangpokpi ") {
+    //             merged[8].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Noney') {
+    //             merged[9].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Pherzawl') {
+    //             merged[10].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Senapati' || entry?.district == "Senapati " || entry?.district == "SENAPATI") {
+    //             merged[11].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Tamenglong') {
+    //             merged[12].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Tengnoupal') {
+    //             merged[13].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Thoubal' || entry?.district == "Thoubal " || entry?.district == "Thouba" || entry?.district == "Thoubal wangmataba" || entry?.district == "THOUBAL DISTRICT" || entry?.district == "Thoubal bazar") {
+    //             merged[14].district_count += entry.district_count;
+    //         } else if (entry?.district == 'Ukhrul') {
+    //             merged[15].district_count += entry.district_count;
+    //         }
+    //     });
+    //     return merged;
+    // }
+
     const mergeDistricts = (data) => {
-        const merged = cloneDeep(defaultDistrict)
+        const merged = cloneDeep(defaultDistrict);
+        const districtMap = {
+            'Bishnupur': 0,
+            'Bishnupur ': 0,
+            'Chandel': 1,
+            'CHANDEL': 1,
+            'Chandel ': 1,
+            'Churachandpur': 2,
+            'Imphal East': 3,
+            'Imphal east': 3,
+            'Imphal east(kshetri bangoon awang leikai kshetrigao)': 3,
+            'Imphal West': 4,
+            'IHMPHAL WEST': 4,
+            'Imphal West ': 4,
+            'IW': 4,
+            'Jiribam': 5,
+            'Jiribam ': 5,
+            ' Jiribam ': 5,
+            'Kakching': 6,
+            'Kakching ': 6,
+            'kakching ': 6,
+            'Kamjong': 7,
+            'Kangpokpi': 8,
+            'kangpokpi': 8,
+            'Kangpokpi ': 8,
+            'Noney': 9,
+            'Pherzawl': 10,
+            'Senapati': 11,
+            'Senapati ': 11,
+            'SENAPATI': 11,
+            'Tamenglong': 12,
+            'Tengnoupal': 13,
+            'Thoubal': 14,
+            'Thoubal ': 14,
+            'Thouba': 14,
+            'Thoubal wangmataba': 14,
+            'THOUBAL DISTRICT': 14,
+            'Thoubal bazar': 14,
+            'Ukhrul': 15
+        };
+
+        // Process each entry in the data array
         data.forEach(entry => {
-            if (entry?.district == 'Bishnupur') {
-                merged[0].district_count += entry.district_count;
-            } else if (entry?.district == 'Chandel') {
-                merged[1].district_count += entry.district_count;
-            } else if (entry?.district == 'Churachandpur') {
-                merged[2].district_count += entry.district_count;
-            } else if (entry?.district == 'Imphal East' || entry?.district == 'Imphal east' || entry?.district == 'Imphal east(kshetri bangoon awang leikai kshetrigao)') {
-                merged[3].district_count += entry.district_count;
-            } else if (entry?.district == 'Imphal West' || entry?.district == 'IHMPHAL WEST' || entry?.district == "Imphal West " || entry?.district == "IW") {
-                merged[4].district_count += entry.district_count;
-            } else if (entry?.district == 'Jiribam' || entry?.district == "Jiribam " || entry?.district == " Jiribam ") {
-                merged[5].district_count += entry.district_count;
-            } else if (entry?.district == 'Kakching' || entry?.district == "Kakching ") {
-                merged[6].district_count += entry.district_count;
-            } else if (entry?.district == 'Kamjong') {
-                merged[7].district_count += entry.district_count;
-            } else if (entry?.district == 'Kangpokpi' || entry?.district == "kangpokpi" || entry?.district == "Kangpokpi ") {
-                merged[8].district_count += entry.district_count;
-            } else if (entry?.district == 'Noney') {
-                merged[9].district_count += entry.district_count;
-            } else if (entry?.district == 'Pherzawl') {
-                merged[10].district_count += entry.district_count;
-            } else if (entry?.district == 'Senapati' || entry?.district == "Senapati ") {
-                merged[11].district_count += entry.district_count;
-            } else if (entry?.district == 'Tamenglong') {
-                merged[12].district_count += entry.district_count;
-            } else if (entry?.district == 'Tengnoupal') {
-                merged[13].district_count += entry.district_count;
-            } else if (entry?.district == 'Thoubal' || entry?.district == "Thoubal " || entry?.district == "Thouba" || entry?.district == "Thoubal wangmataba") {
-                merged[14].district_count += entry.district_count;
-            } else if (entry?.district == 'Ukhrul') {
-                merged[15].district_count += entry.district_count;
+            const districtIndex = districtMap[entry?.district];
+            if (districtIndex !== undefined) {
+                merged[districtIndex].district_count += entry.district_count;
             }
         });
+
         return merged;
-    }
+    };
 
     const fetchCounts = async () => {
         try {
@@ -211,10 +270,10 @@ const OverView = () => {
         <div className="role-container">
             <OverViewHeader queryParams={queryParams} />
             <div style={containerStyle} className="card-container">
-                {CARD_CONFIG.map(({ title, colorIndex, fields }, index) => (
+                {CARD_CONFIG.map(({ title, fields, background }, index) => (
                     <OverviewCard
                         key={index}
-                        style={{ backgroundColor: COLORS[colorIndex].background }}
+                        style={{ backgroundColor: background }}
                         title={title}
                         data={title === 'Age Groups' ? ageGroups : fields}
                         values={title === 'Age Groups' ? null : counts}
