@@ -11,18 +11,45 @@ const headers = [
     'Female',
 ];
 
+const data = [
+    {
+        healthFacilities: 117,
+        villagesStarted: 42,
+        villagesCompleted: 71,
+        populationScreened: 11321,
+        male: 9191,
+        female: 9970
+    },
+    {
+        healthFacilities: 125,
+        villagesStarted: 64,
+        villagesCompleted: 42,
+        populationScreened: 12983,
+        male: 4480,
+        female: 8734
+    },
+    {
+        healthFacilities: 138,
+        villagesStarted: 57,
+        villagesCompleted: 38,
+        populationScreened: 17918,
+        male: 6572,
+        female: 4172
+    },
+];
+
 const summaryData = [
-    { disease: 'DM', knownMale: 848, knownFemale: '', suspectedMale: 932, suspectedFemale: '', referredMale: 875, referredFemale: '', confirmedMale: '', confirmedFemale: '' },
-    { disease: 'HTN', knownMale: 1578, knownFemale: '', suspectedMale: 792, suspectedFemale: '', referredMale: 708, referredFemale: '', confirmedMale: '', confirmedFemale: '' },
-    { disease: 'Oral Cancer', knownMale: 70, knownFemale: 24, suspectedMale: 24, suspectedFemale: 0, referredMale: 0, referredFemale: 0, confirmedMale: '', confirmedFemale: '' },
-    { disease: 'Breast Cancer', knownMale: 6, knownFemale: 0, suspectedMale: 0, suspectedFemale: 0, referredMale: 0, referredFemale: 0, confirmedMale: '', confirmedFemale: '' },
-    { disease: 'Cervical Cancer', knownMale: 6, knownFemale: 1, suspectedMale: 1, suspectedFemale: 1, referredMale: 1, referredFemale: 1, confirmedMale: '', confirmedFemale: '' },
-    { disease: 'CVD', knownMale: 34, knownFemale: 0, suspectedMale: 0, suspectedFemale: 0, referredMale: 0, referredFemale: 0, confirmedMale: '', confirmedFemale: '' },
-    { disease: 'COPD', knownMale: 6, knownFemale: 1, suspectedMale: 1, suspectedFemale: 1, referredMale: 1, referredFemale: 1, confirmedMale: '', confirmedFemale: '' },
-    { disease: 'CKD', knownMale: 46, knownFemale: 3, suspectedMale: 3, suspectedFemale: 0, referredMale: 0, referredFemale: 0, confirmedMale: '', confirmedFemale: '' },
-    { disease: 'Patients having both DM and HTN', knownMale: 208, knownFemale: '', suspectedMale: '', suspectedFemale: '', referredMale: '', referredFemale: '', confirmedMale: '', confirmedFemale: '' },
-    { disease: 'Stroke/Post Stroke', knownMale: 70, knownFemale: '', suspectedMale: '', suspectedFemale: '', referredMale: '', referredFemale: '', confirmedMale: '', confirmedFemale: '' },
-    { disease: 'BMI > 23', knownMale: 3975, knownFemale: '', suspectedMale: '', suspectedFemale: '', referredMale: '', referredFemale: '', confirmedMale: '', confirmedFemale: '' },
+    { disease: 'DM', knownMale: 1591, knownFemale: 2000, suspectedMale: 682, suspectedFemale: 194, referredMale: 991, referredFemale: 848, confirmedMale: '', confirmedFemale: 29 },
+    { disease: 'HTN', knownMale: 178, knownFemale: 59, suspectedMale: 510, suspectedFemale: 283, referredMale: 949, referredFemale: 635, confirmedMale: 823, confirmedFemale: '' },
+    { disease: 'Oral Cancer', knownMale: 1986, knownFemale: 1215, suspectedMale: 65, suspectedFemale: 161, referredMale: 291, referredFemale: 778, confirmedMale: 21, confirmedFemale: '' },
+    { disease: 'Breast Cancer', knownMale: 92, knownFemale: 2, suspectedMale: 146, suspectedFemale: 802, referredMale: 480, referredFemale: 681, confirmedMale: 81, confirmedFemale: 404 },
+    { disease: 'Cervical Cancer', knownMale: 242, knownFemale: 579, suspectedMale: 985, suspectedFemale: 909, referredMale: 860, referredFemale: 16, confirmedMale: '', confirmedFemale: 537 },
+    { disease: 'CVD', knownMale: 15, knownFemale: 72, suspectedMale: 575, suspectedFemale: 193, referredMale: 512, referredFemale: 49, confirmedMale: 986, confirmedFemale: '' },
+    { disease: 'COPD', knownMale: 1493, knownFemale: 1114, suspectedMale: 581, suspectedFemale: 652, referredMale: 878, referredFemale: 26, confirmedMale: 558, confirmedFemale: 535 },
+    { disease: 'CKD', knownMale: 1666, knownFemale: 1543, suspectedMale: 322, suspectedFemale: 519, referredMale: 410, referredFemale: 194, confirmedMale: '', confirmedFemale: '' },
+    { disease: 'Patients having both DM and HTN', knownMale: 1041, knownFemale: 1582, suspectedMale: 706, suspectedFemale: 708, referredMale: 986, referredFemale: 267, confirmedMale: '', confirmedFemale: 690 },
+    { disease: 'Stroke/Post Stroke', knownMale: 1506, knownFemale: 1492, suspectedMale: 704, suspectedFemale: 951, referredMale: 975, referredFemale: 829, confirmedMale: 620, confirmedFemale: 491 },
+    { disease: 'BMI > 23', knownMale: 1267, knownFemale: 744, suspectedMale: 973, suspectedFemale: 143, referredMale: 974, referredFemale: 49, confirmedMale: 570, confirmedFemale: '' }
 ];
 
 const StateWiseScreening = () => {
@@ -30,7 +57,6 @@ const StateWiseScreening = () => {
     const location = useLocation();
     const { state } = location;
     const headingName = state?.action_type == "district" ? state?.data : 'State'
-    const data = [{}, {}, {}]; // Placeholder for dynamic data.
 
     return (
         <div className="role-container">
@@ -56,14 +82,12 @@ const StateWiseScreening = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {data.map((_, idx) => (
+                        {data.map((item, idx) => (
                             <tr key={idx}>
-                                <td>Not filled</td>
-                                <td>Not filled</td>
-                                <td>Not filled</td>
-                                <td>Not filled</td>
-                                <td>0</td>
-                                <td>0</td>
+                                {Object.keys(item).map((key, keyIdx) => {
+                                    const value = item[key] !== undefined && item[key] !== null ? item[key] : 'Not filled';
+                                    return <td key={keyIdx}>{value}</td>;
+                                })}
                             </tr>
                         ))}
                     </tbody>
@@ -79,19 +103,19 @@ const StateWiseScreening = () => {
                             <td style={{ padding: 0 }}>
                                 <div className='age-group'>
                                     <h4>18-29 Years:</h4>
-                                    <p>287848</p>
+                                    <p>27270</p>
                                 </div>
                             </td>
                             <td style={{ padding: 0 }}>
                                 <div className='age-group'>
                                     <h4>30-39 Years:</h4>
-                                    <p>37663</p>
+                                    <p>22940</p>
                                 </div>
                             </td>
                             <td style={{ padding: 0 }}>
                                 <div className='age-group'>
                                     <h4>40-49 Years:</h4>
-                                    <p>97844</p>
+                                    <p>21131</p>
                                 </div>
                             </td>
                         </tr>
@@ -99,13 +123,13 @@ const StateWiseScreening = () => {
                             <td style={{ padding: 0 }}>
                                 <div className='age-group'>
                                     <h4>50-59 Years:</h4>
-                                    <p>287848</p>
+                                    <p>15509</p>
                                 </div>
                             </td>
                             <td style={{ padding: 0 }}>
                                 <div className='age-group'>
                                     <h4>60 years or above:</h4>
-                                    <p>37663</p>
+                                    <p>18596</p>
                                 </div>
                             </td>
                             <td style={{ padding: 0 }}>

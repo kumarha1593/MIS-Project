@@ -52,7 +52,7 @@ const CARD_CONFIG = [
     {
         title: 'Total Screenings',
         fields: [{ label: 'Total Screenings: ', key: 'total_screenings_till_date' }],
-        background: 'rgba(255, 99, 132, 0.2)',
+        background: 'rgba(128, 128, 0, 0.2)',
         route: '/state-screening'
     },
     {
@@ -280,7 +280,15 @@ const OverView = () => {
     return (
         <div className="role-container">
             <OverViewHeader queryParams={queryParams} />
-            <div style={containerStyle} className="card-container">
+
+            <div className='dashboard-overview'>
+                <p>CHIEF MINISTER’S HEALTH FOR ALL, MANIPUR</p>
+                <span>Technical partner</span>
+                <p>MIDORI INFRATECH PVT. LTD</p>
+                <span> DASHBOARD  OVER VIEW
+                </span>
+            </div>
+            <div className="card-container">
                 {CARD_CONFIG.map(({ title, fields, background, route }, index) => (
                     <OverviewCard
                         key={index}
