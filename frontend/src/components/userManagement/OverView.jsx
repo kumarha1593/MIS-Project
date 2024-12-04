@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import OverViewHeader from './OverViewHeader';
 import OverviewCard from './OverviewCard';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
@@ -52,17 +52,20 @@ const CARD_CONFIG = [
     {
         title: 'Total Screenings',
         fields: [{ label: 'Total Screenings: ', key: 'total_screenings_till_date' }],
-        background: 'rgba(255, 99, 132, 0.2)'
+        background: 'rgba(255, 99, 132, 0.2)',
+        route: '/state-screening'
     },
     {
         title: 'Health Facility',
         fields: [{ label: 'Health Facility: ', key: 'health_facility_count' }],
         background: 'rgba(54, 162, 235, 0.2)',
+        route: '/health-facility-status'
     },
     {
         title: 'Villages',
         fields: [{ label: 'Total Villages: ', key: 'village_count' }],
         background: 'rgba(255, 206, 86, 0.2)',
+        route: ''
     },
     {
         title: 'HTN Known Case',
@@ -71,6 +74,7 @@ const CARD_CONFIG = [
             { label: 'Not on treatment: ', key: 'htn_not_on_treatment_count' },
         ],
         background: 'rgba(75, 192, 192, 0.2)',
+        route: ''
     },
     {
         title: 'DM Known Case',
@@ -79,11 +83,13 @@ const CARD_CONFIG = [
             { label: 'Not on treatment: ', key: 'dm_not_on_treatment_count' },
         ],
         background: 'rgba(153, 102, 255, 0.2)',
+        route: ''
     },
     {
         title: 'DM/HTN Known Case',
         fields: [{ label: 'Total: ', key: 'dm_htn_count' }],
         background: 'rgba(255, 159, 64, 0.2)',
+        route: ''
     },
     {
         title: 'Sex',
@@ -92,11 +98,13 @@ const CARD_CONFIG = [
             { label: 'Female: ', key: 'female_count' },
         ],
         background: 'rgba(199, 199, 199, 0.2)',
+        route: ''
     },
     {
         title: 'Age Groups',
         fields: [],
         background: 'rgba(83, 102, 255, 0.2)',
+        route: ''
     },
     {
         title: 'Risk Assessments',
@@ -105,6 +113,7 @@ const CARD_CONFIG = [
             { label: 'Not at risk: ', key: 'not_at_risk_count' },
         ],
         background: 'rgba(0, 128, 128, 0.2)',
+        route: ''
     },
 
 ];
@@ -114,6 +123,8 @@ const chartContainerStyle = { marginTop: 50 };
 
 const OverView = () => {
     const location = useLocation();
+    const navigate = useNavigate();
+
     const queryParams = Object.fromEntries(new URLSearchParams(location?.search));
 
     const [ageGroups, setAgeGroups] = useState([]);
@@ -270,7 +281,7 @@ const OverView = () => {
         <div className="role-container">
             <OverViewHeader queryParams={queryParams} />
             <div style={containerStyle} className="card-container">
-                {CARD_CONFIG.map(({ title, fields, background }, index) => (
+                {CARD_CONFIG.map(({ title, fields, background, route }, index) => (
                     <OverviewCard
                         key={index}
                         style={{ backgroundColor: background }}
@@ -278,11 +289,24 @@ const OverView = () => {
                         data={title === 'Age Groups' ? ageGroups : fields}
                         values={title === 'Age Groups' ? null : counts}
                         type={title === 'Age Groups' ? 'age' : ''}
+                        onClick={() => {
+                            if (route) {
+                                navigate(route);
+                            }
+                        }}
                     />
                 ))}
             </div>
             <div style={chartContainerStyle}>
-                {districtChartData && <Bar data={districtChartData} options={chartOptions} />}
+                {districtChartData && <Bar
+                    data={districtChartData}
+                    options={chartOptions}
+                    onClick={(event, elements) => {
+                        navigate('/state-screening', {
+                            state: { action_type: 'district', data: 'Imphal' }
+                        });
+                    }}
+                />}
             </div>
         </div>
     );

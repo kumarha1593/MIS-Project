@@ -1,8 +1,8 @@
 import React from 'react'
 
-const OverviewCard = ({ title, data, style, values, type }) => {
+const OverviewCard = ({ title, data, style, values, type, onClick }) => {
     return (
-        <div style={style} className="card">
+        <div onClick={onClick} style={style} className="card">
             <div className="card-title">{title}</div>
             <div style={{ padding: '15px' }}>
                 {data?.map((item, idx) => {

@@ -16,6 +16,8 @@ import ReviewPage from "../components/Review/Review";
 import { Route, Routes } from 'react-router-dom'
 import ScreeningCount from '../components/userManagement/ScreeningCount'
 import OverView from '../components/userManagement/OverView'
+import HealthFacilityStatus from '../components/screenings/HealthFacilityStatus'
+import StateWiseScreening from '../components/screenings/StateWiseScreening'
 
 const RouteStack = () => {
     return (
@@ -63,6 +65,27 @@ const RouteStack = () => {
                     element={
                         <AppLayout hideFamily>
                             <ScreeningCount />
+                        </AppLayout>
+                    }
+                />
+
+
+                {/* Health Facility Status Routes */}
+                <Route
+                    path="/health-facility-status"
+                    element={
+                        <AppLayout hideFamily>
+                            <HealthFacilityStatus />
+                        </AppLayout>
+                    }
+                />
+
+                {/* State Screening Routes */}
+                <Route
+                    path="/state-screening"
+                    element={
+                        <AppLayout hideFamily>
+                            <StateWiseScreening />
                         </AppLayout>
                     }
                 />
