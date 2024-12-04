@@ -115,6 +115,7 @@
             }
         }
     }
+
 }
 
 // style for global inputs
@@ -454,6 +455,7 @@
         overflow: hidden;
         font-family: Arial, sans-serif;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        cursor: pointer;
 
         .card-title {
             text-align: center;
@@ -483,6 +485,40 @@
                 font-size: 18px;
                 font-weight: semi-bold;
             }
+        }
+    }
+}
+
+.age-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0px 20px;
+}
+
+.summary-table-container {
+    .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+
+        th {
+            background-color: #217cc070;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        td {
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+
+        thead tr:first-of-type th {
+            border-bottom: 2px solid #ccc;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #fff;
         }
     }
 }
