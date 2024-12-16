@@ -149,7 +149,7 @@ const HealthMeasurements = ({ currentFmId, handleBack, handleNext }) => {
 
         <div style={styles.formGroup}>
           <label style={styles.label} htmlFor="temp">
-            Temperature (°F) *
+            Temperature (°F)
           </label>
           <input
             type="number"
@@ -158,13 +158,12 @@ const HealthMeasurements = ({ currentFmId, handleBack, handleNext }) => {
             value={formData.temp || ""}
             onChange={handleInputChange}
             style={styles.input}
-            required
           />
         </div>
 
         <div style={styles.formGroup}>
           <label style={styles.label} htmlFor="spO2">
-            SpO2 (%) *
+            SpO2 (%)
           </label>
           <input
             type="number"
@@ -173,7 +172,6 @@ const HealthMeasurements = ({ currentFmId, handleBack, handleNext }) => {
             value={formData.spO2 || ""}
             onChange={handleInputChange}
             style={styles.input}
-            required
           />
         </div>
         <div style={styles.formGroup}>
