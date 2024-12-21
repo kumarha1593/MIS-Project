@@ -6,6 +6,7 @@ import { API_ENDPOINTS } from '../../utils/apiEndPoints';
 import FamilyMembers from './FamilyMembers';
 import { getFilterQuery, ROLE_TYPE } from '../../utils/helper';
 import UpdateMem from './UpdateMem';
+import moment from 'moment';
 
 const Users = () => {
 
@@ -50,7 +51,33 @@ const Users = () => {
         navigate(`/users?${queryString}`);
     };
 
+    const validateDateRange = (data) => {
+        const fromDate = moment(data?.from_date, 'YYYY-MM-DD');
+        const toDate = moment(data?.to_date, 'YYYY-MM-DD');
+
+        // Ensure the dates are valid
+        if (!fromDate?.isValid() || !toDate?.isValid()) {
+            return "Invalid date format. Please use YYYY-MM-DD.";
+        }
+
+        // Calculate the difference in days
+        const dateDifference = toDate?.diff(fromDate, 'days');
+
+        // Check if the difference exceeds 30 days
+        if (dateDifference > 30) {
+            return "The date range exceeds 30 days. Please select a range within 30 days.";
+        }
+
+        return null;
+    }
+
     const onExport = async () => {
+        const error = validateDateRange(queryParams);
+
+        if (error) {
+            alert(error)
+            return
+        }
         const response = await defaultInstance.get(API_ENDPOINTS.EXPORT_MASTER_LIST, { params: queryParams });
         const blob = new Blob([response?.data], { type: "text/csv;charset=utf-8;" });
         const link = document.createElement("a");
