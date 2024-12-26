@@ -3237,10 +3237,9 @@ app.post("/api/users", async (req, res) => {
     user_id,
   } = req.body;
   try {
-    // Update the family_members table's status field to 1 for the given fm_id
     const [result] = await db.promise().query(
-      `INSERT INTO Users (name, email, phone, verification_id, verification_id_type, role, password, district_info_id, manager_id)
-         VALUES (?,?,?,?,?,?,?,NULL,?)`,
+      `INSERT INTO Users (name, email, phone, verification_id, verification_id_type, role, password, district_info_id, manager_id, is_active)
+         VALUES (?,?,?,?,?,?,?,NULL,?, 1)`,
       [
         name,
         email,
@@ -5717,6 +5716,96 @@ app.post('/api/update-district-id-list', upload.single('file'), async (req, res)
       console.error('Error reading CSV file:', err);
       res.status(500).json({ error: 'Failed to process CSV file' });
     });
+});
+
+// Created by Tanmay Pradhan - 26 Dec 2024
+app.get("/api/all-assessments/:fm_id", async (req, res) => {
+  const { fm_id } = req.params;
+
+  try {
+    // Fetch master data for the family member
+    const [masterData] = await db
+      .promise()
+      .query(
+        `SELECT * FROM master_data WHERE fm_id = ?`,
+        [fm_id]
+      );
+
+    if (masterData.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Family member not found in master data",
+      });
+    }
+
+    const masterRecord = masterData[0];
+
+    // Helper function to fetch data based on ID and table name
+    const fetchData = async (id, tableName) => {
+      if (!id) return null;
+      const [data] = await db
+        .promise()
+        .query(`SELECT * FROM ${tableName} WHERE id = ?`, [id]);
+      return data.length > 0 ? data[0] : null;
+    };
+
+    // Fetch related data
+    const personalInfo = await fetchData(masterRecord.personal_info_id, "personal_info");
+    const healthMeasurements = await fetchData(masterRecord.health_id, "health");
+    const htnAssessment = await fetchData(masterRecord.htn_id, "htn");
+    const dmAssessment = await fetchData(masterRecord.dm_id, "DM");
+    const riskAssessment = await fetchData(masterRecord.risk_assessment_id, "risk_assessment");
+    const oralCancerAssessment = await fetchData(masterRecord.oral_cancer_id, "oralcancer");
+    const breastCancerAssessment = await fetchData(masterRecord.breast_cancer_id, "breastcancer");
+    const cervicalCancerAssessment = await fetchData(masterRecord.cervical_cancer_id, "cervicalcancer");
+    const cvdAssessment = await fetchData(masterRecord.CVD_id, "cvd");
+    const ckdAssessment = await fetchData(masterRecord.CKD_id, "ckd_assessment");
+    const copdTBAssessment = await fetchData(masterRecord.COPD_TB, "copdtb");
+    const cataractAssessment = await fetchData(masterRecord.cataract_id, "cataract");
+    const hearingIssueAssessment = await fetchData(masterRecord.hearing_id, "hearingissue");
+    const leprosyAssessment = await fetchData(masterRecord.leprosy_id, "leprosy");
+    const elderlyAssessment = await fetchData(masterRecord.elderly_id, "elderly");
+    const mentalHealthAssessment = await fetchData(masterRecord.mental_health_id, "mentalhealth");
+
+    // Map gender
+    const genderMap = {
+      M: "male",
+      F: "female",
+      O: "others",
+    };
+
+    const formattedPersonalInfo = personalInfo
+      ? { ...personalInfo, sex: genderMap[personalInfo.sex] || personalInfo.sex }
+      : null;
+
+    // Compile all data into a single response object
+    const allAssessments = {
+      personal_info: formattedPersonalInfo,
+      health_measurements : healthMeasurements,
+      htn_assessment : htnAssessment,
+      dm_assessment : dmAssessment,
+      risk_assessment : riskAssessment,
+      oral_cancer_assessment : oralCancerAssessment,
+      breast_cancer_assessment : breastCancerAssessment,
+      cervical_cancer_assessment : cervicalCancerAssessment,
+      cvd_assessment : cvdAssessment,
+      ckd_assessment : ckdAssessment,
+      copdTB_assessment : copdTBAssessment,
+      cataract_assessment : cataractAssessment,
+      hearing_issue_assessment : hearingIssueAssessment,
+      leprosy_assessment : leprosyAssessment,
+      elderly_assessment : elderlyAssessment,
+      mental_health_assessment : mentalHealthAssessment,
+    };
+
+    res.status(200).json({
+      success: true,
+      data: allAssessments,
+    });
+  } catch (error) {
+    console.error("Error fetching all assessments:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 });
 
 // Start server
