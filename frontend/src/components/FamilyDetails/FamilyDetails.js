@@ -50,9 +50,13 @@ const FamilyDetails = () => {
     fetchFamilyData();
   }, [headId]);
 
-  const handleCompleteForm = (fm_id) => {
+  const handleCompleteForm = (fm_id, item) => {
     localStorage.setItem("current_fm_id", fm_id);
-    navigate("/FormPage");
+    navigate("/FormPage", {
+      state: {
+        data: item
+      }
+    });
   };
 
   const handleAddMember = () => {
@@ -92,7 +96,7 @@ const FamilyDetails = () => {
               <td>
                 {familyData.head.status === 0 ? (
                   <button
-                    onClick={() => handleCompleteForm(familyData.head.id)}
+                    onClick={() => handleCompleteForm(familyData.head.id, familyData?.head)}
                     style={{ padding: "3px", backgroundColor: "red" }}
                   >
                     Pending
@@ -112,7 +116,7 @@ const FamilyDetails = () => {
               <td>
                 {member.status === 0 ? (
                   <button
-                    onClick={() => handleCompleteForm(member.id)}
+                    onClick={() => handleCompleteForm(member.id, member)}
                     style={{ padding: "3px", backgroundColor: "red" }}
                   >
                     Pending

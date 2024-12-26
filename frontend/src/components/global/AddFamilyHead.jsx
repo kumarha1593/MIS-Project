@@ -25,6 +25,7 @@ const AddFamilyHead = ({ onDone, onDismiss }) => {
             const apiPayload = {
                 ...validatedData,
                 fc_id: user_id,
+                identifier: formData?.govtId || ''
             };
 
             delete apiPayload.govtId;
