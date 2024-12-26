@@ -60,6 +60,7 @@ export const validateVillageForm = Yup.object().shape({
 
 export const validateMemForm = Yup.object().shape({
     name: Yup.string().required('Name is required'),
+    govtId: Yup.string().required('Government id type is required'),
     aadhar: Yup.string().required('Aadhar is required'),
 });
 

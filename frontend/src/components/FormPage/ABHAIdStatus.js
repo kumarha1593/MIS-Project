@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import moment from "moment";
+import ButtonLoader from "../global/ButtonLoader";
 
 const ABHAIdStatus = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     abhaIdStatus: "",
     screeningDate: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchAbhaIdData = async () => {
@@ -62,6 +64,7 @@ const ABHAIdStatus = ({ currentFmId, handleBack, handleNext }) => {
   const handleSave = async (evt) => {
     evt.preventDefault();
     try {
+      setIsLoading(true)
       // Save ABHA ID status
       const abhaResponse = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/abhaid-assessment`,
@@ -82,6 +85,8 @@ const ABHAIdStatus = ({ currentFmId, handleBack, handleNext }) => {
         );
       }
 
+      setIsLoading(false)
+
       if (abhaResponse.data.success && dateResponse.data.success) {
         alert("Data saved successfully!");
         handleNext?.()
@@ -89,6 +94,7 @@ const ABHAIdStatus = ({ currentFmId, handleBack, handleNext }) => {
         alert("Failed to save some data. Please try again.");
       }
     } catch (error) {
+      setIsLoading(false)
       console.error("Error saving data:", error);
       alert("Failed to save data. Please try again.");
     }
@@ -169,8 +175,13 @@ const ABHAIdStatus = ({ currentFmId, handleBack, handleNext }) => {
           <button type="button" onClick={handleBack}>
             Back
           </button>
-          <button type="submit">
-            Submit
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Submit'
+            }
           </button>
         </footer>
       </form>

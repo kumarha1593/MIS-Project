@@ -51,6 +51,7 @@ const AdminFormPage = () => {
         ...validatedData,
         name: `${validatedData.first_name} ${validatedData.last_name}`,
         role: getRoleLabel(validatedData.role || ROLE_TYPE.STATE_COORDINATOR),
+        is_active: 1
       };
       delete apiPayload.first_name;
       delete apiPayload.last_name;

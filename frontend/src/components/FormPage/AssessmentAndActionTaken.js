@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ButtonLoader from "../global/ButtonLoader";
 
 const AssessmentAndActionTaken = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ const AssessmentAndActionTaken = ({ currentFmId, handleBack, handleNext }) => {
     otherAdvices: "",
     remarks: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchAssessmentData = async () => {
@@ -42,6 +44,7 @@ const AssessmentAndActionTaken = ({ currentFmId, handleBack, handleNext }) => {
   const handleSave = async (evt) => {
     evt.preventDefault();
     try {
+      setIsLoading(true)
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/assessment-and-action-taken`,
         {
@@ -49,11 +52,13 @@ const AssessmentAndActionTaken = ({ currentFmId, handleBack, handleNext }) => {
           ...formData,
         }
       );
+      setIsLoading(false)
       if (response.data.success) {
         alert("Assessment and action taken saved successfully!");
         handleNext?.()
       }
     } catch (error) {
+      setIsLoading(false)
       console.error("Error saving assessment and action taken:", error);
       alert("Failed to save assessment and action taken. Please try again.");
     }
@@ -183,8 +188,13 @@ const AssessmentAndActionTaken = ({ currentFmId, handleBack, handleNext }) => {
         <button type="button" onClick={handleBack}>
           Back
         </button>
-        <button type="submit">
-          Save & Next
+        <button style={{ height: 40 }} disabled={isLoading} type="submit">
+          {isLoading
+            ?
+            <ButtonLoader />
+            :
+            'Save & Next'
+          }
         </button>
       </footer>
     </form>

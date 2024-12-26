@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ButtonLoader from "../global/ButtonLoader";
 
 const RiskAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ const RiskAssessment = ({ currentFmId, handleBack, handleNext }) => {
     risk_score: 0,
   });
   const [sex, setSex] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const calculateAge = (birthDate) => {
     const today = new Date();
@@ -140,6 +142,7 @@ const RiskAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const handleSave = async (evt) => {
     evt.preventDefault();
     try {
+      setIsLoading(true)
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/risk-assessment`,
         {
@@ -147,11 +150,13 @@ const RiskAssessment = ({ currentFmId, handleBack, handleNext }) => {
           ...formData,
         }
       );
+      setIsLoading(false)
       if (response.data.success) {
         alert("Risk assessment saved successfully!");
         handleNext?.();
       }
     } catch (error) {
+      setIsLoading(false)
       console.error("Error saving risk assessment:", error);
       alert("Failed to save risk assessment. Please try again.");
     }
@@ -333,8 +338,13 @@ const RiskAssessment = ({ currentFmId, handleBack, handleNext }) => {
           <button type="button" onClick={handleBack}>
             Back
           </button>
-          <button type="submit">
-            Save & Next
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Save & Next'
+            }
           </button>
         </footer>
       </form>

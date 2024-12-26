@@ -1,20 +1,23 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import ButtonLoader from "../global/ButtonLoader";
 
 const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
     knownCKD: "",
     historyCKDStone: "",
     ageAbove50: "",
-    hypertensionPatient: "",
-    diabetesPatient: "",
+    hypertensionPatient: localStorage.getItem('case_of_htn_data') == 'No' ? "No" : "Yes",
+    diabetesPatient: localStorage.getItem('case_of_dm_data') == 'No' ? "No" : "Yes",
     anemiaPatient: "",
-    historyOfStroke: "",
+    historyOfStroke: localStorage.getItem('history_of_stroke_data') == 'No' ? "No" : "Yes",
     swellingFaceLeg: "",
     historyNSAIDS: "",
     ckdRiskScore: 0,
     riskaAssessment: "",
   });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const calculateAge = (birthDate) => {
     const today = new Date();
@@ -92,6 +95,7 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
     const riskaAssessment = calculateRiskAssessment(ckdRiskScore);
 
     try {
+      setIsLoading(true)
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/ckd-assessment`,
         {
@@ -101,7 +105,7 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
           riskaAssessment,
         }
       );
-
+      setIsLoading(false)
       if (response.data.success) {
         alert("CKD assessment saved successfully!");
         handleNext?.();
@@ -112,6 +116,7 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
         );
       }
     } catch (error) {
+      setIsLoading(false)
       console.error(
         "Error saving CKD assessment:",
         error.response?.data || error.message
@@ -205,6 +210,7 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
             onChange={handleInputChange}
             required
             style={styles.input}
+            disabled
           >
             <option value="">Select</option>
             <option value="Yes">Yes</option>
@@ -219,6 +225,7 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
             onChange={handleInputChange}
             required
             style={styles.input}
+            disabled
           >
             <option value="">Select</option>
             <option value="Yes">Yes</option>
@@ -233,6 +240,7 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
             onChange={handleInputChange}
             required
             style={styles.input}
+            disabled
           >
             <option value="">Select</option>
             <option value="Yes">Yes</option>
@@ -261,6 +269,7 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
             onChange={handleInputChange}
             required
             style={styles.input}
+            disabled
           >
             <option value="">Select</option>
             <option value="Yes">Yes</option>
@@ -319,8 +328,13 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
           <button type="button" onClick={handleBack}>
             Back
           </button>
-          <button type="submit">
-            Save & Next
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Save & Next'
+            }
           </button>
         </footer>
       </form>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SelectAll from "../global/SelectAll";
+import ButtonLoader from "../global/ButtonLoader";
 
 const CervicalCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,8 @@ const CervicalCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
     via_appointment_date: "",
     via_result: "",
   });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchCervicalCancerData = async () => {
     try {
@@ -44,6 +47,7 @@ const CervicalCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const handleSave = async (evt) => {
     evt.preventDefault();
     try {
+      setIsLoading(true)
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/cervical-cancer-assessment`,
         {
@@ -51,11 +55,13 @@ const CervicalCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
           ...formData,
         }
       );
+      setIsLoading(false)
       if (response.data.success) {
         alert("Cervical Cancer Assessment saved successfully!");
         handleNext?.();
       }
     } catch (error) {
+      setIsLoading(false)
       console.error("Error saving cervical cancer assessment:", error);
       alert("Failed to save cervical cancer assessment. Please try again.");
     }
@@ -196,8 +202,13 @@ const CervicalCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
           <button type="button" onClick={handleBack}>
             Back
           </button>
-          <button type="submit">
-            Save & Next
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Save & Next'
+            }
           </button>
         </footer>
       </form>

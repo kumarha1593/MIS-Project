@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SelectAll from "../global/SelectAll";
+import ButtonLoader from "../global/ButtonLoader";
 
 const LeprosyAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,8 @@ const LeprosyAssessment = ({ currentFmId, handleBack, handleNext }) => {
     inabilityToCloseEyelid: "",
     weaknessFeet: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
+
 
   useEffect(() => {
     const fetchLeprosyData = async () => {
@@ -48,6 +51,7 @@ const LeprosyAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const handleSave = async (evt) => {
     evt.preventDefault();
     try {
+      setIsLoading(true)
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/leprosy-assessment`,
         {
@@ -59,11 +63,13 @@ const LeprosyAssessment = ({ currentFmId, handleBack, handleNext }) => {
           weaknessFeet: formData.weaknessFeet,
         }
       );
+      setIsLoading(false)
       if (response.data.success) {
         alert("Leprosy assessment saved successfully!");
         handleNext?.()
       }
     } catch (error) {
+      setIsLoading(false)
       console.error("Error saving Leprosy assessment:", error);
       alert("Failed to save Leprosy assessment. Please try again.");
     }
@@ -203,8 +209,13 @@ const LeprosyAssessment = ({ currentFmId, handleBack, handleNext }) => {
           <button type="button" onClick={handleBack}>
             Back
           </button>
-          <button type="submit">
-            Save & Next
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Save & Next'
+            }
           </button>
         </footer>
       </form>

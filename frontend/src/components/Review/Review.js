@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Review.css";
+import ButtonLoader from "../global/ButtonLoader";
 
 const Review = () => {
   const location = useLocation();
@@ -36,6 +37,8 @@ const Review = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const gender = localStorage.getItem("sex");
+  const [isLoading, setIsLoading] = useState(false);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -140,13 +143,15 @@ const Review = () => {
 
   const handleFinalSubmit = async () => {
     try {
+      setIsLoading(true)
       await axios.post(`${process.env.REACT_APP_BASE_URL}api/final-submit`, {
         fm_id: currentFmId,
       });
-
+      setIsLoading(false)
       alert("Data submitted successfully!");
       navigate("/FieldDashboard");
     } catch (error) {
+      setIsLoading(false)
       console.error("Error submitting data:", error);
       alert("Failed to submit data. Please try again.");
     }
@@ -732,8 +737,13 @@ const Review = () => {
         <button onClick={handleBack} className="back-button">
           Back
         </button>
-        <button className="submit-button" onClick={handleFinalSubmit}>
-          Final Submit
+        <button type="button" className="submit-button" onClick={handleFinalSubmit} style={{ height: 40 }} disabled={isLoading}>
+          {isLoading
+            ?
+            <ButtonLoader />
+            :
+            'Final Submit'
+          }
         </button>
       </div>
 
