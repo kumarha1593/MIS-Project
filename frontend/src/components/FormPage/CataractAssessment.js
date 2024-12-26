@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ButtonLoader from "../global/ButtonLoader";
 
 const CataractAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -7,6 +8,8 @@ const CataractAssessment = ({ currentFmId, handleBack, handleNext }) => {
     painOrRedness: "",
     cataractAssessmentResult: "",
   });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchCataractData = async () => {
@@ -43,6 +46,7 @@ const CataractAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const handleSave = async (evt) => {
     evt.preventDefault();
     try {
+      setIsLoading(true)
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/cataract-assessment`,
         {
@@ -52,11 +56,13 @@ const CataractAssessment = ({ currentFmId, handleBack, handleNext }) => {
           cataractAssessmentResult: formData.cataractAssessmentResult,
         }
       );
+      setIsLoading(false)
       if (response.data.success) {
         alert("Cataract assessment saved successfully!");
         handleNext?.();
       }
     } catch (error) {
+      setIsLoading(false)
       console.error("Error saving Cataract assessment:", error);
       alert("Failed to save Cataract assessment. Please try again.");
     }
@@ -147,8 +153,13 @@ const CataractAssessment = ({ currentFmId, handleBack, handleNext }) => {
           <button type="button" onClick={handleBack}>
             Back
           </button>
-          <button type="submit">
-            Save & Next
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Save & Next'
+            }
           </button>
         </footer>
       </form>

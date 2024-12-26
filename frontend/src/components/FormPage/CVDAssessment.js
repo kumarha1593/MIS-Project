@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ButtonLoader from "../global/ButtonLoader";
 
 const CVDAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ const CVDAssessment = ({ currentFmId, handleBack, handleNext }) => {
 
   const [showAdditionalFields, setShowAdditionalFields] = useState(false);
   const [showReferralCentre, setShowReferralCentre] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchCVDData = async () => {
     try {
@@ -54,6 +56,7 @@ const CVDAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const handleSave = async (evt) => {
     evt.preventDefault();
     try {
+      setIsLoading(true)
       console.log("Sending data to backend:", formData); // Add this line
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/cvd-assessment`,
@@ -62,11 +65,13 @@ const CVDAssessment = ({ currentFmId, handleBack, handleNext }) => {
           ...formData,
         }
       );
+      setIsLoading(false)
       if (response.data.success) {
         alert("CVD Assessment saved successfully!");
         handleNext?.();
       }
     } catch (error) {
+      setIsLoading(false)
       console.error("Error saving CVD assessment:", error);
       alert("Failed to save CVD assessment. Please try again.");
     }
@@ -242,8 +247,13 @@ const CVDAssessment = ({ currentFmId, handleBack, handleNext }) => {
           <button type="button" onClick={handleBack}>
             Back
           </button>
-          <button type="submit">
-            Save & Next
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Save & Next'
+            }
           </button>
         </footer>
       </form>

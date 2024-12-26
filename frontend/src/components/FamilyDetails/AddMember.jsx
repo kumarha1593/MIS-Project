@@ -1,16 +1,20 @@
 import React, { useState } from 'react'
 import TextInput from '../global/TextInput';
 import defaultInstance from '../../axiosHelper';
-import { validateMemForm } from '../../utils/helper';
+import { extraGovernmentIdOptions, governmentIdOptions, validateMemForm } from '../../utils/helper';
+import ButtonLoader from '../global/ButtonLoader';
+import SelectInput from '../global/SelectInput';
 
 const AddMember = ({ headId, onDismiss, onDone }) => {
 
     const [formData, setFormData] = useState({
         name: '',
-        aadhar: ''
+        aadhar: '',
+        govtId: "",
     });
 
     const [errors, setErrors] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (evt) => {
         evt?.preventDefault();
@@ -23,16 +27,18 @@ const AddMember = ({ headId, onDismiss, onDone }) => {
                 head_id: headId,
                 ...validatedData
             }
+            setIsLoading(true)
             const response = await defaultInstance.post('api/family-members/', payload)
+            setIsLoading(false)
             if (response?.data?.success) {
                 alert('Member created successfully!')
                 onDone()
             }
         } catch (err) {
             formatValidationErrors(err);
+            setIsLoading(false)
         }
     }
-
 
     const formatValidationErrors = (err) => {
         const formattedErrors = err?.inner?.reduce((acc, item) => {
@@ -62,6 +68,16 @@ const AddMember = ({ headId, onDismiss, onDone }) => {
                         type='text'
                         required
                     />
+                    <SelectInput
+                        name="govtId"
+                        value={formData?.govtId}
+                        options={[...governmentIdOptions, ...extraGovernmentIdOptions]}
+                        onChange={updateValue}
+                        error={errors?.govtId}
+                        placeholder="government id type"
+                        required
+                        label='Government ID'
+                    />
                     <TextInput
                         label="Aadhar Number"
                         name="aadhar"
@@ -72,10 +88,15 @@ const AddMember = ({ headId, onDismiss, onDone }) => {
                         required
                     />
                 </form>
-                <button onClick={handleSubmit} type='button'>
-                    Submit
+                <button disabled={isLoading} style={{ height: 30 }} onClick={handleSubmit} type='button'>
+                    {isLoading
+                        ?
+                        <ButtonLoader />
+                        :
+                        'Submit'
+                    }
                 </button>
-                <button onClick={onDismiss}>Cancel</button>
+                <button style={{ height: 30 }} onClick={onDismiss}>Cancel</button>
             </div>
         </div>
     )

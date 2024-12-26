@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SelectAll from "../global/SelectAll";
+import ButtonLoader from "../global/ButtonLoader";
 
 const OralCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,8 @@ const OralCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
     swelling_in_neck: "",
     suspected_oral_cancer: "",
   });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchOralCancerData = async () => {
     try {
@@ -36,6 +39,7 @@ const OralCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const handleSave = async (evt) => {
     evt.preventDefault();
     try {
+      setIsLoading(true)
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/oral-cancer-assessment`,
         {
@@ -43,11 +47,13 @@ const OralCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
           ...formData,
         }
       );
+      setIsLoading(false)
       if (response.data.success) {
         alert("Oral Cancer Assessment saved successfully!");
         handleNext?.();
       }
     } catch (error) {
+      setIsLoading(false)
       console.error("Error saving oral cancer assessment:", error);
       alert("Failed to save oral cancer assessment. Please try again.");
     }
@@ -250,8 +256,13 @@ const OralCancerAssessment = ({ currentFmId, handleBack, handleNext }) => {
           <button type="button" onClick={handleBack}>
             Back
           </button>
-          <button type="submit">
-            Save & Next
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Save & Next'
+            }
           </button>
         </footer>
       </form>

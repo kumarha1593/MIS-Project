@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
+import ButtonLoader from "../global/ButtonLoader";
 
 const HealthProfileForm = ({ formData, handleInputChange, handleNext }) => {
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const styles = {
     formSection: {
       marginBottom: "20px",
@@ -54,6 +58,7 @@ const HealthProfileForm = ({ formData, handleInputChange, handleNext }) => {
     evt.preventDefault();
     try {
       const fm_id = localStorage.getItem("current_fm_id");
+      setIsLoading(true)
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/personal-info`,
         {
@@ -71,6 +76,8 @@ const HealthProfileForm = ({ formData, handleInputChange, handleNext }) => {
           disability_remark: formData.disability_remark,
         }
       );
+
+      setIsLoading(false)
 
       if (response.data.success) {
         alert("Personal information saved successfully!");
@@ -242,7 +249,14 @@ const HealthProfileForm = ({ formData, handleInputChange, handleNext }) => {
           />
         </div>
         <footer className="form-footer">
-          <button type="submit">Save & Next</button>
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Save & Next'
+            }
+          </button>
         </footer>
       </form>
     </div>
