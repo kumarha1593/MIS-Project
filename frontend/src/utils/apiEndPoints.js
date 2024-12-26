@@ -16,5 +16,6 @@ export const API_ENDPOINTS = {
   SCREENING_REPORT: `${process.env.REACT_APP_API_PREFIX}get-screening-report/`,
   FAMILY_MEMBER_LIST: `${process.env.REACT_APP_API_PREFIX}get-family-member-list/`,
   COUNT_SUMMARY: `${process.env.REACT_APP_API_PREFIX}get-summary-count/`,
+  ALL_ASSESSMENTS: `${process.env.REACT_APP_API_PREFIX}all-assessments/`,
   // Add more API endpoints as needed
 };
