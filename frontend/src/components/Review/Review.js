@@ -12,7 +12,7 @@ const Review = () => {
   const navigate = useNavigate();
   const [allAssessmentsData, setAllAssessmentsData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [fetching, setFetching] = useState(true);
+  const [fetching, setFetching] = useState(currentFmId ? true : false);
 
   const allAssessments = async () => {
     const response = await defaultInstance.get(`${API_ENDPOINTS.ALL_ASSESSMENTS}${currentFmId}`);
