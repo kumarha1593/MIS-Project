@@ -5,6 +5,7 @@ import "./Review.css";
 import ButtonLoader from "../global/ButtonLoader";
 import defaultInstance from "../../axiosHelper";
 import { API_ENDPOINTS } from "../../utils/apiEndPoints";
+import moment from "moment";
 
 const Review = () => {
   const location = useLocation();
@@ -80,7 +81,7 @@ const Review = () => {
         <p>Name: {personalInfo?.name || "Not filled"}</p>
         <p>Identifier: {personalInfo?.identifier || "Not filled"}</p>
         <p>Card Number: {personalInfo?.card_number || "Not filled"}</p>
-        <p>Date of Birth: {personalInfo?.dob || "Not filled"}</p>
+        <p>Date of Birth: {personalInfo?.dob ? moment(personalInfo?.dob).format('MMMM D, YYYY') : "Not filled"}</p>
         <p>Sex: {personalInfo?.sex || "Not filled"}</p>
         <p>Telephone Number: {personalInfo?.tel_no || "Not filled"}</p>
         <p>Address: {personalInfo?.address || "Not filled"}</p>
@@ -302,7 +303,7 @@ const Review = () => {
             </p>
             <p>
               <strong>VIA Appointment Date:</strong>{" "}
-              {cervicalCancerAssessment?.via_appointment_date || "Not Filled"}
+              {cervicalCancerAssessment?.via_appointment_date ? moment(cervicalCancerAssessment?.via_appointment_date).format('MMMM D, YYYY') : "Not Filled"}
             </p>
             <p>
               <strong>VIA Result:</strong>{" "}
@@ -326,7 +327,7 @@ const Review = () => {
           <strong>Symptom:</strong> {cvdAssessment?.symptom || "Not Filled"}
         </p>
         <p>
-          <strong>CVD Date:</strong> {cvdAssessment?.cvd_date || "Not Filled"}
+          <strong>CVD Date:</strong> {cvdAssessment?.cvd_date ? moment(cvdAssessment?.cvd_date).format('MMMM D, YYYY') : "Not Filled"}
         </p>
         <p>
           <strong>Suspected CVD:</strong>{" "}
@@ -452,7 +453,7 @@ const Review = () => {
         </p>
         <p>
           <strong>COPD Confirmation Date:</strong>{" "}
-          {copdTbAssessment?.copd_confirmation_date || "Not Filled"}
+          {copdTbAssessment?.copd_confirmation_date ? moment(copdTbAssessment?.copd_confirmation_date).format('MMMM D, YYYY') : "Not Filled"}
         </p>
         <p>
           <strong>Shortness of Breath:</strong>{" "}
