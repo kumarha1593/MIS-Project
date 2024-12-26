@@ -25,8 +25,10 @@ const AddMember = ({ headId, onDismiss, onDone }) => {
             const payload = {
                 fc_id: user_id,
                 head_id: headId,
+                identifier: formData?.govtId || '',
                 ...validatedData
             }
+            delete payload.govtId;
             setIsLoading(true)
             const response = await defaultInstance.post('api/family-members/', payload)
             setIsLoading(false)

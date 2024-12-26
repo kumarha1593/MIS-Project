@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./FormPage.css";
 import { FaList } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
 import HealthProfileForm from "./HealthProfileForm";
 import HealthMeasurements from "./HealthMeasurements";
@@ -26,6 +26,7 @@ import ABHAIdStatus from "./ABHAIdStatus";
 
 const FormPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentFmId, setCurrentFmId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -255,9 +256,9 @@ const FormPage = () => {
         const formattedDate = fetchedData.dob
           ? new Date(fetchedData.dob).toISOString().split("T")[0]
           : "";
-        setFormData({ ...fetchedData, dob: formattedDate });
-
-        // Store sex in localStorage
+        const cardData = location?.state?.data?.Aadhar ? location?.state?.data?.Aadhar : fetchedData?.card_number ? fetchedData?.card_number : ''
+        const identifier = location?.state?.data?.identifier ? location?.state?.data?.identifier : fetchedData?.identifier ? fetchedData?.identifier : ''
+        setFormData({ ...fetchedData, dob: formattedDate, card_number: cardData, identifier: identifier });
         localStorage.setItem("sex", fetchedData.sex);
         localStorage.setItem("age", fetchedData.dob);
       }
