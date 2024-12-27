@@ -9,8 +9,8 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
     ageAbove50: "",
     hypertensionPatient: !localStorage.getItem('case_of_htn_data') ? '' : localStorage.getItem('case_of_htn_data') == 'No' ? "No" : "Yes",
     diabetesPatient: !localStorage.getItem('case_of_dm_data') ? "" : localStorage.getItem('case_of_dm_data') == 'No' ? "No" : "Yes",
-    anemiaPatient: "",
     historyOfStroke: !localStorage.getItem('history_of_stroke_data') ? '' : localStorage.getItem('history_of_stroke_data') == 'No' ? "No" : "Yes",
+    anemiaPatient: "",
     swellingFaceLeg: "",
     historyNSAIDS: "",
     ckdRiskScore: 0,
@@ -63,32 +63,6 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
     }));
   };
 
-  const fetchCKDData = useCallback(async () => {
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}api/ckd-assessment/${currentFmId}`
-      );
-      if (response.data.success) {
-        const data = response.data.data;
-        setFormData({
-          knownCKD: data.knownCKD || "",
-          historyCKDStone: data.historyCKDStone || "",
-          ageAbove50: data.ageAbove50 || "",
-          hypertensionPatient: data.hypertensionPatient || "",
-          diabetesPatient: data.diabetesPatient || "",
-          anemiaPatient: data.anemiaPatient || "",
-          historyOfStroke: data.historyOfStroke || "",
-          swellingFaceLeg: data.swellingFaceLeg || "",
-          historyNSAIDS: data.historyNSAIDS || "",
-          ckdRiskScore: data.ckdRiskScore || 0,
-          riskaAssessment: data.riskaAssessment || "",
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching CKD assessment:", error);
-    }
-  }, [currentFmId]);
-
   const handleSubmit = async (evt) => {
     evt.preventDefault();
     const ckdRiskScore = calculateCKDRiskScore();
@@ -108,6 +82,9 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
       setIsLoading(false)
       if (response.data.success) {
         alert("CKD assessment saved successfully!");
+        localStorage.removeItem('case_of_htn_data')
+        localStorage.removeItem('case_of_dm_data')
+        localStorage.removeItem('history_of_stroke_data')
         handleNext?.();
       } else {
         console.error("Server responded with an error:", response.data);
@@ -126,22 +103,50 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
       );
     }
   };
+  const fetchCKDData = useCallback(async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}api/ckd-assessment/${currentFmId}`);
+      const data = response?.data?.success ? response?.data?.data : {};
+      preFillData(data);
+    } catch (error) {
+      console.error("Error fetching CKD assessment:", error);
+    }
+  }, [currentFmId]);
+
+  const getLocalStorageValue = (key, defaultValue = "") => {
+    const storedValue = localStorage.getItem(key);
+    if (storedValue == 'No') return "No";
+    if (storedValue == 'yes and on treatment' || storedValue == 'yes and not on treatment') return "Yes";
+    return storedValue || defaultValue;
+  };
+
+  const preFillData = (data = {}) => {
+    const hypertensionPatient = getLocalStorageValue('case_of_htn_data', data?.hypertensionPatient);
+    const diabetesPatient = getLocalStorageValue('case_of_dm_data', data?.diabetesPatient);
+    const historyOfStroke = getLocalStorageValue('history_of_stroke_data', data?.historyCKDStone);
+    const storedBirthDate = localStorage.getItem("age");
+    const age = storedBirthDate ? calculateAge(storedBirthDate) : '';
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      ageAbove50: age > 50 ? "Yes" : "No",
+      hypertensionPatient,
+      diabetesPatient,
+      historyOfStroke,
+      knownCKD: data?.knownCKD || "",
+      anemiaPatient: data?.anemiaPatient || "",
+      swellingFaceLeg: data?.swellingFaceLeg || "",
+      historyNSAIDS: data?.historyNSAIDS || "",
+      ckdRiskScore: data?.ckdRiskScore || 0,
+      riskaAssessment: data?.riskaAssessment || "",
+    }));
+  };
 
   useEffect(() => {
     if (currentFmId) {
       fetchCKDData();
     }
-
-    // Fetch age from local storage and set ageAbove50
-    const storedBirthDate = localStorage.getItem("age");
-    if (storedBirthDate) {
-      const age = calculateAge(storedBirthDate);
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        ageAbove50: age > 50 ? "Yes" : "No",
-      }));
-    }
-  }, [currentFmId, fetchCKDData]);
+  }, [currentFmId]);
 
   const styles = {
     formSection: { marginBottom: "20px" },

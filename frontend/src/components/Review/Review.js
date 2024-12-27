@@ -36,6 +36,9 @@ const Review = () => {
       });
       setIsLoading(false)
       alert("Data submitted successfully!");
+      localStorage.removeItem('case_of_htn_data')
+      localStorage.removeItem('case_of_dm_data')
+      localStorage.removeItem('history_of_stroke_data')
       navigate("/FieldDashboard");
     } catch (error) {
       setIsLoading(false)
