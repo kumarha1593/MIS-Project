@@ -5750,22 +5750,86 @@ app.get("/api/all-assessments/:fm_id", async (req, res) => {
     };
 
     // Fetch related data
-    const personalInfo = await fetchData(masterRecord.personal_info_id, "personal_info");
-    const healthMeasurements = await fetchData(masterRecord.health_id, "health");
-    const htnAssessment = await fetchData(masterRecord.htn_id, "htn");
-    const dmAssessment = await fetchData(masterRecord.dm_id, "DM");
-    const riskAssessment = await fetchData(masterRecord.risk_assessment_id, "risk_assessment");
-    const oralCancerAssessment = await fetchData(masterRecord.oral_cancer_id, "oralcancer");
-    const breastCancerAssessment = await fetchData(masterRecord.breast_cancer_id, "breastcancer");
-    const cervicalCancerAssessment = await fetchData(masterRecord.cervical_cancer_id, "cervicalcancer");
-    const cvdAssessment = await fetchData(masterRecord.CVD_id, "cvd");
-    const ckdAssessment = await fetchData(masterRecord.CKD_id, "ckd_assessment");
-    const copdTBAssessment = await fetchData(masterRecord.COPD_TB, "copdtb");
-    const cataractAssessment = await fetchData(masterRecord.cataract_id, "cataract");
-    const hearingIssueAssessment = await fetchData(masterRecord.hearing_id, "hearingissue");
-    const leprosyAssessment = await fetchData(masterRecord.leprosy_id, "leprosy");
-    const elderlyAssessment = await fetchData(masterRecord.elderly_id, "elderly");
-    const mentalHealthAssessment = await fetchData(masterRecord.mental_health_id, "mentalhealth");
+    const personalInfo = masterRecord.personal_info_id 
+      ? await fetchData(masterRecord.personal_info_id, "personal_info") 
+      : null;
+
+    const healthMeasurements = masterRecord.health_id 
+      ? await fetchData(masterRecord.health_id, "health") 
+      : null;
+
+    const htnAssessment = masterRecord.htn_id 
+      ? await fetchData(masterRecord.htn_id, "htn") 
+      : null;
+
+    const dmAssessment = masterRecord.dm_id 
+      ? await fetchData(masterRecord.dm_id, "DM") 
+      : null;
+
+    const riskAssessment = masterRecord.risk_assessment_id 
+      ? await fetchData(masterRecord.risk_assessment_id, "risk_assessment") 
+      : null;
+
+    const oralCancerAssessment = masterRecord.oral_cancer_id 
+      ? await fetchData(masterRecord.oral_cancer_id, "oralcancer") 
+      : null;
+
+    const breastCancerAssessment = masterRecord.breast_cancer_id 
+      ? await fetchData(masterRecord.breast_cancer_id, "breastcancer") 
+      : null;
+
+    const cervicalCancerAssessment = masterRecord.cervical_cancer_id 
+      ? await fetchData(masterRecord.cervical_cancer_id, "cervicalcancer") 
+      : null;
+
+    const cvdAssessment = masterRecord.CVD_id 
+      ? await fetchData(masterRecord.CVD_id, "cvd") 
+      : null;
+
+    const ckdAssessment = masterRecord.CKD_id 
+      ? await fetchData(masterRecord.CKD_id, "ckd_assessment") 
+      : null;
+
+    const copdTBAssessment = masterRecord.COPD_TB 
+      ? await fetchData(masterRecord.COPD_TB, "copdtb") 
+      : null;
+
+    const cataractAssessment = masterRecord.cataract_id 
+      ? await fetchData(masterRecord.cataract_id, "cataract") 
+      : null;
+
+    const hearingIssueAssessment = masterRecord.hearing_id 
+      ? await fetchData(masterRecord.hearing_id, "hearingissue") 
+      : null;
+
+    const leprosyAssessment = masterRecord.leprosy_id 
+      ? await fetchData(masterRecord.leprosy_id, "leprosy") 
+      : null;
+
+      // Fetch Elderly records
+    const elderlyAssessment = masterRecord.elderly_id 
+      ? await fetchData(masterRecord.elderly_id, "elderly") 
+      : null;
+
+      // Fetch Mental Health
+    const mentalHealthAssessment = masterRecord.mental_health_id 
+      ? await fetchData(masterRecord.mental_health_id, "mentalhealth") 
+      : null;
+
+    // Fetch post-stroke assessment
+    const postStrokeAssessment = masterRecord.post_stroke_id
+      ? await fetchData(masterRecord.post_stroke_id, "poststroke")
+      : null;
+
+    // Fetch assessment and action taken
+    const assessmentAndActionTaken = masterRecord.assesmentandaction_id
+      ? await fetchData(masterRecord.assesmentandaction_id, "assessment_and_action_taken")
+      : null;
+
+    // Fetch Abhaid assessment
+    const abhaidAssessment = masterRecord.AHBA_id
+      ? await fetchData(masterRecord.AHBA_id, "abhaid")
+      : null;
 
     // Map gender
     const genderMap = {
@@ -5773,6 +5837,139 @@ app.get("/api/all-assessments/:fm_id", async (req, res) => {
       F: "female",
       O: "others",
     };
+
+    if(personalInfo == null) {
+      return res.status(200).json({
+        success: false,
+        message : "Please fill Personal Info"
+      });
+    }
+
+    if (healthMeasurements == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill Health Measurements",
+      });
+    }
+    
+    if (htnAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill HTN Assessment",
+      });
+    }
+    
+    if (dmAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill DM Assessment",
+      });
+    }
+    
+    if (riskAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill Risk Assessment",
+      });
+    }
+    
+    if (oralCancerAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill Oral Cancer Assessment",
+      });
+    }
+    
+    if (breastCancerAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill Breast Cancer Assessment",
+      });
+    }
+    
+    if (cervicalCancerAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill Cervical Cancer Assessment",
+      });
+    }
+    
+    if (cvdAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill CVD Assessment",
+      });
+    }
+    
+    if (ckdAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill CKD Assessment",
+      });
+    }
+    
+    if (copdTBAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill COPD/TB Assessment",
+      });
+    }
+    
+    if (cataractAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill Cataract Assessment",
+      });
+    }
+    
+    if (hearingIssueAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill Hearing Issue Assessment",
+      });
+    }
+    
+    if (leprosyAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill Leprosy Assessment",
+      });
+    }
+    
+    if (elderlyAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill Elderly Assessment",
+      });
+    }
+    
+    if (mentalHealthAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill Mental Health Assessment",
+      });
+    }
+    
+    if (postStrokeAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill Post Stroke Assessment",
+      });
+    }
+    
+    if (assessmentAndActionTaken == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill Assessment and Action Taken",
+      });
+    }
+    
+    if (abhaidAssessment == null) {
+      return res.status(200).json({
+        success: false,
+        message: "Please fill Abhaid Assessment",
+      });
+    }    
 
     const formattedPersonalInfo = personalInfo
       ? { ...personalInfo, sex: genderMap[personalInfo.sex] || personalInfo.sex }
@@ -5796,6 +5993,9 @@ app.get("/api/all-assessments/:fm_id", async (req, res) => {
       leprosy_assessment : leprosyAssessment,
       elderly_assessment : elderlyAssessment,
       mental_health_assessment : mentalHealthAssessment,
+      post_stroke_assessment: postStrokeAssessment,
+      assessment_and_action_taken: assessmentAndActionTaken,
+      abhaid_assessment: abhaidAssessment,
     };
 
     res.status(200).json({
