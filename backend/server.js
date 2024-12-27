@@ -5838,138 +5838,138 @@ app.get("/api/all-assessments/:fm_id", async (req, res) => {
       O: "others",
     };
 
-    if(personalInfo == null) {
-      return res.status(200).json({
-        success: false,
-        message : "Please fill Personal Info"
-      });
-    }
+    // if(personalInfo == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message : "Please fill Personal Info"
+    //   });
+    // }
 
-    if (healthMeasurements == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill Health Measurements",
-      });
-    }
+    // if (healthMeasurements == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill Health Measurements",
+    //   });
+    // }
     
-    if (htnAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill HTN Assessment",
-      });
-    }
+    // if (htnAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill HTN Assessment",
+    //   });
+    // }
     
-    if (dmAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill DM Assessment",
-      });
-    }
+    // if (dmAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill DM Assessment",
+    //   });
+    // }
     
-    if (riskAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill Risk Assessment",
-      });
-    }
+    // if (riskAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill Risk Assessment",
+    //   });
+    // }
     
-    if (oralCancerAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill Oral Cancer Assessment",
-      });
-    }
+    // if (oralCancerAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill Oral Cancer Assessment",
+    //   });
+    // }
     
-    if (breastCancerAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill Breast Cancer Assessment",
-      });
-    }
+    // if (breastCancerAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill Breast Cancer Assessment",
+    //   });
+    // }
     
-    if (cervicalCancerAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill Cervical Cancer Assessment",
-      });
-    }
+    // if (cervicalCancerAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill Cervical Cancer Assessment",
+    //   });
+    // }
     
-    if (cvdAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill CVD Assessment",
-      });
-    }
+    // if (cvdAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill CVD Assessment",
+    //   });
+    // }
     
-    if (ckdAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill CKD Assessment",
-      });
-    }
+    // if (ckdAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill CKD Assessment",
+    //   });
+    // }
     
-    if (copdTBAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill COPD/TB Assessment",
-      });
-    }
+    // if (copdTBAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill COPD/TB Assessment",
+    //   });
+    // }
     
-    if (cataractAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill Cataract Assessment",
-      });
-    }
+    // if (cataractAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill Cataract Assessment",
+    //   });
+    // }
     
-    if (hearingIssueAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill Hearing Issue Assessment",
-      });
-    }
+    // if (hearingIssueAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill Hearing Issue Assessment",
+    //   });
+    // }
     
-    if (leprosyAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill Leprosy Assessment",
-      });
-    }
+    // if (leprosyAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill Leprosy Assessment",
+    //   });
+    // }
     
-    if (elderlyAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill Elderly Assessment",
-      });
-    }
+    // if (elderlyAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill Elderly Assessment",
+    //   });
+    // }
     
-    if (mentalHealthAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill Mental Health Assessment",
-      });
-    }
+    // if (mentalHealthAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill Mental Health Assessment",
+    //   });
+    // }
     
-    if (postStrokeAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill Post Stroke Assessment",
-      });
-    }
+    // if (postStrokeAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill Post Stroke Assessment",
+    //   });
+    // }
     
-    if (assessmentAndActionTaken == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill Assessment and Action Taken",
-      });
-    }
+    // if (assessmentAndActionTaken == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill Assessment and Action Taken",
+    //   });
+    // }
     
-    if (abhaidAssessment == null) {
-      return res.status(200).json({
-        success: false,
-        message: "Please fill Abhaid Assessment",
-      });
-    }    
+    // if (abhaidAssessment == null) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Please fill Abhaid Assessment",
+    //   });
+    // }    
 
     const formattedPersonalInfo = personalInfo
       ? { ...personalInfo, sex: genderMap[personalInfo.sex] || personalInfo.sex }
