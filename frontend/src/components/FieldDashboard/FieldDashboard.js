@@ -167,13 +167,17 @@ const FieldDashboard = () => {
     navigate(`/family-details/${id}`);
   };
 
-  const handleCompleteForm = (fm_id) => {
+  const handleCompleteForm = (fm_id, item) => {
     if (!districtInfo?.village) {
       alert('Please complete the village information first!')
       return
     }
     localStorage.setItem("current_fm_id", fm_id);
-    navigate("/FormPage");
+    navigate("/FormPage", {
+      state: {
+        data: item
+      }
+    });
   };
 
   const handleFilterClick = () => {
@@ -376,7 +380,7 @@ const FieldDashboard = () => {
               <td>
                 {row.status === 0 ? (
                   <button
-                    onClick={() => handleCompleteForm(row.id)}
+                    onClick={() => handleCompleteForm(row.id, row)}
                     style={{ padding: "3px", backgroundColor: "red", cursor: 'pointer' }}
                   >
                     Pending

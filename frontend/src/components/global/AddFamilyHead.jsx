@@ -3,6 +3,7 @@ import TextInput from './TextInput';
 import { extraGovernmentIdOptions, governmentIdOptions, validateFamilyHeadForm } from '../../utils/helper';
 import defaultInstance from '../../axiosHelper';
 import SelectInput from './SelectInput';
+import ButtonLoader from './ButtonLoader';
 
 const AddFamilyHead = ({ onDone, onDismiss }) => {
 
@@ -13,6 +14,7 @@ const AddFamilyHead = ({ onDone, onDismiss }) => {
     });
 
     const [errors, setErrors] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleSave = async (e) => {
         e.preventDefault();
@@ -23,17 +25,20 @@ const AddFamilyHead = ({ onDone, onDismiss }) => {
             const apiPayload = {
                 ...validatedData,
                 fc_id: user_id,
+                identifier: formData?.govtId || ''
             };
 
             delete apiPayload.govtId;
-
+            setIsLoading(true)
             const response = await defaultInstance.post(`api/family-members-head`, apiPayload);
+            setIsLoading(false)
             if (response.data.success) {
                 onDone?.(response);
             }
 
         } catch (err) {
             formatValidationErrors(err);
+            setIsLoading(false)
         }
     };
 
@@ -84,8 +89,15 @@ const AddFamilyHead = ({ onDone, onDismiss }) => {
                     pattern="\d{12}"
                     required
                 />
-                <button type='button' onClick={handleSave}>Save & Continue</button>
-                <button onClick={onDismiss}>Cancel</button>
+                <button style={{ height: 30 }} disabled={isLoading} type='button' onClick={handleSave}>
+                    {isLoading
+                        ?
+                        <ButtonLoader />
+                        :
+                        'Save & Continue'
+                    }
+                </button>
+                <button style={{ height: 30 }} onClick={onDismiss}>Cancel</button>
             </div>
         </div>
     )

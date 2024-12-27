@@ -2,183 +2,94 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Review.css";
+import ButtonLoader from "../global/ButtonLoader";
+import defaultInstance from "../../axiosHelper";
+import { API_ENDPOINTS } from "../../utils/apiEndPoints";
+import moment from "moment";
 
 const Review = () => {
   const location = useLocation();
   const { currentFmId } = location.state || {};
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({});
-  const [emptyFields, setEmptyFields] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [sex, setSex] = useState(null);
+  const [allAssessmentsData, setAllAssessmentsData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [fetching, setFetching] = useState(currentFmId ? true : false);
 
-  const [personalInfo, setPersonalInfo] = useState(null);
-  const [healthProfile, setHealthProfile] = useState(null);
-  const [htnAssessment, setHtnAssessment] = useState(null);
-  const [dmAssessment, setDmAssessment] = useState(null);
-  const [riskAssessment, setRiskAssessment] = useState(null);
-  const [oralCancerAssessment, setOralCancerAssessment] = useState(null);
-  const [breastCancerAssessment, setBreastCancerAssessment] = useState(null);
-  const [cervicalCancerAssessment, setCervicalCancerAssessment] =
-    useState(null);
-  const [cvdAssessment, setCvdAssessment] = useState(null);
-  const [postStrokeAssessment, setPostStrokeAssessment] = useState(null);
-  const [ckdAssessment, setCkdAssessment] = useState(null);
-  const [copdTbAssessment, setCopdTbAssessment] = useState(null);
-  const [cataractAssessment, setCataractAssessment] = useState(null);
-  const [hearingIssueAssessment, setHearingIssueAssessment] = useState(null);
-  const [leprosyAssessment, setLeprosyAssessment] = useState(null);
-  const [elderlyAssessment, setElderlyAssessment] = useState(null);
-  const [mentalHealthAssessment, setMentalHealthAssessment] = useState(null);
-  const [assessmentAndActionTaken, setAssessmentAndActionTaken] =
-    useState(null);
-  const [abhaIdStatus, setAbhaIdStatus] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const gender = localStorage.getItem("sex");
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-
-      const apiCalls = [
-        { name: "personalInfo", endpoint: "api/personal-info" },
-        { name: "healthProfile", endpoint: "api/health-measurements" },
-        { name: "htnAssessment", endpoint: "api/htn-assessment" },
-        { name: "dmAssessment", endpoint: "api/dm-assessment" },
-        { name: "riskAssessment", endpoint: "api/risk-assessment" },
-        {
-          name: "oralCancerAssessment",
-          endpoint: "api/oral-cancer-assessment",
-        },
-        {
-          name: "breastCancerAssessment",
-          endpoint: "api/breast-cancer-assessment",
-        },
-        {
-          name: "cervicalCancerAssessment",
-          endpoint: "api/cervical-cancer-assessment",
-        },
-        { name: "cvdAssessment", endpoint: "api/cvd-assessment" },
-        {
-          name: "postStrokeAssessment",
-          endpoint: "api/post-stroke-assessment",
-        },
-        { name: "ckdAssessment", endpoint: "api/ckd-assessment" },
-        { name: "copdTbAssessment", endpoint: "api/copd-tb-assessment" },
-        { name: "cataractAssessment", endpoint: "api/cataract-assessment" },
-        {
-          name: "hearingIssueAssessment",
-          endpoint: "api/hearing-issue-assessment",
-        },
-        { name: "leprosyAssessment", endpoint: "api/leprosy-assessment" },
-        { name: "elderlyAssessment", endpoint: "api/elderly-assessment" },
-        {
-          name: "mentalHealthAssessment",
-          endpoint: "api/mental-health-assessment",
-        },
-        { name: "abhaIdStatus", endpoint: "api/abhaid-assessment" },
-        {
-          name: "assessmentAndActionTaken",
-          endpoint: "api/assessment-and-action-taken",
-        },
-      ];
-
-      const results = {};
-
-      for (const call of apiCalls) {
-        try {
-          const response = await axios.get(
-            `${process.env.REACT_APP_BASE_URL}${call.endpoint}/${currentFmId}`
-          );
-          results[call.name] = response.data.data;
-        } catch (error) {
-          console.error(`Error fetching ${call.name}:`, error);
-          results[call.name] = null;
-        }
-      }
-
-      // Set all state variables at once
-      setPersonalInfo(results.personalInfo);
-      setHealthProfile(results.healthProfile);
-      setHtnAssessment(results.htnAssessment);
-      setDmAssessment(results.dmAssessment);
-      setRiskAssessment(results.riskAssessment);
-      setOralCancerAssessment(results.oralCancerAssessment);
-      setBreastCancerAssessment(results.breastCancerAssessment);
-      setCervicalCancerAssessment(results.cervicalCancerAssessment);
-      setCvdAssessment(results.cvdAssessment);
-      setPostStrokeAssessment(results.postStrokeAssessment);
-      setCkdAssessment(results.ckdAssessment);
-      setCopdTbAssessment(results.copdTbAssessment);
-      setCataractAssessment(results.cataractAssessment);
-      setHearingIssueAssessment(results.hearingIssueAssessment);
-      setLeprosyAssessment(results.leprosyAssessment);
-      setElderlyAssessment(results.elderlyAssessment);
-      setMentalHealthAssessment(results.mentalHealthAssessment);
-      setAbhaIdStatus(results.abhaIdStatus);
-      setAssessmentAndActionTaken(results.assessmentAndActionTaken);
-
-      setLoading(false);
-    };
-
-    fetchData();
-  }, [currentFmId]);
-
-  useEffect(() => {
-    if (location.state && location.state.formData) {
-      setFormData(location.state.formData);
+  const allAssessments = async () => {
+    const response = await defaultInstance.get(`${API_ENDPOINTS.ALL_ASSESSMENTS}${currentFmId}`);
+    setFetching(false)
+    if (response?.data?.success) {
+      setAllAssessmentsData(response?.data?.data)
     }
-    const storedSex = localStorage.getItem("sex");
-    setSex(storedSex);
-  }, [location.state]);
+  }
 
-  const handleBack = () => {
-    navigate("/FormPage");
-  };
+  useEffect(() => {
+    if (currentFmId)
+      allAssessments();
+  }, [currentFmId]);
 
   const handleFinalSubmit = async () => {
     try {
+      setIsLoading(true)
       await axios.post(`${process.env.REACT_APP_BASE_URL}api/final-submit`, {
         fm_id: currentFmId,
       });
-
+      setIsLoading(false)
       alert("Data submitted successfully!");
       navigate("/FieldDashboard");
     } catch (error) {
-      console.error("Error submitting data:", error);
+      setIsLoading(false)
       alert("Failed to submit data. Please try again.");
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error fetching data: {error.message}</div>;
+  if (fetching) {
+    return (<div style={{ width: '100%', height: '100%', position: 'absolute', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
+      <img style={{ width: 50, height: 50 }} src='./loading.gif' alt='loading' />
+    </div>)
+  }
+
+  if (!allAssessmentsData) return <div>Error fetching data</div>;
+
+  const {
+    personal_info: personalInfo,
+    health_measurements: healthProfile,
+    htn_assessment: htnAssessment,
+    dm_assessment: dmAssessment,
+    risk_assessment: riskAssessment,
+    oral_cancer_assessment: oralCancerAssessment,
+    breast_cancer_assessment: breastCancerAssessment,
+    cervical_cancer_assessment: cervicalCancerAssessment,
+    cvd_assessment: cvdAssessment,
+    post_stroke_assessment: postStrokeAssessment,
+    ckd_assessment: ckdAssessment,
+    copdTB_assessment: copdTbAssessment,
+    cataract_assessment: cataractAssessment,
+    hearing_issue_assessment: hearingIssueAssessment,
+    leprosy_assessment: leprosyAssessment,
+    elderly_assessment: elderlyAssessment,
+    mental_health_assessment: mentalHealthAssessment,
+    assessment_and_action_taken: assessmentAndActionTaken,
+    abhaid_status: abhaIdStatus,
+  } = allAssessmentsData
 
   return (
     <div className="review-page">
       <h1>Review Your Submission</h1>
       <div>
         <h2>Health Profile</h2>
-        <p>Name: {personalInfo.name || "Not filled"}</p>
-        <p>Identifier: {personalInfo.identifier || "Not filled"}</p>
-        <p>Card Number: {personalInfo.card_number || "Not filled"}</p>
-        <p>Date of Birth: {personalInfo.dob || "Not filled"}</p>
-        <p>Sex: {personalInfo.sex || "Not filled"}</p>
-        <p>Telephone Number: {personalInfo.tel_no || "Not filled"}</p>
-        <p>Address: {personalInfo.address || "Not filled"}</p>
+        <p>Name: {personalInfo?.name || "Not filled"}</p>
+        <p>Identifier: {personalInfo?.identifier || "Not filled"}</p>
+        <p>Card Number: {personalInfo?.card_number || "Not filled"}</p>
+        <p>Date of Birth: {personalInfo?.dob ? moment(personalInfo?.dob).format('MMMM D, YYYY') : "Not filled"}</p>
+        <p>Sex: {personalInfo?.sex || "Not filled"}</p>
+        <p>Telephone Number: {personalInfo?.tel_no || "Not filled"}</p>
+        <p>Address: {personalInfo?.address || "Not filled"}</p>
         <p>
           Health Insurance (State/Government/Private):{" "}
-          {personalInfo.state_health_insurance || "Not filled"}
+          {personalInfo?.state_health_insurance || "Not filled"}
         </p>
-        {/* <p>
-          State Health Insurance Remark:{" "}
-          {personalInfo.state_health_insurance_remark || "Not filled"}
-        </p> */}
-        <p>Disability: {personalInfo.disability || "Not filled"}</p>
-        {/* <p>
-          Disability Remark: {personalInfo.disability_remark || "Not filled"}
-        </p> */}
+        <p>Disability: {personalInfo?.disability || "Not filled"}</p>
       </div>
 
       <h2>Health Measurements</h2>
@@ -225,11 +136,7 @@ const Review = () => {
           <strong>Referral Center:</strong>{" "}
           {htnAssessment?.referral_center || "Not Filled"}
         </p>
-        {/* <p>
-          <strong>HTN Date:</strong> {htnAssessment?.htn_date || "Not Filled"}
-        </p> */}
       </div>
-
       <h2>DM Assessment</h2>
       <div>
         <p>
@@ -256,9 +163,6 @@ const Review = () => {
           <strong>Referral Center:</strong>{" "}
           {dmAssessment?.referral_center || "Not Filled"}
         </p>
-        {/* <p>
-          <strong>DM Date:</strong> {dmAssessment?.DM_date || "Not Filled"}
-        </p> */}
       </div>
 
       <h2>Risk Assessment</h2>
@@ -274,14 +178,14 @@ const Review = () => {
           <strong>Alcohol Use:</strong>{" "}
           {riskAssessment?.alcohol_use || "Not Filled"}
         </p>
-        {sex === "female" && (
+        {personalInfo?.sex === "female" && (
           <p>
             <strong>Waist Circumference (Female):</strong>{" "}
             {riskAssessment?.waist_female || "Not Filled"}
           </p>
         )}
 
-        {sex === "male" && (
+        {personalInfo?.sex === "male" && (
           <p>
             <strong>Waist Circumference (Male):</strong>{" "}
             {riskAssessment?.waist_male || "Not Filled"}
@@ -369,7 +273,7 @@ const Review = () => {
         </p>
       </div>
 
-      {sex !== "male" && (
+      {personalInfo?.sex !== "male" && (
         <>
           <h2>Cervical Cancer Assessment</h2>
           <div>
@@ -399,7 +303,7 @@ const Review = () => {
             </p>
             <p>
               <strong>VIA Appointment Date:</strong>{" "}
-              {cervicalCancerAssessment?.via_appointment_date || "Not Filled"}
+              {cervicalCancerAssessment?.via_appointment_date ? moment(cervicalCancerAssessment?.via_appointment_date).format('MMMM D, YYYY') : "Not Filled"}
             </p>
             <p>
               <strong>VIA Result:</strong>{" "}
@@ -423,7 +327,7 @@ const Review = () => {
           <strong>Symptom:</strong> {cvdAssessment?.symptom || "Not Filled"}
         </p>
         <p>
-          <strong>CVD Date:</strong> {cvdAssessment?.cvd_date || "Not Filled"}
+          <strong>CVD Date:</strong> {cvdAssessment?.cvd_date ? moment(cvdAssessment?.cvd_date).format('MMMM D, YYYY') : "Not Filled"}
         </p>
         <p>
           <strong>Suspected CVD:</strong>{" "}
@@ -549,7 +453,7 @@ const Review = () => {
         </p>
         <p>
           <strong>COPD Confirmation Date:</strong>{" "}
-          {copdTbAssessment?.copd_confirmation_date || "Not Filled"}
+          {copdTbAssessment?.copd_confirmation_date ? moment(copdTbAssessment?.copd_confirmation_date).format('MMMM D, YYYY') : "Not Filled"}
         </p>
         <p>
           <strong>Shortness of Breath:</strong>{" "}
@@ -729,23 +633,18 @@ const Review = () => {
         </p>
       </div>
       <div className="button-container">
-        <button onClick={handleBack} className="back-button">
+        <button onClick={() => navigate("/FormPage")} className="back-button">
           Back
         </button>
-        <button className="submit-button" onClick={handleFinalSubmit}>
-          Final Submit
+        <button type="button" className="submit-button" onClick={handleFinalSubmit} style={{ height: 40 }} disabled={isLoading}>
+          {isLoading
+            ?
+            <ButtonLoader />
+            :
+            'Final Submit'
+          }
         </button>
       </div>
-
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Please fill all the fields</h2>
-            <p>{emptyFields.join(", ")}</p>
-            <button onClick={() => setShowModal(false)}>Close</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

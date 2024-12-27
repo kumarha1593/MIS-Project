@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ButtonLoader from "../global/ButtonLoader";
 
 const ElderlyAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -8,6 +9,7 @@ const ElderlyAssessment = ({ currentFmId, handleBack, handleNext }) => {
     helpNeeded: "",
     forgetNames: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchElderlyData = async () => {
@@ -45,6 +47,7 @@ const ElderlyAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const handleSave = async (evt) => {
     evt.preventDefault();
     try {
+      setIsLoading(true)
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/elderly-assessment`,
         {
@@ -55,11 +58,13 @@ const ElderlyAssessment = ({ currentFmId, handleBack, handleNext }) => {
           forget_names: formData.forgetNames,
         }
       );
+      setIsLoading(false)
       if (response.data.success) {
         alert("Elderly assessment saved successfully!");
         handleNext?.();
       }
     } catch (error) {
+      setIsLoading(false)
       console.error("Error saving Elderly assessment:", error);
       alert("Failed to save Elderly assessment. Please try again.");
     }
@@ -169,8 +174,13 @@ const ElderlyAssessment = ({ currentFmId, handleBack, handleNext }) => {
           <button type="button" onClick={handleBack}>
             Back
           </button>
-          <button type="submit">
-            Save & Next
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Save & Next'
+            }
           </button>
         </footer>
       </form>

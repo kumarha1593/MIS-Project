@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ButtonLoader from "../global/ButtonLoader";
 
 const PostStrokeAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,8 @@ const PostStrokeAssessment = ({ currentFmId, handleBack, handleNext }) => {
 
   const [showStrokeDetails, setShowStrokeDetails] = useState(false);
   const [showReferralField, setShowReferralField] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
 
   useEffect(() => {
     const fetchPostStrokeData = async () => {
@@ -65,6 +68,7 @@ const PostStrokeAssessment = ({ currentFmId, handleBack, handleNext }) => {
     // Conditional logic based on the field being changed
     if (name === "history_of_stroke") {
       setShowStrokeDetails(value === "Yes");
+      localStorage.setItem('history_of_stroke_data', value);
       if (value !== "Yes") {
         setShowReferralField(false);
         setFormData((prevState) => ({
@@ -85,6 +89,7 @@ const PostStrokeAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const handleSave = async (evt) => {
     evt.preventDefault();
     try {
+      setIsLoading(true)
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/post-stroke-assessment`,
         {
@@ -92,11 +97,13 @@ const PostStrokeAssessment = ({ currentFmId, handleBack, handleNext }) => {
           ...formData,
         }
       );
+      setIsLoading(false)
       if (response.data.success) {
         alert("Post-stroke assessment saved successfully!");
         handleNext?.();
       }
     } catch (error) {
+      setIsLoading(false)
       console.error("Error saving post-stroke assessment:", error);
       alert("Failed to save post-stroke assessment. Please try again.");
     }
@@ -221,8 +228,13 @@ const PostStrokeAssessment = ({ currentFmId, handleBack, handleNext }) => {
           <button type="button" onClick={handleBack}>
             Back
           </button>
-          <button type="submit">
-            Save & Next
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Save & Next'
+            }
           </button>
         </footer>
       </form>

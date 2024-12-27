@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ButtonLoader from "../global/ButtonLoader";
 
 const DMAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ const DMAssessment = ({ currentFmId, handleBack, handleNext }) => {
 
   const [showHighBSOptions, setShowHighBSOptions] = useState(false);
   const [showReferralField, setShowReferralField] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchDmData = async () => {
@@ -57,6 +59,10 @@ const DMAssessment = ({ currentFmId, handleBack, handleNext }) => {
     };
     setFormData(updatedFormData);
 
+    if (name === 'case_of_dm') {
+      localStorage.setItem('case_of_dm_data', value);
+    }
+
     if (
       name === "fasting_blood_sugar" ||
       name === "post_prandial_blood_sugar" ||
@@ -73,6 +79,7 @@ const DMAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const handleSave = async (evt) => {
     evt.preventDefault();
     try {
+      setIsLoading(true)
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/dm-assessment`,
         {
@@ -80,11 +87,13 @@ const DMAssessment = ({ currentFmId, handleBack, handleNext }) => {
           ...formData,
         }
       );
+      setIsLoading(false)
       if (response.data.success) {
         alert("DM assessment saved successfully!");
         handleNext?.();
       }
     } catch (error) {
+      setIsLoading(false)
       console.error("Error saving DM assessment:", error);
       alert("Failed to save DM assessment. Please try again.");
     }
@@ -215,8 +224,13 @@ const DMAssessment = ({ currentFmId, handleBack, handleNext }) => {
           <button type="button" onClick={handleBack}>
             Back
           </button>
-          <button type="submit">
-            Save & Next
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Save & Next'
+            }
           </button>
         </footer>
       </form>

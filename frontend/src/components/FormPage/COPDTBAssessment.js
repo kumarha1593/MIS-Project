@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ButtonLoader from "../global/ButtonLoader";
 
 const COPDTBAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -21,6 +22,8 @@ const COPDTBAssessment = ({ currentFmId, handleBack, handleNext }) => {
     family_tb_history: "",
     history_of_tb: "",
   });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const [showRespiratoryDiseaseField, setShowRespiratoryDiseaseField] =
     useState(false);
@@ -102,6 +105,7 @@ const COPDTBAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const handleSave = async (evt) => {
     evt.preventDefault();
     try {
+      setIsLoading(true)
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/copd-tb-assessment`,
         {
@@ -109,11 +113,13 @@ const COPDTBAssessment = ({ currentFmId, handleBack, handleNext }) => {
           ...formData,
         }
       );
+      setIsLoading(false)
       if (response.data.success) {
         alert("COPD/TB assessment saved successfully!");
         handleNext?.();
       }
     } catch (error) {
+      setIsLoading(false)
       console.error("Error saving COPD/TB assessment:", error);
       alert("Failed to save COPD/TB assessment. Please try again.");
     }
@@ -431,8 +437,13 @@ const COPDTBAssessment = ({ currentFmId, handleBack, handleNext }) => {
           <button type="button" onClick={handleBack}>
             Back
           </button>
-          <button type="submit">
-            Save & Next
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Save & Next'
+            }
           </button>
         </footer>
       </form>

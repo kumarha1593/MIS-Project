@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ButtonLoader from "../global/ButtonLoader";
 
 const MentalHealthAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ const MentalHealthAssessment = ({ currentFmId, handleBack, handleNext }) => {
   });
 
   const [mentalHealthScore, setMentalHealthScore] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchMentalHealthData = async () => {
@@ -89,6 +91,7 @@ const MentalHealthAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const handleSave = async (evt) => {
     evt.preventDefault();
     try {
+      setIsLoading(true)
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/mental-health-assessment`,
         {
@@ -103,6 +106,7 @@ const MentalHealthAssessment = ({ currentFmId, handleBack, handleNext }) => {
           intervention_type: formData.interventionType,
         }
       );
+      setIsLoading(false)
       if (response.data.success) {
         alert("Mental health assessment saved successfully!");
         handleNext?.();
@@ -111,6 +115,7 @@ const MentalHealthAssessment = ({ currentFmId, handleBack, handleNext }) => {
         alert("Failed to save Mental Health assessment. Please try again.");
       }
     } catch (error) {
+      setIsLoading(false)
       console.error("Error saving mental health assessment:", error);
       alert("Failed to save mental health assessment. Please try again.");
     }
@@ -293,8 +298,13 @@ const MentalHealthAssessment = ({ currentFmId, handleBack, handleNext }) => {
           <button type="button" onClick={handleBack}>
             Back
           </button>
-          <button type="submit">
-            Save & Next
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Save & Next'
+            }
           </button>
         </footer>
       </form>

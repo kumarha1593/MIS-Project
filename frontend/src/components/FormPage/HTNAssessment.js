@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ButtonLoader from "../global/ButtonLoader";
 
 const HTNAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ const HTNAssessment = ({ currentFmId, handleBack, handleNext }) => {
   });
 
   const [showHighBPOptions, setShowHighBPOptions] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchHtnData = async () => {
@@ -43,6 +45,10 @@ const HTNAssessment = ({ currentFmId, handleBack, handleNext }) => {
       [name]: value,
     });
 
+    if (name === 'case_of_htn') {
+      localStorage.setItem('case_of_htn_data', value);
+    }
+
     if (name === "upper_bp" || name === "lower_bp") {
       const upperBP =
         name === "upper_bp" ? parseInt(value) : parseInt(formData.upper_bp);
@@ -59,6 +65,7 @@ const HTNAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const handleSave = async (evt) => {
     evt.preventDefault();
     try {
+      setIsLoading(true)
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}api/htn-assessment`,
         {
@@ -66,11 +73,13 @@ const HTNAssessment = ({ currentFmId, handleBack, handleNext }) => {
           ...formData,
         }
       );
+      setIsLoading(false)
       if (response.data.success) {
         alert("HTN assessment saved successfully!");
         handleNext?.();
       }
     } catch (error) {
+      setIsLoading(false)
       console.error("Error saving HTN assessment:", error);
       alert("Failed to save HTN assessment. Please try again.");
     }
@@ -185,8 +194,13 @@ const HTNAssessment = ({ currentFmId, handleBack, handleNext }) => {
           <button type="button" onClick={handleBack}>
             Back
           </button>
-          <button type="submit">
-            Save & Next
+          <button style={{ height: 40 }} disabled={isLoading} type="submit">
+            {isLoading
+              ?
+              <ButtonLoader />
+              :
+              'Save & Next'
+            }
           </button>
         </footer>
       </form>
