@@ -215,7 +215,6 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
             onChange={handleInputChange}
             required
             style={styles.input}
-            disabled
           >
             <option value="">Select</option>
             <option value="Yes">Yes</option>
@@ -230,7 +229,6 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
             onChange={handleInputChange}
             required
             style={styles.input}
-            disabled
           >
             <option value="">Select</option>
             <option value="Yes">Yes</option>
@@ -245,7 +243,6 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
             onChange={handleInputChange}
             required
             style={styles.input}
-            disabled
           >
             <option value="">Select</option>
             <option value="Yes">Yes</option>
@@ -274,7 +271,6 @@ const CKDAssessment = ({ currentFmId, handleBack, handleNext }) => {
             onChange={handleInputChange}
             required
             style={styles.input}
-            disabled
           >
             <option value="">Select</option>
             <option value="Yes">Yes</option>

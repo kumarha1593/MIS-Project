@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ButtonLoader from "../global/ButtonLoader";
+import { handleInputChangeWithMaxLength } from "../../utils/helper";
 
 const AssessmentAndActionTaken = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -108,7 +109,7 @@ const AssessmentAndActionTaken = ({ currentFmId, handleBack, handleNext }) => {
           type="text"
           name="majorNCDDetected"
           value={formData.majorNCDDetected || ""}
-          onChange={handleInputChange}
+          onChange={(e) => handleInputChangeWithMaxLength(e, 20, handleInputChange)}
           style={styles.input}
         />
       </div>
@@ -118,13 +119,13 @@ const AssessmentAndActionTaken = ({ currentFmId, handleBack, handleNext }) => {
         <textarea
           name="anyOtherDiseaseDetected"
           value={formData.anyOtherDiseaseDetected || ""}
-          onChange={handleInputChange}
+          onChange={(e) => handleInputChangeWithMaxLength(e, 20, handleInputChange)}
           rows="2"
           style={styles.textarea}
         ></textarea>
       </div>
 
-      <div style={styles.formGroup}>
+      {/* <div style={styles.formGroup}>
         <label style={styles.label}>Known Case of DM with HTN</label>
         <input
           type="text"
@@ -133,6 +134,20 @@ const AssessmentAndActionTaken = ({ currentFmId, handleBack, handleNext }) => {
           onChange={handleInputChange}
           style={styles.input}
         />
+      </div> */}
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Known Case of DM with HTN</label>
+        <select
+          name="knownCaseDMWithHTN"
+          value={formData.knownCaseDMWithHTN || ""}
+          onChange={handleInputChange}
+          style={styles.input}
+        >
+          <option value="">Select</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
       </div>
 
       <div style={styles.formGroup}>
@@ -168,7 +183,7 @@ const AssessmentAndActionTaken = ({ currentFmId, handleBack, handleNext }) => {
         <textarea
           name="otherAdvices"
           value={formData.otherAdvices || ""}
-          onChange={handleInputChange}
+          onChange={(e) => handleInputChangeWithMaxLength(e, 20, handleInputChange)}
           rows="3"
           style={styles.textarea}
         ></textarea>
@@ -179,7 +194,7 @@ const AssessmentAndActionTaken = ({ currentFmId, handleBack, handleNext }) => {
         <textarea
           name="remarks"
           value={formData.remarks || ""}
-          onChange={handleInputChange}
+          onChange={(e) => handleInputChangeWithMaxLength(e, 20, handleInputChange)}
           rows="3"
           style={styles.textarea}
         ></textarea>

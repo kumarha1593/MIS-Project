@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ButtonLoader from "../global/ButtonLoader";
+import { handleInputChangeWithMaxLength } from "../../utils/helper";
 
 const HTNAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -145,7 +146,7 @@ const HTNAssessment = ({ currentFmId, handleBack, handleNext }) => {
             id="upper_bp"
             name="upper_bp"
             value={formData.upper_bp || ""}
-            onChange={handleInputChange}
+            onChange={(e) => handleInputChangeWithMaxLength(e, 3, handleInputChange)}
             required
           />
         </div>
@@ -157,7 +158,7 @@ const HTNAssessment = ({ currentFmId, handleBack, handleNext }) => {
             id="lower_bp"
             name="lower_bp"
             value={formData.lower_bp || ""}
-            onChange={handleInputChange}
+            onChange={(e) => handleInputChangeWithMaxLength(e, 3, handleInputChange)}
             required
           />
         </div>
@@ -186,7 +187,7 @@ const HTNAssessment = ({ currentFmId, handleBack, handleNext }) => {
               id="referral_center"
               name="referral_center"
               value={formData.referral_center || ""}
-              onChange={handleInputChange}
+              onChange={(e) => handleInputChangeWithMaxLength(e, 10, handleInputChange)}
             />
           </div>
         )}
