@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ButtonLoader from "../global/ButtonLoader";
+import { handleInputChangeWithMaxLength } from "../../utils/helper";
 
 const COPDTBAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -184,7 +185,7 @@ const COPDTBAssessment = ({ currentFmId, handleBack, handleNext }) => {
               type="text"
               name="crd_specify"
               value={formData.crd_specify || ""}
-              onChange={handleInputChange}
+              onChange={(e) => handleInputChangeWithMaxLength(e, 20, handleInputChange)}
               required
               style={styles.input}
             />
