@@ -43,109 +43,84 @@ db.connect((err) => {
 });
 
 // Login Route
-app.post("/api/login", (req, res) => {
-  console.log("Request body:", req.body);
-  const { email, password } = req.body;
+app.post("/api/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    const query = "SELECT * FROM Users WHERE email = ? AND password = ?";
+    db.query(query, [email, password], (err, results) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return res.status(500).json({ message: "Server error", error: err });
+      }
+
+      if (results.length > 0) {
+        const user = results[0];
+        delete user.password;
+        return res.status(200).json({
+          message: "Login successful",
+          token: "fake-jwt-token",
+          user_id: user.id,
+          hasDistrictInfo: user.district_info_id !== null,
+          user_info: user,
+        });
+      } else {
+        return res.status(400).json({ message: "Invalid email or password" });
+      }
+    });
+  } catch (error) {
+    console.error("Error during login:", error);
+    res.status(500).json({ message: "Server error" });
   }
-
-  const query = "SELECT * FROM Users WHERE email = ? AND password = ?";
-  db.query(query, [email, password], (err, results) => {
-    if (err) {
-      console.error("Database query error:", err);
-      return res.status(500).json({ message: "Server error", error: err });
-    }
-
-    if (results.length > 0) {
-      const user = results[0];
-      delete user.password;
-      console.log("Login successful", user);
-      return res.status(200).json({
-        message: "Login successful",
-        token: "fake-jwt-token",
-        user_id: user.id,
-        hasDistrictInfo: user.district_info_id !== null,
-        user_info: user,
-      });
-    } else {
-      console.log("Invalid email or password");
-      return res.status(400).json({ message: "Invalid email or password" });
-    }
-  });
 });
 
-//Admin Login
+// Admin Login
 app.post("/api/admin/login", async (req, res) => {
-  const { username, password } = req.body;
-
   try {
-    // Check if the username exists in the database
-    const [adminUser] = await db
-      .promise()
-      .query("SELECT * FROM admin_users WHERE username = ?", [username]);
+    const { username, password } = req.body;
+    const [adminUser] = await db.promise().query("SELECT * FROM admin_users WHERE username = ?", [username]);
 
     if (adminUser.length === 0) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid username or password",
-      });
+      return res.status(401).json({ success: false, message: "Invalid username or password" });
     }
 
-    // Compare the provided password with the hashed password in the database
     const validPassword = await bcrypt.compare(password, adminUser[0].password);
-    console.log("Password comparison result:", validPassword);
 
     if (!validPassword) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid username or password",
-      });
+      return res.status(401).json({ success: false, message: "Invalid username or password" });
     }
 
     const adminUserData = adminUser[0];
     delete adminUserData.password;
-    // Instead of generating JWT, simply return a success message
+
     res.status(200).json({
       success: true,
       message: "Login successful",
-      userId: adminUserData?.id, // You can return user data as needed
+      userId: adminUserData.id,
       user_info: adminUserData,
     });
   } catch (error) {
     console.error("Error during admin login:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-app.post("/api/district_info", (req, res) => {
-  const {
-    user_id,
-    district,
-    village,
-    health_facility,
-    mo_mpw_cho_anu_name,
-    asha_name,
-    midori_staff_name,
-    date,
-  } = req.body;
+// District Info
+app.post("/api/district_info", async (req, res) => {
+  try {
+    const { user_id, district, village, health_facility, mo_mpw_cho_anu_name, asha_name, midori_staff_name, date } =
+      req.body;
 
-  // Format the date to MySQL datetime format
-  const formattedDate = new Date(date)
-    .toISOString()
-    .slice(0, 19)
-    .replace("T", " ");
+    const formattedDate = new Date(date).toISOString().slice(0, 19).replace("T", " ");
 
-  const query = `INSERT INTO district_info_fc (user_id, district, village, health_facility, mo_mpw_cho_anu_name, asha_name, midori_staff_name, date)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    const query = `INSERT INTO district_info_fc (user_id, district, village, health_facility, mo_mpw_cho_anu_name, asha_name, midori_staff_name, date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
-  db.query(
-    query,
-    [
+    const [result] = await db.promise().query(query, [
       user_id,
       district,
       village,
@@ -154,95 +129,74 @@ app.post("/api/district_info", (req, res) => {
       asha_name,
       midori_staff_name,
       formattedDate,
-    ],
-    (error, result) => {
-      if (error) {
-        console.error("Error inserting data:", error);
-        return res
-          .status(500)
-          .json({ success: false, error: "Failed to store data" });
-      }
+    ]);
 
-      // Update users table with the new district_info_id
-      const updateUserQuery =
-        "UPDATE Users SET district_info_id = ? WHERE id = ?";
-      db.query(updateUserQuery, [result.insertId, user_id], (updateError) => {
-        if (updateError) {
-          console.error("Error updating user:", updateError);
-          return res
-            .status(500)
-            .json({ success: false, error: "Failed to update user data" });
-        }
+    const updateUserQuery = "UPDATE Users SET district_info_id = ? WHERE id = ?";
+    await db.promise().query(updateUserQuery, [result.insertId, user_id]);
 
-        res.status(200).json({ success: true });
-      });
-    }
-  );
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error in district info endpoint:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
-app.get("/api/user/:id", (req, res) => {
-  const userId = req.params.id;
-  const query = "SELECT name FROM Users WHERE id = ?";
-
-  db.query(query, [userId], (err, results) => {
-    if (err) {
-      console.error("Database query error:", err);
-      return res.status(500).json({ message: "Server error", error: err });
-    }
-
-    if (results.length > 0) {
-      return res.status(200).json({ name: results[0].name });
-    } else {
-      return res.status(404).json({ message: "User not found" });
-    }
-  });
-});
-
-// Endpoint to fetch data for FieldDashboard
-app.get("/api/user_district_info/:user_id", (req, res) => {
-  const user_id = req.params.user_id;
-  const query = `
-    SELECT d.*
-    FROM Users u
-    JOIN district_info_fc d ON u.district_info_id = d.id
-    WHERE u.id = ?
-  `;
-
-  db.query(query, [user_id], (err, results) => {
-    if (err) {
-      console.error("Database query error:", err);
-      return res.status(500).json({ message: "Server error", error: err });
-    }
-
-    if (results.length > 0) {
-      return res.status(200).json(results[0]);
-    } else {
-      return res.status(404).json({ message: "User district info not found" });
-    }
-  });
-});
-
-// Add new family member (head of family)
-app.post("/api/family-members-head", async (req, res) => {
-  const { fc_id, name, aadhar } = req.body;
-
+// Fetch User Info
+app.get("/api/user/:id", async (req, res) => {
   try {
-    // Start a transaction
+    const userId = req.params.id;
+    const query = "SELECT name FROM Users WHERE id = ?";
+    const [results] = await db.promise().query(query, [userId]);
+
+    if (results.length > 0) {
+      res.status(200).json({ name: results[0].name });
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching user info:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Fetch District Info
+app.get("/api/user_district_info/:user_id", async (req, res) => {
+  try {
+    const user_id = req.params.user_id;
+    const query = `
+      SELECT d.*
+      FROM Users u
+      JOIN district_info_fc d ON u.district_info_id = d.id
+      WHERE u.id = ?
+    `;
+    const [results] = await db.promise().query(query, [user_id]);
+
+    if (results.length > 0) {
+      res.status(200).json(results[0]);
+    } else {
+      res.status(404).json({ message: "User district info not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching district info:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Add Family Member Head
+app.post("/api/family-members-head", async (req, res) => {
+  try {
+    const { fc_id, name, aadhar } = req.body;
+
     await db.promise().beginTransaction();
 
-    // Fetch di_id based on fc_id from district_info_fc
     const [diResult] = await db
       .promise()
       .query(`SELECT id FROM district_info_fc WHERE user_id = ? ORDER BY id DESC`, [fc_id]);
     const di_id = diResult.length > 0 ? diResult[0].id : null;
 
-    // Insert into personal_info table
-    const [personalInfoResult] = await db
-      .promise()
-      .query(`INSERT INTO personal_info (name) VALUES (?)`, [name]);
+    const [personalInfoResult] = await db.promise().query(`INSERT INTO personal_info (name) VALUES (?)`, [name]);
     const personal_info_id = personalInfoResult.insertId;
 
-    // Insert the new family member into family_members table, including di_id
     const [familyResult] = await db.promise().query(
       `INSERT INTO family_members (fc_id, name, Aadhar, head_id, master_data_id, di_id, status, date)
        VALUES (?, ?, ?, 0, NULL, ?, 0, NOW())`,
@@ -250,24 +204,13 @@ app.post("/api/family-members-head", async (req, res) => {
     );
     const fm_id = familyResult.insertId;
 
-    // Insert into master_data and update personal_info_id
     const [masterDataResult] = await db
       .promise()
-      .query(
-        `INSERT INTO master_data (fm_id, personal_info_id) VALUES (?, ?);`,
-        [fm_id, personal_info_id]
-      );
+      .query(`INSERT INTO master_data (fm_id, personal_info_id) VALUES (?, ?)`, [fm_id, personal_info_id]);
     const master_data_id = masterDataResult.insertId;
 
-    // Update family_members with master_data_id
-    await db
-      .promise()
-      .query(`UPDATE family_members SET master_data_id = ? WHERE id = ?;`, [
-        master_data_id,
-        fm_id,
-      ]);
+    await db.promise().query(`UPDATE family_members SET master_data_id = ? WHERE id = ?`, [master_data_id, fm_id]);
 
-    // Commit the transaction
     await db.promise().commit();
 
     res.status(201).json({
@@ -278,24 +221,18 @@ app.post("/api/family-members-head", async (req, res) => {
       personal_info_id,
     });
   } catch (error) {
-    // Rollback in case of an error
     await db.promise().rollback();
     console.error("Error inserting family member:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-// Fetch family members for a user
+// Fetch Family Members
 app.get("/api/family-members/:user_id", async (req, res) => {
-  const user_id = req.params.user_id;
-
-  // Get the current date in YYYY-MM-DD format
-  const currentDate = new Date().toISOString().split("T")[0];
-
-  // console.log("Current Date:", currentDate); // Log the current date
-  // console.log("User ID:", user_id); // Log the user ID
-
   try {
+    const user_id = req.params.user_id;
+    const currentDate = new Date().toISOString().split("T")[0];
+
     const [rows] = await db.promise().query(
       `SELECT fm.id, fm.name, fm.Aadhar, fm.status,
        (SELECT COUNT(*) FROM family_members WHERE head_id = fm.id) as familyMemberCount
@@ -303,8 +240,6 @@ app.get("/api/family-members/:user_id", async (req, res) => {
        WHERE fm.fc_id = ? AND fm.head_id = 0 AND fm.date = ?`,
       [user_id, currentDate]
     );
-
-    // console.log("Query Result:", rows); // Log the results of the query
 
     res.status(200).json(rows);
   } catch (error) {
