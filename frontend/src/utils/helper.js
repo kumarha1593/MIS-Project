@@ -708,3 +708,23 @@ export const defaultDistrict = [
     { "district_count": 0, "label": "Thoubal", "value": "Thoubal" },
     { "district_count": 0, "label": "Ukhrul", "value": "Ukhrul" }
 ]
+
+
+export const handleInputChangeWithMaxLength = (e, maxLength, callback) => {
+    const { value } = e.target;
+    const stringValue = value?.toString();
+    if (stringValue?.length <= maxLength || !stringValue) {
+        callback(e);
+    }
+}
+export const removeTrailingZeros = (input) => {
+    if (!input) {
+        return ""
+    }
+    const tempString = input?.toString()
+    if (!tempString?.includes('.')) {
+        return tempString;
+    }
+    return tempString?.replace(/(\.0+$|(?<=\.\d*[^0])0+$)/, "");
+};
+

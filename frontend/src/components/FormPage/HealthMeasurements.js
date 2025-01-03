@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ButtonLoader from "../global/ButtonLoader";
+import { handleInputChangeWithMaxLength, removeTrailingZeros } from "../../utils/helper";
 
 const HealthMeasurements = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -117,8 +118,8 @@ const HealthMeasurements = ({ currentFmId, handleBack, handleNext }) => {
             type="number"
             id="height"
             name="height"
-            value={formData.height || ""}
-            onChange={handleInputChange}
+            value={formData.height ? removeTrailingZeros(formData.height) : ""}
+            onChange={(e) => handleInputChangeWithMaxLength(e, 3, handleInputChange)}
             style={styles.input}
             required
           />
@@ -132,8 +133,8 @@ const HealthMeasurements = ({ currentFmId, handleBack, handleNext }) => {
             type="number"
             id="weight"
             name="weight"
-            value={formData.weight || ""}
-            onChange={handleInputChange}
+            value={formData.weight ? removeTrailingZeros(formData.weight) : ""}
+            onChange={(e) => handleInputChangeWithMaxLength(e, 3, handleInputChange)}
             style={styles.input}
             required
           />
@@ -147,8 +148,8 @@ const HealthMeasurements = ({ currentFmId, handleBack, handleNext }) => {
             type="number"
             id="bmi"
             name="bmi"
-            value={formData.bmi || ""}
-            onChange={handleInputChange}
+            value={formData.bmi ? removeTrailingZeros(formData.bmi) : ''}
+            onChange={(e) => handleInputChangeWithMaxLength(e, 5, handleInputChange)}
             style={styles.input}
             required
           />
@@ -162,8 +163,8 @@ const HealthMeasurements = ({ currentFmId, handleBack, handleNext }) => {
             type="number"
             id="temp"
             name="temp"
-            value={formData.temp || ""}
-            onChange={handleInputChange}
+            value={formData.temp ? removeTrailingZeros(formData.temp) : ''}
+            onChange={(e) => handleInputChangeWithMaxLength(e, 2, handleInputChange)}
             style={styles.input}
           />
         </div>
@@ -176,8 +177,8 @@ const HealthMeasurements = ({ currentFmId, handleBack, handleNext }) => {
             type="number"
             id="spO2"
             name="spO2"
-            value={formData.spO2 || ""}
-            onChange={handleInputChange}
+            value={formData.spO2 ? removeTrailingZeros(formData.spO2) : ''}
+            onChange={(e) => handleInputChangeWithMaxLength(e, 2, handleInputChange)}
             style={styles.input}
           />
         </div>
@@ -189,8 +190,8 @@ const HealthMeasurements = ({ currentFmId, handleBack, handleNext }) => {
             type="number"
             id="pulse"
             name="pulse"
-            value={formData.pulse || ""}
-            onChange={handleInputChange}
+            value={formData.pulse ? removeTrailingZeros(formData.pulse) : ''}
+            onChange={(e) => handleInputChangeWithMaxLength(e, 2, handleInputChange)}
             style={styles.input}
             required
           />

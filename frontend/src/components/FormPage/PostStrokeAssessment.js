@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ButtonLoader from "../global/ButtonLoader";
+import { handleInputChangeWithMaxLength } from "../../utils/helper";
 
 const PostStrokeAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -216,7 +217,7 @@ const PostStrokeAssessment = ({ currentFmId, handleBack, handleNext }) => {
                   id="referral_center_name"
                   name="referral_center_name"
                   value={formData.referral_center_name || ""}
-                  onChange={handleInputChange}
+                  onChange={(e) => handleInputChangeWithMaxLength(e, 20, handleInputChange)}
                   style={styles.input}
                   required
                 />

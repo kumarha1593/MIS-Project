@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ButtonLoader from "../global/ButtonLoader";
+import { handleInputChangeWithMaxLength } from "../../utils/helper";
 
 const CVDAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -236,7 +237,7 @@ const CVDAssessment = ({ currentFmId, handleBack, handleNext }) => {
                   id="referral_centre"
                   name="referral_centre"
                   value={formData.referral_centre}
-                  onChange={handleInputChange}
+                  onChange={(e) => handleInputChangeWithMaxLength(e, 20, handleInputChange)}
                   style={styles.input}
                 />
               </div>

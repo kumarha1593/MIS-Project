@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ButtonLoader from "../global/ButtonLoader";
+import { handleInputChangeWithMaxLength, removeTrailingZeros } from "../../utils/helper";
 
 const DMAssessment = ({ currentFmId, handleBack, handleNext }) => {
   const [formData, setFormData] = useState({
@@ -159,8 +160,8 @@ const DMAssessment = ({ currentFmId, handleBack, handleNext }) => {
             type="number"
             id="fasting_blood_sugar"
             name="fasting_blood_sugar"
-            value={formData.fasting_blood_sugar || ""}
-            onChange={handleInputChange}
+            value={formData.fasting_blood_sugar ? removeTrailingZeros(formData.fasting_blood_sugar) : ''}
+            onChange={(e) => handleInputChangeWithMaxLength(e, 3, handleInputChange)}
             style={styles.input}
           />
         </div>
@@ -171,8 +172,8 @@ const DMAssessment = ({ currentFmId, handleBack, handleNext }) => {
             type="number"
             id="post_prandial_blood_sugar"
             name="post_prandial_blood_sugar"
-            value={formData.post_prandial_blood_sugar || ""}
-            onChange={handleInputChange}
+            value={formData.post_prandial_blood_sugar ? removeTrailingZeros(formData.post_prandial_blood_sugar) : ''}
+            onChange={(e) => handleInputChangeWithMaxLength(e, 3, handleInputChange)}
             style={styles.input}
           />
         </div>
@@ -183,8 +184,8 @@ const DMAssessment = ({ currentFmId, handleBack, handleNext }) => {
             type="number"
             id="random_blood_sugar"
             name="random_blood_sugar"
-            value={formData.random_blood_sugar || ""}
-            onChange={handleInputChange}
+            value={formData.random_blood_sugar ? removeTrailingZeros(formData.random_blood_sugar) : ''}
+            onChange={(e) => handleInputChangeWithMaxLength(e, 3, handleInputChange)}
             style={styles.input}
             required
           />
@@ -215,7 +216,7 @@ const DMAssessment = ({ currentFmId, handleBack, handleNext }) => {
               id="referral_center"
               name="referral_center"
               value={formData.referral_center || ""}
-              onChange={handleInputChange}
+              onChange={(e) => handleInputChangeWithMaxLength(e, 10, handleInputChange)}
               style={styles.input}
             />
           </div>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
 import ButtonLoader from "../global/ButtonLoader";
+import { handleInputChangeWithMaxLength } from "../../utils/helper";
 
 const HealthProfileForm = ({ formData, handleInputChange, handleNext }) => {
 
@@ -187,7 +188,7 @@ const HealthProfileForm = ({ formData, handleInputChange, handleNext }) => {
             type="tel"
             name="tel_no"
             value={formData.tel_no || ""}
-            onChange={handleInputChange}
+            onChange={(e) => handleInputChangeWithMaxLength(e, 10, handleInputChange)}
             required={true}
           />
         </div>
@@ -196,7 +197,7 @@ const HealthProfileForm = ({ formData, handleInputChange, handleNext }) => {
           <textarea
             name="address"
             value={formData.address || ""}
-            onChange={handleInputChange}
+            onChange={(e) => handleInputChangeWithMaxLength(e, 20, handleInputChange)}
             required={true}
           />
         </div>
